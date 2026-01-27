@@ -1,0 +1,302 @@
+{% include 'home_page_html/header.html' %}
+
+
+
+<!-- Hero Section -->
+<section class="hero">
+    <div class="container">
+        <div class="hero-content">
+            <h1>Connecting Daily Wage Workers with Job Opportunities</h1>
+            <p>Find work or hire skilled workers quickly and easily</p>
+            <div class="search-box">
+                <input type="text" class="search-input" placeholder="Search for jobs or skills..."
+                    aria-label="Search jobs or skills">
+                <button class="search-btn" aria-label="Search">Search</button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features">
+    <div class="container">
+        <div class="section-title">
+            <h2>Why Choose WorkConnect</h2>
+            <p>We make it easier for daily wage workers and employers to connect</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-briefcase"></i></div>
+                <h3>Find Work Quickly</h3>
+                <p>Access hundreds of job opportunities in your area based on your skills</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-users"></i></div>
+                <h3>Hire Skilled Workers</h3>
+                <p>Find reliable and skilled workers for your projects quickly</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
+                <h3>Safe & Secure</h3>
+                <p>Verified workers and employers with secure payment options</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Sliding Login Section -->
+<section class="login-section" id="login-section">
+    <div class="container">
+        <div class="section-title">
+            <h2>Login to Your Account</h2>
+            <p>Access your account to find work opportunities or hire workers</p>
+        </div>
+
+        <div class="login-switcher" role="tablist" aria-label="Login type switcher">
+            <button class="switch-btn active" id="employeeSwitch" type="button" aria-pressed="true">Employee
+                Login</button>
+            <button class="switch-btn" id="employerSwitch" type="button" aria-pressed="false">Employer Login</button>
+        </div>
+
+        <div class="login-container" id="loginContainer" aria-live="polite">
+            <div class="login-slider" id="loginSlider">
+                <!-- Employee Login -->
+                <div class="login-box employee-login" id="employeeBox" data-role="employee">
+                    <div class="login-header">
+                        <h3>Employee Login</h3>
+                        <p>Find work opportunities in your area and grow your career</p>
+                    </div>
+                    <div class="login-form">
+                        <h3 class="form-title">Welcome Back</h3>
+
+                        <!-- Display Messages (Django) -->
+                        <div class="messages" id="employeeMessages">
+                            {% if messages %}
+                            {% for message in messages %}
+                            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">{{ message }}
+                            </div>
+                            {% endfor %}
+                            {% endif %}
+                        </div>
+
+                        <!-- the employe name= employee login is given in the home app view and urls-->
+                        <form method="POST" action="{% url 'employee_login' %}">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label for="employee_email">Email Address <span class="required">*</span></label>
+                                <input type="email" id="employee_email" name="email"
+                                    placeholder="Enter your email address" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="employee_password">Password <span class="required">*</span></label>
+                                <input type="password" id="employee_password" name="password"
+                                    placeholder="Enter your password" required>
+                            </div>
+
+                            <div class="form-options">
+                                <div class="remember-me">
+                                    <input type="checkbox" id="employee_remember" name="remember">
+                                    <label for="employee_remember">Remember me</label>
+                                </div>
+                                <a href="#" class="forgot-password">Forgot Password?</a>
+                            </div>
+
+                            <button type="submit" class="form-submit">Login as Employee</button>
+                        </form>
+
+                        <div class="form-footer">
+                            <p>Don't have an account?</p>
+                            <a href="{% url 'register' %}">Register as Employee</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Employer Login -->
+                <div class="login-box employer-login" id="employerBox" data-role="employer">
+                    <div class="login-header">
+                        <h3>Employer Login</h3>
+                        <p>Find skilled workers for your projects and grow your business</p>
+                    </div>
+                    <div class="login-form">
+                        <h3 class="form-title">Welcome Back</h3>
+
+                        <!-- Display Messages (Django) -->
+                        <div class="messages" id="employerMessages">
+                            {% if messages %}
+                            {% for message in messages %}
+                            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">{{ message }}
+                            </div>
+                            {% endfor %}
+                            {% endif %}
+                        </div>
+
+                        <form method="POST" action="{% url 'employer_login' %}">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label for="employer_email">Email Address <span class="required">*</span></label>
+                                <input type="email" id="employer_email" name="email"
+                                    placeholder="Enter your email address" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="employer_password">Password <span class="required">*</span></label>
+                                <input type="password" id="employer_password" name="password"
+                                    placeholder="Enter your password" required>
+                            </div>
+
+                            <div class="form-options">
+                                <div class="remember-me">
+                                    <input type="checkbox" id="employer_remember" name="remember">
+                                    <label for="employer_remember">Remember me</label>
+                                </div>
+                                <a href="#" class="forgot-password">Forgot Password?</a>
+                            </div>
+
+                            <button type="submit" class="form-submit">Login as Employer</button>
+                        </form>
+
+                        <div class="form-footer">
+                            <p>Don't have an account?</p>
+                            <a href="{% url 'register' %}">Register as Employer</a>
+                        </div>
+                    </div>
+                </div>
+            </div> <!-- /.login-slider -->
+        </div> <!-- /.login-container -->
+    </div>
+</section>
+
+<!-- How it Works Section -->
+<section class="how-it-works">
+    <div class="container">
+        <div class="section-title">
+            <h2>How It Works</h2>
+            <p>Simple steps to get started with WorkConnect</p>
+        </div>
+        <div class="steps-container">
+            <div class="step-card">
+                <div class="step-icon-wrapper">
+                    <div class="step-icon">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                    <div class="step-number-badge">1</div>
+                </div>
+                <h3>Create Profile</h3>
+                <p>Register as a worker or employer and create your detailed profile in minutes</p>
+            </div>
+
+            <div class="step-connector">
+                <i class="fas fa-chevron-right"></i>
+            </div>
+
+            <div class="step-card">
+                <div class="step-icon-wrapper">
+                    <div class="step-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <div class="step-number-badge">2</div>
+                </div>
+                <h3>Search & Connect</h3>
+                <p>Browse relevant jobs or find skilled workers that match your specific requirements</p>
+            </div>
+
+            <div class="step-connector">
+                <i class="fas fa-chevron-right"></i>
+            </div>
+
+            <div class="step-card">
+                <div class="step-icon-wrapper">
+                    <div class="step-icon">
+                        <i class="fas fa-handshake"></i>
+                    </div>
+                    <div class="step-number-badge">3</div>
+                </div>
+                <h3>Get Work Done</h3>
+                <p>Hire the best talent or get hired, complete the job, and grow your network</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials -->
+<section class="testimonials">
+    <div class="container">
+        <div class="section-title">
+            <h2>Success Stories</h2>
+            <p>Hear from workers and employers who have benefited from WorkConnect</p>
+        </div>
+        <div class="testimonial-cards">
+            {% if reviews %}
+            {% for review in reviews %}
+            <div class="testimonial-card">
+                <p class="testimonial-text">"{{ review.review_text }}"</p>
+                <div class="testimonial-author">
+                    {% if review.employer.profile_image %}
+                    <div class="author-avatar"
+                        style="border: 3px solid #fff; box-shadow: 0 0 0 2px var(--primary); width: 54px; height: 54px; padding: 0;">
+                        <img src="{{ review.employer.profile_image.url }}" alt="{{ review.employer.first_name }}"
+                            style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                    </div>
+                    {% else %}
+                    <div class="author-avatar"
+                        style="background-color: var(--primary); color: white; display: flex; align-items: center; justify-content: center; width: 54px; height: 54px; border-radius: 50%; font-weight: bold; border: 3px solid #fff; box-shadow: 0 0 0 2px var(--primary);">
+                        <span style="font-size: 1.1rem;">{{ review.employer.first_name|slice:":1" }}{{
+                            review.employer.last_name|slice:":1" }}</span>
+                    </div>
+                    {% endif %}
+                    <div style="margin-left: 12px;">
+                        <h4 style="margin-bottom: 2px; font-size: 1.05rem;">{{ review.employer.full_name }}</h4>
+                        <p style="font-size: 0.85rem; color: #666; margin: 0;">{{ review.employer.company_name }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <!-- Fallback static reviews if no dynamic reviews exist yet -->
+            <div class="testimonial-card">
+                <p class="testimonial-text">"WorkConnect has helped me find consistent daily work in my area. I've
+                    doubled my income since I started using this platform."</p>
+                <div class="testimonial-author">
+                    <div class="author-avatar"
+                        style="background-color: var(--primary); color: white; display: flex; align-items: center; justify-content: center; width: 54px; height: 54px; border-radius: 50%; font-weight: bold; border: 3px solid #fff; box-shadow: 0 0 0 2px var(--primary);">
+                        RK</div>
+                    <div style="margin-left: 12px;">
+                        <h4 style="margin-bottom: 2px; font-size: 1.05rem;">Rajesh Kumar</h4>
+                        <p style="font-size: 0.85rem; color: #666; margin: 0;">Construction Worker</p>
+                    </div>
+                </div>
+            </div>
+            <div class="testimonial-card">
+                <p class="testimonial-text">"As a small business owner, finding reliable daily wage workers was always a
+                    challenge. WorkConnect has made the process so much easier."</p>
+                <div class="testimonial-author">
+                    <div class="author-avatar"
+                        style="background-color: var(--primary); color: white; display: flex; align-items: center; justify-content: center; width: 54px; height: 54px; border-radius: 50%; font-weight: bold; border: 3px solid #fff; box-shadow: 0 0 0 2px var(--primary);">
+                        PS</div>
+                    <div style="margin-left: 12px;">
+                        <h4 style="margin-bottom: 2px; font-size: 1.05rem;">Priya Sharma</h4>
+                        <p style="font-size: 0.85rem; color: #666; margin: 0;">Restaurant Owner</p>
+                    </div>
+                </div>
+            </div>
+            <div class="testimonial-card">
+                <p class="testimonial-text">"I've been able to find skilled workers for my construction projects within
+                    hours of posting a job. This platform saves me time and money."</p>
+                <div class="testimonial-author">
+                    <div class="author-avatar"
+                        style="background-color: var(--primary); color: white; display: flex; align-items: center; justify-content: center; width: 54px; height: 54px; border-radius: 50%; font-weight: bold; border: 3px solid #fff; box-shadow: 0 0 0 2px var(--primary);">
+                        VS</div>
+                    <div style="margin-left: 12px;">
+                        <h4 style="margin-bottom: 2px; font-size: 1.05rem;">Vikram Singh</h4>
+                        <p style="font-size: 0.85rem; color: #666; margin: 0;">Contractor</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+{% include 'home_page_html/footer.html' %}
+
