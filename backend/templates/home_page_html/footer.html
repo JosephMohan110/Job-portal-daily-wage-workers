@@ -1,0 +1,118 @@
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column"><h3>WorkConnect</h3><p>Connecting daily wage workers with employers for a better tomorrow.</p><div class="social-icons"><a href="#"><i class="fab fa-facebook"></i></a><a href="#"><i class="fab fa-twitter"></i></a><a href="#"><i class="fab fa-instagram"></i></a><a href="#"><i class="fab fa-linkedin"></i></a></div></div>
+
+                <div class="footer-column"><h3>Quick Links</h3><ul class="footer-links"><li><a href="#">Home</a></li><li><a href="#">Find Work</a></li><li><a href="#">Find Workers</a></li><li><a href="#">About Us</a></li><li><a href="#">Contact</a></li></ul></div>
+
+                <div class="footer-column"><h3>Support</h3><ul class="footer-links"><li><a href="#">FAQ</a></li><li><a href="#">Privacy Policy</a></li><li><a href="#">Terms of Service</a></li><li><a href="#">Help Center</a></li><li><a href="#">Safety Guidelines</a></li></ul></div>
+
+                <div class="footer-column"><h3>Contact Us</h3><ul class="footer-links"><li><i class="fas fa-map-marker-alt"></i> 123 Main Street, City, Country</li><li><i class="fas fa-phone"></i> +1 234 567 8900</li><li><i class="fas fa-envelope"></i> info@workconnect.com</li></ul></div>
+            </div>
+
+            <div class="copyright"><p>&copy; 2023 WorkConnect. All rights reserved.</p></div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const employeeSwitch = document.getElementById('employeeSwitch');
+            const employerSwitch = document.getElementById('employerSwitch');
+            const loginSlider = document.getElementById('loginSlider');
+            const loginContainer = document.getElementById('loginContainer');
+            const employeeBox = document.getElementById('employeeBox');
+            const employerBox = document.getElementById('employerBox');
+            
+            // Mobile navigation toggle
+            const menuToggle = document.getElementById('menuToggle');
+            const navLinks = document.getElementById('navLinks');
+            
+            menuToggle.addEventListener('click', function() {
+                navLinks.classList.toggle('show');
+            });
+
+            // set initial state: employee visible
+            function setDesktopEmployee() {
+                loginSlider.style.transform = 'translateX(0)';
+                employeeSwitch.classList.add('active'); employeeSwitch.setAttribute('aria-pressed','true');
+                employerSwitch.classList.remove('active'); employerSwitch.setAttribute('aria-pressed','false');
+                // ensure both boxes are visible in the slider (desktop)
+                employeeBox.style.display = 'flex';
+                employerBox.style.display = 'flex';
+            }
+            function setDesktopEmployer() {
+                loginSlider.style.transform = 'translateX(-50%)';
+                employerSwitch.classList.add('active'); employerSwitch.setAttribute('aria-pressed','true');
+                employeeSwitch.classList.remove('active'); employeeSwitch.setAttribute('aria-pressed','false');
+                employeeBox.style.display = 'flex';
+                employerBox.style.display = 'flex';
+            }
+
+            // mobile behaviour: show/hide boxes (no translation)
+            function setMobileEmployee() {
+                // show only employee
+                employeeBox.style.display = 'flex';
+                employerBox.style.display = 'none';
+                employeeSwitch.classList.add('active'); employeeSwitch.setAttribute('aria-pressed','true');
+                employerSwitch.classList.remove('active'); employerSwitch.setAttribute('aria-pressed','false');
+                loginSlider.style.transform = 'none';
+            }
+            function setMobileEmployer() {
+                employerBox.style.display = 'flex';
+                employeeBox.style.display = 'none';
+                employerSwitch.classList.add('active'); employerSwitch.setAttribute('aria-pressed','true');
+                employeeSwitch.classList.remove('active'); employeeSwitch.setAttribute('aria-pressed','false');
+                loginSlider.style.transform = 'none';
+            }
+
+            function isMobileView() {
+                return window.innerWidth <= 768;
+            }
+
+            function initView() {
+                if (isMobileView()) {
+                    // default show Employee on mobile
+                    setMobileEmployee();
+                } else {
+                    // default on desktop: employee (slider view)
+                    // reset slider style to ensure correct transform
+                    loginSlider.style.transition = 'transform .5s ease-in-out';
+                    setDesktopEmployee();
+                }
+            }
+
+            // Click handlers
+            employeeSwitch.addEventListener('click', function () {
+                if (isMobileView()) {
+                    setMobileEmployee();
+                } else {
+                    setDesktopEmployee();
+                }
+            });
+
+            employerSwitch.addEventListener('click', function () {
+                if (isMobileView()) {
+                    setMobileEmployer();
+                } else {
+                    setDesktopEmployer();
+                }
+            });
+
+            // handle resize to switch behaviour cleanly
+            let resizeTimeout;
+            window.addEventListener('resize', function () {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(function () {
+                    // when going from mobile to desktop or vice versa, re-init view
+                    initView();
+                }, 120);
+            });
+
+            // initialize
+            initView();
+        });
+    </script>
+</body>
+</html>
