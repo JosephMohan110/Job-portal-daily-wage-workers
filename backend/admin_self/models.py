@@ -410,3 +410,7 @@ class DataCollectionLog(models.Model):
     def file_size_mb(self):
         """Return file size in MB"""
         return round(self.file_size / (1024 * 1024), 2) if self.file_size else 0
+
+
+
+
