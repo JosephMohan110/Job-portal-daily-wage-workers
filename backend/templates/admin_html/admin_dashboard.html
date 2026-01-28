@@ -359,9 +359,27 @@
         }
 
         @media (max-width: 992px) {
+
+            /* Force show mobile header which is hidden by default in included sidebar */
+            .mobile-header {
+                display: flex !important;
+            }
+
+            /* Hide sidebar by default on mobile with !important to override inline/body styles */
+            nav.sidebar {
+                transform: translateX(-100%) !important;
+                box-shadow: none !important;
+            }
+
+            /* Show sidebar when active */
+            nav.sidebar.active {
+                transform: translateX(0) !important;
+                box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1) !important;
+            }
+
             .main-content {
-                margin-left: 0;
-                padding-top: calc(var(--header-height) + 20px);
+                margin-left: 0 !important;
+                padding-top: calc(var(--header-height) + 20px) !important;
             }
 
             .page-header {
@@ -414,8 +432,8 @@
 
         @media (max-width: 576px) {
             .main-content {
-                padding: 16px;
-                padding-top: calc(var(--header-height) + 16px);
+                padding: 16px !important;
+                padding-top: calc(var(--header-height) + 16px) !important;
             }
 
             .page-header {
@@ -553,11 +571,13 @@
                     <div
                         style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
                         <span style="font-size: 0.8rem; color: var(--text-light);">Total Paid by Employer:</span>
-                        <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-dark);">{{ formatted_total_spent }}</span>
+                        <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-dark);">{{
+                            formatted_total_spent }}</span>
                     </div>
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <span style="font-size: 0.8rem; color: var(--text-light);">Pending Amount to Pay:</span>
-                        <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-dark);">{{ formatted_pending_amount }}</span>
+                        <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-dark);">{{
+                            formatted_pending_amount }}</span>
                     </div>
                 </div>
             </div>
@@ -582,7 +602,8 @@
                     <p style="font-weight: 600; color: var(--text-dark); margin-bottom: 8px;">Prediction Chart
                         Visualization</p>
                     <p style="color: var(--text-light); font-size: 0.95rem; margin-bottom: 16px;">
-                        Expected New Users: <strong style="color: var(--primary-color);">~{{ predicted_worker_growth }}</strong> |
+                        Expected New Users: <strong style="color: var(--primary-color);">~{{ predicted_worker_growth
+                            }}</strong> |
                         Expected Revenue: <strong style="color: var(--primary-color);">{{ predicted_revenue }}</strong>
                     </p>
                     <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 20px;">
@@ -654,47 +675,6 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const menuToggle = document.getElementById('menuToggle');
-            const sidebar = document.getElementById('sidebar');
-            const sidebarOverlay = document.getElementById('sidebarOverlay');
-
-            // Toggle sidebar on mobile
-            if (menuToggle && sidebar && sidebarOverlay) {
-                menuToggle.addEventListener('click', function () {
-                    sidebar.classList.toggle('active');
-                    sidebarOverlay.classList.toggle('active');
-                    document.body.style.overflow = sidebar.classList.contains('active') ? 'hidden' : '';
-                });
-
-                // Close sidebar when clicking on overlay
-                sidebarOverlay.addEventListener('click', function () {
-                    sidebar.classList.remove('active');
-                    sidebarOverlay.classList.remove('active');
-                    document.body.style.overflow = '';
-                });
-
-                // Close sidebar when clicking on a nav link (for mobile)
-                const navLinks = document.querySelectorAll('.nav-link');
-                navLinks.forEach(link => {
-                    link.addEventListener('click', function () {
-                        if (window.innerWidth <= 992) {
-                            sidebar.classList.remove('active');
-                            sidebarOverlay.classList.remove('active');
-                            document.body.style.overflow = '';
-                        }
-                    });
-                });
-
-                // Handle window resize
-                window.addEventListener('resize', function () {
-                    if (window.innerWidth > 992) {
-                        sidebar.classList.remove('active');
-                        sidebarOverlay.classList.remove('active');
-                        document.body.style.overflow = '';
-                    }
-                });
-            }
-
             // Make cards interactive on mobile
             const cards = document.querySelectorAll('.card');
             cards.forEach(card => {
