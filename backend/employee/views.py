@@ -3228,3 +3228,124 @@ def submit_employee_site_feedback(request):
             messages.error(request, f"Error submitting feedback: {str(e)}", extra_tags='site_feedback danger')
     
     return redirect(reverse('employee_review_list') + '?tab=feedback')
+
+
+
+
+
+# Add this new view function in employee/views.py
+def send_rejection_message(request):
+    """Send rejection message to employer via chat"""
+    if 'employee_id' not in request.session:
+        return JsonResponse({'success': False, 'error': 'Please login first.'})
+    
+    if request.method == 'POST':
+        try:
+            employee = Employee.objects.get(employee_id=request.session['employee_id'])
+            job_id = request.POST.get('job_id')
+            rejection_message = request.POST.get('rejection_message', '').strip()
+            
+            if not job_id:
+                return JsonResponse({'success': False, 'error': 'Job ID is required.'})
+            
+            if not rejection_message:
+                return JsonResponse({'success': False, 'error': 'Please enter a reason for rejection.'})
+            
+            job = JobRequest.objects.get(job_id=job_id, employee=employee)
+            
+            # Update job status
+            job.status = 'rejected'
+            job.rejection_reason = rejection_message
+            job.updated_at = timezone.now()
+            job.save()
+            
+            # Create action record
+            JobAction.objects.create(
+                job=job,
+                employee=employee,
+                action_type='rejected',
+                notes=f"Job rejected by {employee.full_name}. Reason: {rejection_message}"
+            )
+            
+            # Import message system models
+            from message_system.models import ChatRoom, Message
+            
+            # Check if chat room exists, create if not
+            chat_room, created = ChatRoom.objects.get_or_create(
+                employer=job.employer,
+                employee=employee,
+                defaults={
+                    'subject': f'Job #{job.job_id}: {job.title}',
+                    'room_type': 'job',
+                }
+            )
+            
+            # Update chat room with job reference if not set
+            if not chat_room.job:
+                chat_room.job = job
+                chat_room.save()
+            
+            # Create rejection message in chat
+            message = Message.objects.create(
+                room=chat_room,
+                sender_type='employee',
+                sender_employee=employee,
+                content=f"❌ **Job Rejected**\n\nI've declined the job '{job.title}'.\n\n**Reason:** {rejection_message}\n\nJob ID: #{job.job_id}\nProposed Date: {job.proposed_date}\nBudget: ₹{job.budget if job.budget else 'Negotiable'}",
+                message_type='job_update',
+                status='sent'
+            )
+            
+            # Update chat room stats
+            chat_room.message_count += 1
+            chat_room.unread_employer += 1
+            chat_room.last_message_time = timezone.now()
+            chat_room.save()
+            
+            # Create chat notification for employer
+            from message_system.models import ChatNotification
+            ChatNotification.objects.create(
+                user_type='employer',
+                user_employer=job.employer,
+                room=chat_room,
+                message=message,
+                notification_type='job_update',
+                title='Job Rejected',
+                message_preview=f"{employee.full_name} rejected your job '{job.title}'"
+            )
+            
+            # Create Employee Notification
+            EmployeeNotification.objects.create(
+                employee=employee,
+                title="Job Rejected",
+                message=f"You rejected the job '{job.title}' and sent a message to the employer.",
+                notification_type='job',
+                is_read=True,
+                link=f"/employee/job/details/{job.job_id}/"
+            )
+            
+            return JsonResponse({
+                'success': True, 
+                'message': 'Job rejected and message sent successfully!',
+                'redirect': reverse('employee_job_request')
+            })
+            
+        except JobRequest.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Job request not found.'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+
+# Also update your existing update_job_status function to handle rejection differently
+# Modify the reject_job_request function (or create a new one)
+def reject_job_with_message(request):
+    """Handle job rejection with message"""
+    if 'employee_id' not in request.session:
+        messages.error(request, "Please login first.")
+        return redirect('index')
+    
+    if request.method == 'POST':
+        # This will now be handled by the AJAX function
+        pass
+    
+    return redirect('employee_job_request')
