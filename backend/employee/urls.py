@@ -33,6 +33,8 @@ urlpatterns = [
     # 4. Filter Jobs (if your template uses the filter function)
     path('job/filter/', views.filter_job_requests, name='filter_job_requests'),
 
+    path('job/reject-with-message/', views.send_rejection_message, name='send_rejection_message'),
+
 
 
     #employee_review_list
