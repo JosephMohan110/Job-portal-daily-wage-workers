@@ -743,8 +743,8 @@
         }
 
         .tab-badge {
-            background: rgba(255, 255, 255, 0.25);
-            color: white;
+            background: rgba(0, 0, 0, 0.55);
+            color: rgb(255, 255, 255);
             padding: 2px 8px;
             border-radius: 10px;
             font-size: 0.8rem;
@@ -752,7 +752,7 @@
         }
 
         .tab-btn.active .tab-badge {
-            background: rgba(255, 255, 255, 0.3);
+            background: rgba(255, 0, 0, 0.63);
         }
 
         .tab-content {
@@ -769,13 +769,12 @@
             from {
                 opacity: 0;
             }
-
             to {
                 opacity: 1;
             }
         }
 
-        /* Job Cards */
+        /* Job Cards - FIXED SECTION */
         .job-requests {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -796,18 +795,20 @@
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         }
 
-        /* Card Header */
+        /* Card Header - FIXED */
         .job-card-header {
             padding: 1.5rem;
             border-bottom: 1px solid var(--border-color);
             background: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
 
         .job-profile-section {
             display: flex;
-            align-items: center;
+            align-items: flex-start; /* Changed from center to flex-start */
             gap: 12px;
-            margin-bottom: 1rem;
         }
 
         .job-profile-avatar {
@@ -823,6 +824,7 @@
             border: 2px solid var(--border-color);
             font-weight: 600;
             overflow: hidden;
+            flex-shrink: 0;
         }
 
         .job-profile-avatar img {
@@ -833,18 +835,23 @@
 
         .job-profile-info {
             flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
         }
 
         .job-profile-info h4 {
             font-size: 1.1rem;
             font-weight: 700;
-            margin-bottom: 4px;
             color: var(--dark);
+            margin: 0;
+            line-height: 1.2;
         }
 
         .job-profile-info p {
             font-size: 0.9rem;
             color: var(--gray);
+            margin: 0;
             display: flex;
             align-items: center;
             gap: 6px;
@@ -853,15 +860,16 @@
         .job-title {
             font-size: 1.3rem;
             font-weight: 700;
-            margin-bottom: 0.75rem;
             color: var(--dark);
             line-height: 1.3;
+            margin: 0;
         }
 
         .job-meta {
             display: flex;
             gap: 12px;
             flex-wrap: wrap;
+            align-items: center;
         }
 
         .job-meta-item {
@@ -871,6 +879,10 @@
             font-size: 0.875rem;
             color: var(--gray);
             font-weight: 500;
+        }
+
+        .job-meta-item i {
+            min-width: 16px;
         }
 
         /* Status and Priority Badges */
@@ -884,6 +896,7 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            z-index: 2;
         }
 
         .new-job .status-badge {
@@ -919,6 +932,7 @@
             display: flex;
             align-items: center;
             gap: 4px;
+            z-index: 2;
         }
 
         /* Job Card Body */
@@ -1229,7 +1243,6 @@
             outline-offset: 2px;
         }
 
-
         /* Modal Styles */
         .modal {
             position: fixed;
@@ -1384,7 +1397,7 @@
 
 
 
-    {% include 'employee_html/employee_header.html' %}
+{% include 'employee_html/employee_header.html' %}
 
 
 <body>
@@ -1411,19 +1424,153 @@
         </div>
 
         {% if job_details %}
-        <!-- Job Details View -->
+                <!-- Job Details View -->
         <div class="dashboard-content">
             <div class="job-card">
-                <div class="job-card-header">
-                    <h3 class="job-title">{{ job_details.title }}</h3>
-                    <a href="{% url 'employee_job_request' %}" class="btn btn-outline" style="float: right;">Back to List</a>
+                <!-- Status Badge -->
+                <div class="status-badge" style="{% if job_details.status == 'pending' %}background: #dbeafe; color: #1d4ed8;{% elif job_details.status == 'accepted' %}background: #dcfce7; color: #059669;{% elif job_details.status == 'completed' %}background: #fef3c7; color: #d97706;{% elif job_details.status == 'rejected' %}background: #fee2e2; color: #dc2626;{% endif %}">
+                    {{ job_details.status|upper }}
                 </div>
+
+                {% if job_details.is_urgent %}
+                <div class="priority-badge">
+                    <i class="fas fa-bolt"></i> URGENT
+                </div>
+                {% endif %}
+
+                <div class="job-card-header">
+                    <div class="job-profile-section">
+                        <div class="job-profile-avatar">
+                            {% if job_details.employer.profile_image %}
+                            <img src="{{ job_details.employer.profile_image.url }}" alt="Employer">
+                            {% else %}
+                            <span>{{ job_details.employer.company_name|first|default:job_details.employer.full_name|first }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="job-profile-info">
+                            <h4>{{ job_details.employer.company_name|default:job_details.employer.full_name }}</h4>
+                            <p><i class="fas fa-user-tie"></i> Employer</p>
+                        </div>
+                        
+                        <a href="{% url 'employee_job_request' %}" class="btn btn-outline" style="margin-left: auto;">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </a>
+                    </div>
+
+                    <h3 class="job-title">{{ job_details.title }}</h3>
+
+                    <div class="job-meta">
+                        <div class="job-meta-item">
+                            <i class="far fa-clock"></i>
+                            Posted {{ job_details.created_at|timesince }} ago
+                        </div>
+                        <div class="job-meta-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            {{ job_details.location }}
+                        </div>
+                        {% if job_details.category %}
+                        <div class="job-meta-item">
+                            <i class="fas fa-tag"></i>
+                            {{ job_details.category }}
+                        </div>
+                        {% endif %}
+                        {% if job_details.accepted_at %}
+                        <div class="job-meta-item">
+                            <i class="fas fa-calendar-check"></i>
+                            Started {{ job_details.accepted_at|date:"M d, Y" }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
                 <div class="job-card-body">
                     <p class="job-description">{{ job_details.description }}</p>
-                    <!-- Add more detailed fields here as needed -->
+
+                    <div class="job-details-grid">
+                        <div class="detail-item">
+                            <span class="detail-label">Proposed Date</span>
+                            <span class="detail-value">{{ job_details.proposed_date|date:"M d, Y" }}</span>
+                        </div>
+                         <div class="detail-item">
+                            <span class="detail-label">Budget</span>
+                            <span class="detail-value budget-value">{{ job_details.formatted_budget }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Duration</span>
+                            <span class="detail-value">{{ job_details.estimated_duration|default:"Not specified" }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Job ID</span>
+                            <span class="detail-value">#{{ job_details.job_id }}</span>
+                        </div>
+                        {% if job_details.deadline %}
+                        <div class="detail-item">
+                            <span class="detail-label">Deadline</span>
+                            <span class="detail-value">{{ job_details.deadline|date:"M d, Y" }}</span>
+                        </div>
+                        {% endif %}
+                        {% if job_details.accepted_at %}
+                        <div class="detail-item">
+                            <span class="detail-label">Started At</span>
+                            <span class="detail-value">{{ job_details.accepted_at|date:"M d, Y H:i" }}</span>
+                        </div>
+                        {% endif %}
+                        {% if job_details.completed_at %}
+                        <div class="detail-item">
+                            <span class="detail-label">Completed At</span>
+                            <span class="detail-value">{{ job_details.completed_at|date:"M d, Y H:i" }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    {% if job_details.employer_notes %}
+                    <div style="margin-top: 20px; padding: 15px; background: var(--light); border-radius: 8px;">
+                        <strong><i class="fas fa-sticky-note"></i> Note from Employer:</strong>
+                        <p style="margin-bottom: 0; margin-top: 5px; font-style: italic;">"{{ job_details.employer_notes }}"</p>
+                    </div>
+                    {% endif %}
+
+                    <div class="job-actions">
+                        {% if job_details.status == 'pending' %}
+                            <form method="POST" action="{% url 'update_job_status' %}" style="display:inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="job_id" value="{{ job_details.job_id }}">
+                                <input type="hidden" name="status" value="accepted">
+                                <button type="submit" class="btn btn-success" onclick="return confirm('Accept this job?')">
+                                    <i class="fas fa-check"></i> Accept Job
+                                </button>
+                            </form>
+
+                            <form method="POST" action="{% url 'update_job_status' %}" style="display:inline;" class="reject-form">
+                                {% csrf_token %}
+                                <input type="hidden" name="job_id" value="{{ job_details.job_id }}">
+                                <input type="hidden" name="status" value="rejected">
+                                <button type="button" class="btn btn-danger reject-btn-trigger" data-title="{{ job_details.title }}">
+                                    <i class="fas fa-times"></i> Decline Request
+                                </button>
+                            </form>
+                        {% elif job_details.status == 'accepted' %}
+                             <form method="POST" action="{% url 'update_job_status' %}" style="display:inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="job_id" value="{{ job_details.job_id }}">
+                                <input type="hidden" name="status" value="completed">
+                                <button type="submit" class="btn btn-success" onclick="return confirm('Mark this job as completed?')">
+                                    <i class="fas fa-check-double"></i> Mark as Completed
+                                </button>
+                            </form>
+                             <a href="{% url 'start_chat' %}?user_type=employer&user_id={{ job_details.employer.employer_id }}&job_id={{ job_details.job_id }}" class="btn btn-secondary">
+                                <i class="fas fa-comments"></i> Message Employer
+                            </a>
+                        {% elif job_details.status == 'completed' %}
+                             <a href="{% url 'job_history_review' job_details.job_id %}?view_review=true" class="btn btn-secondary">
+                                <i class="fas fa-star"></i> View Review
+                            </a>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </div>
+
 
         {% else %}
 
@@ -1476,19 +1623,23 @@
             <!-- Tabs Section -->
             <div class="tabs-section">
                 <div class="tabs-header">
-                    <button class="tab-btn {% if current_tab == 'new-jobs' %}active{% endif %}" data-tab="new-jobs" onclick="switchTab('new-jobs')">
+                    <button class="tab-btn {% if current_tab == 'new-jobs' %}active{% endif %}" data-tab="new-jobs"
+                        onclick="switchTab('new-jobs')">
                         <i class="fas fa-bell"></i> New Requests
                         {% if new_jobs_count > 0 %}<span class="tab-badge">{{ new_jobs_count }}</span>{% endif %}
                     </button>
-                    <button class="tab-btn {% if current_tab == 'active-jobs' %}active{% endif %}" data-tab="active-jobs" onclick="switchTab('active-jobs')">
+                    <button class="tab-btn {% if current_tab == 'active-jobs' %}active{% endif %}"
+                        data-tab="active-jobs" onclick="switchTab('active-jobs')">
                         <i class="fas fa-tasks"></i> Active Jobs
                         {% if active_jobs_count > 0 %}<span class="tab-badge">{{ active_jobs_count }}</span>{% endif %}
                     </button>
-                    <button class="tab-btn {% if current_tab == 'previous-jobs' %}active{% endif %}" data-tab="previous-jobs" onclick="switchTab('previous-jobs')">
+                    <button class="tab-btn {% if current_tab == 'previous-jobs' %}active{% endif %}"
+                        data-tab="previous-jobs" onclick="switchTab('previous-jobs')">
                         <i class="fas fa-history"></i> Previous Jobs
                         {% if previous_jobs_count > 0 %}<span class="tab-badge">{{ previous_jobs_count }}</span>{% endif %}
                     </button>
-                    <button class="tab-btn {% if current_tab == 'rejected-jobs' %}active{% endif %}" data-tab="rejected-jobs" onclick="switchTab('rejected-jobs')">
+                    <button class="tab-btn {% if current_tab == 'rejected-jobs' %}active{% endif %}"
+                        data-tab="rejected-jobs" onclick="switchTab('rejected-jobs')">
                         <i class="fas fa-ban"></i> Rejected Jobs
                         {% if rejected_jobs_count > 0 %}<span class="tab-badge">{{ rejected_jobs_count }}</span>{% endif %}
                     </button>
@@ -1515,7 +1666,8 @@
                                         {% if job.employer.profile_image %}
                                         <img src="{{ job.employer.profile_image.url }}" alt="Employer">
                                         {% else %}
-                                        <span>{{ job.employer.company_name|first|default:job.employer.full_name|first }}</span>
+                                        <span>{{ job.employer.company_name|first|default:job.employer.full_name|first
+                                            }}</span>
                                         {% endif %}
                                     </div>
                                     <div class="job-profile-info">
@@ -1535,6 +1687,12 @@
                                         <i class="fas fa-map-marker-alt"></i>
                                         {{ job.location|truncatechars:18 }}
                                     </div>
+                                    {% if job.category %}
+                                    <div class="job-meta-item">
+                                        <i class="fas fa-tag"></i>
+                                        {{ job.category|truncatechars:15 }}
+                                    </div>
+                                    {% endif %}
                                 </div>
                             </div>
 
@@ -1552,7 +1710,8 @@
                                     </div>
                                     <div class="detail-item">
                                         <span class="detail-label">Duration</span>
-                                        <span class="detail-value">{{ job.estimated_duration|default:"Not specified" }}</span>
+                                        <span class="detail-value">{{ job.estimated_duration|default:"Not specified"
+                                            }}</span>
                                     </div>
                                     <div class="detail-item">
                                         <span class="detail-label">Job ID</span>
@@ -1569,16 +1728,19 @@
                                         {% csrf_token %}
                                         <input type="hidden" name="job_id" value="{{ job.job_id }}">
                                         <input type="hidden" name="status" value="accepted">
-                                        <button type="submit" class="btn btn-success" onclick="return confirm('Accept this job?')">
+                                        <button type="submit" class="btn btn-success"
+                                            onclick="return confirm('Accept this job?')">
                                             <i class="fas fa-check"></i> Accept
                                         </button>
                                     </form>
 
-                                    <form method="POST" action="{% url 'update_job_status' %}" style="display:inline;" class="reject-form">
+                                    <form method="POST" action="{% url 'update_job_status' %}" style="display:inline;"
+                                        class="reject-form">
                                         {% csrf_token %}
                                         <input type="hidden" name="job_id" value="{{ job.job_id }}">
                                         <input type="hidden" name="status" value="rejected">
-                                        <button type="button" class="btn btn-danger reject-btn-trigger" data-title="{{ job.title }}">
+                                        <button type="button" class="btn btn-danger reject-btn-trigger"
+                                            data-title="{{ job.title }}">
                                             <i class="fas fa-times"></i> Decline
                                         </button>
                                     </form>
@@ -1617,7 +1779,8 @@
                                         {% if job.employer.profile_image %}
                                         <img src="{{ job.employer.profile_image.url }}" alt="Employer">
                                         {% else %}
-                                        <span>{{ job.employer.company_name|first|default:job.employer.full_name|first }}</span>
+                                        <span>{{ job.employer.company_name|first|default:job.employer.full_name|first
+                                            }}</span>
                                         {% endif %}
                                     </div>
                                     <div class="job-profile-info">
@@ -1637,6 +1800,12 @@
                                         <i class="fas fa-map-marker-alt"></i>
                                         {{ job.location|truncatechars:18 }}
                                     </div>
+                                    {% if job.category %}
+                                    <div class="job-meta-item">
+                                        <i class="fas fa-tag"></i>
+                                        {{ job.category|truncatechars:15 }}
+                                    </div>
+                                    {% endif %}
                                 </div>
                             </div>
 
@@ -1669,12 +1838,14 @@
                                         {% csrf_token %}
                                         <input type="hidden" name="job_id" value="{{ job.job_id }}">
                                         <input type="hidden" name="status" value="completed">
-                                        <button type="submit" class="btn btn-success" onclick="return confirm('Mark this job as completed?')">
+                                        <button type="submit" class="btn btn-success"
+                                            onclick="return confirm('Mark this job as completed?')">
                                             <i class="fas fa-check-double"></i> Complete
                                         </button>
                                     </form>
 
-                                    <a href="{% url 'start_chat' %}?user_type=employer&user_id={{ job.employer.employer_id }}&job_id={{ job.job_id }}" class="btn btn-secondary">
+                                    <a href="{% url 'start_chat' %}?user_type=employer&user_id={{ job.employer.employer_id }}&job_id={{ job.job_id }}"
+                                        class="btn btn-secondary">
                                         <i class="fas fa-comments"></i> Message
                                     </a>
                                 </div>
@@ -1712,7 +1883,8 @@
                                         {% if job.employer.profile_image %}
                                         <img src="{{ job.employer.profile_image.url }}" alt="Employer">
                                         {% else %}
-                                        <span>{{ job.employer.company_name|first|default:job.employer.full_name|first }}</span>
+                                        <span>{{ job.employer.company_name|first|default:job.employer.full_name|first
+                                            }}</span>
                                         {% endif %}
                                     </div>
                                     <div class="job-profile-info">
@@ -1728,6 +1900,16 @@
                                         <i class="far fa-calendar-check"></i>
                                         Completed {{ job.updated_at|date:"M d" }}
                                     </div>
+                                    <div class="job-meta-item">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        {{ job.location|truncatechars:18 }}
+                                    </div>
+                                    {% if job.category %}
+                                    <div class="job-meta-item">
+                                        <i class="fas fa-tag"></i>
+                                        {{ job.category|truncatechars:15 }}
+                                    </div>
+                                    {% endif %}
                                 </div>
                             </div>
 
@@ -1755,7 +1937,8 @@
                                     <a href="{% url 'job_request_details' job.job_id %}" class="btn btn-outline">
                                         <i class="fas fa-eye"></i> View Details
                                     </a>
-                                    <a href="{% url 'job_history_review' job.job_id %}?view_review=true" class="btn btn-secondary">
+                                    <a href="{% url 'job_history_review' job.job_id %}?view_review=true"
+                                        class="btn btn-secondary">
                                         <i class="fas fa-star"></i> See Review
                                     </a>
                                 </div>
@@ -1790,7 +1973,8 @@
                                         {% if job.employer.profile_image %}
                                         <img src="{{ job.employer.profile_image.url }}" alt="Employer">
                                         {% else %}
-                                        <span>{{ job.employer.company_name|first|default:job.employer.full_name|first }}</span>
+                                        <span>{{ job.employer.company_name|first|default:job.employer.full_name|first
+                                            }}</span>
                                         {% endif %}
                                     </div>
                                     <div class="job-profile-info">
@@ -1806,6 +1990,16 @@
                                         <i class="far fa-clock"></i>
                                         Rejected {{ job.updated_at|date:"M d" }}
                                     </div>
+                                    <div class="job-meta-item">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        {{ job.location|truncatechars:18 }}
+                                    </div>
+                                    {% if job.category %}
+                                    <div class="job-meta-item">
+                                        <i class="fas fa-tag"></i>
+                                        {{ job.category|truncatechars:15 }}
+                                    </div>
+                                    {% endif %}
                                 </div>
                             </div>
 
@@ -1850,66 +2044,75 @@
 
 
     <!-- Rejection Message Modal -->
-    <div id="rejectionModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 9999; align-items: center; justify-content: center;">
-        <div class="modal-content" style="background: white; width: 90%; max-width: 500px; border-radius: 10px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); overflow: hidden;">
-            <div class="modal-header" style="padding: 1.5rem; border-bottom: 1px solid var(--border-color); background: #f8fafc;">
+    <div id="rejectionModal" class="modal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 9999; align-items: center; justify-content: center;">
+        <div class="modal-content"
+            style="background: white; width: 90%; max-width: 500px; border-radius: 10px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); overflow: hidden;">
+            <div class="modal-header"
+                style="padding: 1.5rem; border-bottom: 1px solid var(--border-color); background: #f8fafc;">
                 <h3 style="margin: 0; font-size: 1.3rem; font-weight: 600; color: var(--dark);">
                     <i class="fas fa-times-circle" style="color: var(--danger); margin-right: 10px;"></i>
                     Decline Job Request
                 </h3>
-                <button class="modal-close" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--gray);">
+                <button class="modal-close"
+                    style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--gray);">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            
+
             <div class="modal-body" style="padding: 1.5rem;">
                 <p id="jobTitlePreview" style="font-weight: 600; color: var(--dark); margin-bottom: 10px;">Job Title</p>
                 <p style="color: var(--gray); margin-bottom: 1.5rem; font-size: 0.95rem;">
                     Please provide a reason for declining this job request. This message will be sent to the employer.
                 </p>
-                
+
                 <form id="rejectionForm">
                     {% csrf_token %}
                     <input type="hidden" name="job_id" id="rejectionJobId">
-                    
+
                     <div class="form-group" style="margin-bottom: 1.5rem;">
                         <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--dark);">
                             Reason for Declining <span style="color: var(--danger);">*</span>
                         </label>
-                        <textarea 
-                            name="rejection_message" 
-                            id="rejectionMessage" 
-                            rows="4" 
+                        <textarea name="rejection_message" id="rejectionMessage" rows="4"
                             placeholder="Example: The salary is too low for the work required. / I'm not available on that date. / I don't have the required equipment for this job."
                             style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.95rem; resize: vertical; transition: border 0.2s;"
-                            required
-                        ></textarea>
+                            required></textarea>
                         <div style="font-size: 0.85rem; color: var(--gray); margin-top: 6px;">
                             Your message will help the employer understand your decision
                         </div>
                     </div>
-                    
+
                     <div class="suggested-reasons" style="margin-bottom: 1.5rem;">
                         <div style="font-size: 0.9rem; color: var(--gray); margin-bottom: 8px;">Quick reasons:</div>
                         <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                            <button type="button" class="quick-reason" data-reason="The salary is lower than my minimum rate" style="background: var(--primary-light); border: 1px solid var(--primary); color: var(--primary); padding: 6px 12px; border-radius: 6px; font-size: 0.85rem; cursor: pointer; transition: all 0.2s;">
+                            <button type="button" class="quick-reason"
+                                data-reason="The salary is lower than my minimum rate"
+                                style="background: var(--primary-light); border: 1px solid var(--primary); color: var(--primary); padding: 6px 12px; border-radius: 6px; font-size: 0.85rem; cursor: pointer; transition: all 0.2s;">
                                 Salary too low
                             </button>
-                            <button type="button" class="quick-reason" data-reason="I'm not available on the proposed date" style="background: var(--primary-light); border: 1px solid var(--primary); color: var(--primary); padding: 6px 12px; border-radius: 6px; font-size: 0.85rem; cursor: pointer; transition: all 0.2s;">
+                            <button type="button" class="quick-reason"
+                                data-reason="I'm not available on the proposed date"
+                                style="background: var(--primary-light); border: 1px solid var(--primary); color: var(--primary); padding: 6px 12px; border-radius: 6px; font-size: 0.85rem; cursor: pointer; transition: all 0.2s;">
                                 Not available
                             </button>
-                            <button type="button" class="quick-reason" data-reason="The location is outside my service area" style="background: var(--primary-light); border: 1px solid var(--primary); color: var(--primary); padding: 6px 12px; border-radius: 6px; font-size: 0.85rem; cursor: pointer; transition: all 0.2s;">
+                            <button type="button" class="quick-reason"
+                                data-reason="The location is outside my service area"
+                                style="background: var(--primary-light); border: 1px solid var(--primary); color: var(--primary); padding: 6px 12px; border-radius: 6px; font-size: 0.85rem; cursor: pointer; transition: all 0.2s;">
                                 Location issue
                             </button>
-                            <button type="button" class="quick-reason" data-reason="I don't have the required skills/equipment for this job" style="background: var(--primary-light); border: 1px solid var(--primary); color: var(--primary); padding: 6px 12px; border-radius: 6px; font-size: 0.85rem; cursor: pointer; transition: all 0.2s;">
+                            <button type="button" class="quick-reason"
+                                data-reason="I don't have the required skills/equipment for this job"
+                                style="background: var(--primary-light); border: 1px solid var(--primary); color: var(--primary); padding: 6px 12px; border-radius: 6px; font-size: 0.85rem; cursor: pointer; transition: all 0.2s;">
                                 Skills mismatch
                             </button>
                         </div>
                     </div>
                 </form>
             </div>
-            
-            <div class="modal-footer" style="padding: 1.5rem; border-top: 1px solid var(--border-color); background: #f8fafc; display: flex; justify-content: flex-end; gap: 12px;">
+
+            <div class="modal-footer"
+                style="padding: 1.5rem; border-top: 1px solid var(--border-color); background: #f8fafc; display: flex; justify-content: flex-end; gap: 12px;">
                 <button class="btn btn-outline cancel-reject" style="padding: 10px 18px;">
                     <i class="fas fa-times"></i> Cancel
                 </button>
@@ -1917,10 +2120,12 @@
                     <i class="fas fa-paper-plane"></i> Send & Reject
                 </button>
             </div>
-            
-            <div class="loading-overlay" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.9); align-items: center; justify-content: center; border-radius: 10px;">
+
+            <div class="loading-overlay"
+                style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.9); align-items: center; justify-content: center; border-radius: 10px;">
                 <div style="text-align: center;">
-                    <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: var(--primary); margin-bottom: 1rem;"></i>
+                    <i class="fas fa-spinner fa-spin"
+                        style="font-size: 2rem; color: var(--primary); margin-bottom: 1rem;"></i>
                     <p style="color: var(--dark); font-weight: 600;">Sending message...</p>
                 </div>
             </div>
@@ -1928,7 +2133,8 @@
     </div>
 
     <!-- Success Toast -->
-    <div id="successToast" style="display: none; position: fixed; top: 20px; right: 20px; background: var(--success); color: white; padding: 1rem 1.5rem; border-radius: 8px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); z-index: 10000; align-items: center; gap: 12px;">
+    <div id="successToast"
+        style="display: none; position: fixed; top: 20px; right: 20px; background: var(--success); color: white; padding: 1rem 1.5rem; border-radius: 8px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); z-index: 10000; align-items: center; gap: 12px;">
         <i class="fas fa-check-circle" style="font-size: 1.2rem;"></i>
         <div>
             <strong>Success!</strong>
@@ -1937,7 +2143,8 @@
     </div>
 
     <!-- Error Toast -->
-    <div id="errorToast" style="display: none; position: fixed; top: 20px; right: 20px; background: var(--danger); color: white; padding: 1rem 1.5rem; border-radius: 8px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); z-index: 10000; align-items: center; gap: 12px;">
+    <div id="errorToast"
+        style="display: none; position: fixed; top: 20px; right: 20px; background: var(--danger); color: white; padding: 1rem 1.5rem; border-radius: 8px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); z-index: 10000; align-items: center; gap: 12px;">
         <i class="fas fa-exclamation-circle" style="font-size: 1.2rem;"></i>
         <div>
             <strong>Error!</strong>
@@ -1947,7 +2154,7 @@
 
     <!-- Scripts -->
 
-        <script>
+    <script>
         // Mobile menu toggle
         const menuToggle = document.getElementById('menuToggle');
         const sidebar = document.getElementById('sidebar');
@@ -2033,19 +2240,19 @@
                 btn.addEventListener('click', function (e) {
                     e.preventDefault();
                     e.stopPropagation();
-                    
+
                     const form = this.closest('form');
                     const jobId = form.querySelector('input[name="job_id"]').value;
                     const jobTitle = this.getAttribute('data-title');
-                    
+
                     currentJobId = jobId;
                     currentJobTitle = jobTitle;
-                    
+
                     // Update modal content
                     document.getElementById('jobTitlePreview').textContent = `"${jobTitle}"`;
                     document.getElementById('rejectionJobId').value = jobId;
                     document.getElementById('rejectionMessage').value = '';
-                    
+
                     // Show modal
                     document.getElementById('rejectionModal').style.display = 'flex';
                     document.body.style.overflow = 'hidden';
@@ -2108,26 +2315,26 @@
                 const messageField = document.getElementById('rejectionMessage');
                 const loadingOverlay = document.querySelector('.loading-overlay');
                 const submitBtn = document.getElementById('submitRejection');
-                
+
                 if (!form || !messageField || !loadingOverlay || !submitBtn) {
                     showError('Form elements not found');
                     return;
                 }
-                
+
                 // Validate message
                 if (!messageField.value.trim()) {
                     showError('Please enter a reason for declining the job.');
                     messageField.focus();
                     return;
                 }
-                
+
                 // Show loading
                 loadingOverlay.style.display = 'flex';
                 submitBtn.disabled = true;
-                
+
                 // Prepare form data
                 const formData = new FormData(form);
-                
+
                 // Send AJAX request
                 fetch("{% url 'send_rejection_message' %}", {
                     method: 'POST',
@@ -2137,37 +2344,37 @@
                         'X-Requested-With': 'XMLHttpRequest',
                     }
                 })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    loadingOverlay.style.display = 'none';
-                    submitBtn.disabled = false;
-                    
-                    if (data.success) {
-                        // Show success toast
-                        showSuccess();
-                        
-                        // Close modal
-                        closeModal();
-                        
-                        // Reload page after delay
-                        setTimeout(() => {
-                            window.location.href = data.redirect || "{% url 'employee_job_request' %}";
-                        }, 2000);
-                    } else {
-                        showError(data.error || 'An error occurred. Please try again.');
-                    }
-                })
-                .catch(error => {
-                    loadingOverlay.style.display = 'none';
-                    submitBtn.disabled = false;
-                    console.error('Error:', error);
-                    showError('Network error. Please check your connection.');
-                });
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! Status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        loadingOverlay.style.display = 'none';
+                        submitBtn.disabled = false;
+
+                        if (data.success) {
+                            // Show success toast
+                            showSuccess();
+
+                            // Close modal
+                            closeModal();
+
+                            // Reload page after delay
+                            setTimeout(() => {
+                                window.location.href = data.redirect || "{% url 'employee_job_request' %}";
+                            }, 2000);
+                        } else {
+                            showError(data.error || 'An error occurred. Please try again.');
+                        }
+                    })
+                    .catch(error => {
+                        loadingOverlay.style.display = 'none';
+                        submitBtn.disabled = false;
+                        console.error('Error:', error);
+                        showError('Network error. Please check your connection.');
+                    });
             }
         }
 
@@ -2219,7 +2426,7 @@
                     const originalText = btn.innerHTML;
                     btn.disabled = true;
                     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-                    
+
                     // Re-enable after 10 seconds in case of error
                     setTimeout(() => {
                         btn.disabled = false;
@@ -2234,7 +2441,7 @@
             const toast = document.getElementById('successToast');
             if (toast) {
                 toast.style.display = 'flex';
-                
+
                 // Auto-hide after 5 seconds
                 setTimeout(() => {
                     toast.style.display = 'none';
@@ -2245,11 +2452,11 @@
         function showError(message) {
             const toast = document.getElementById('errorToast');
             const messageElement = document.getElementById('errorMessage');
-            
+
             if (toast && messageElement) {
                 messageElement.textContent = message;
                 toast.style.display = 'flex';
-                
+
                 // Auto-hide after 5 seconds
                 setTimeout(() => {
                     toast.style.display = 'none';
@@ -2275,7 +2482,7 @@
             }
         });
     </script>
-    
+
 </body>
 
 </html>
