@@ -30,8 +30,7 @@ from .models import (
     EmployeeCertificate, 
     EmployeePortfolio, 
     EmployeeSkill,
-    EmployeeNotification,
-    EmployeeAvailability
+    EmployeeNotification
 )
 
 
@@ -40,6 +39,8 @@ from .models import (
 
 
 #**********************************************************
+
+
 
 def employee_dashboard(request):
     # Check if employee is logged in
@@ -419,13 +420,12 @@ def employee_earnings(request):
         messages.error(request, f"Error loading earnings: {str(e)}")
         return redirect('employee_dashboard')
 
-
-#**********************************************************
-
-
 def get_payment_method(job):
     """Determine payment method for a job"""
+    # You can enhance this function to use your Payment model
+    # For now, using a simple logic based on job details
     
+    # Check if job has employer notes that might indicate payment method
     if job.employer_notes:
         notes_lower = job.employer_notes.lower()
         if 'cash' in notes_lower:
@@ -698,6 +698,7 @@ def job_history_review(request, job_id):
 #**************************************************************
 
 
+
 def employee_review_list(request):
     """View for employee to see all reviews from employers"""
     if 'employee_id' not in request.session:
@@ -767,6 +768,8 @@ def employee_review_list(request):
         for review in reviews:
             review.sentiment = compute_text_sentiment(review.text)
             review.sentiment_category = get_sentiment_category(review.sentiment)
+
+        # Notifications are now handled by context processor
         
         
         # Prepare context
@@ -791,10 +794,10 @@ def employee_review_list(request):
         messages.error(request, "Employee not found.")
         return redirect('employee_dashboard')
     except Exception as e:
-
+        # messages.error(request, f"Error loading reviews: {str(e)}")
+        # return redirect('employee_dashboard')
         raise e
 
-#**********************************************************
 
 def get_sentiment_category(sentiment_score):
     """Categorize sentiment score"""
@@ -805,8 +808,9 @@ def get_sentiment_category(sentiment_score):
     else:
         return 'negative'
     
-#****************************************************
 
+
+# Add this function to employee/views.py
 def compute_text_sentiment(text):
     """Simple sentiment analysis for reviews"""
     if not text or not isinstance(text, str):
@@ -897,6 +901,7 @@ def employee_profile(request):
 
 #**********************************************************************
 
+# employee/views.py - Update employee_job_request function
 
 def employee_job_request(request):
     if 'employee_id' not in request.session:
@@ -1209,6 +1214,7 @@ def reject_job_request(request):
 
 #**************************************************************
 
+# Update Job Status (for completing/cancelling jobs)
 def update_job_status(request):
     if 'employee_id' not in request.session:
         messages.error(request, "Please login first.")
@@ -1371,6 +1377,8 @@ def filter_job_requests(request):
 
 #*********************************************************************
 
+
+# employee/views.py - Updated employee_schedule function
 
 def employee_schedule(request):
     if 'employee_id' not in request.session:
@@ -1580,9 +1588,9 @@ def employee_schedule(request):
         return redirect('employee_dashboard')
 
 
-#*********************************************************
 
 
+# Add this function to employee/views.py
 def bulk_mark_unavailable(request):
     """Mark multiple dates as unavailable"""
     if 'employee_id' not in request.session:
@@ -1655,7 +1663,10 @@ def bulk_mark_unavailable(request):
     return redirect('employee_schedule')
 
 
+    
+
 #***************************************************************
+
 
 # Employee Settings View
 def employee_setting(request):
@@ -2333,7 +2344,9 @@ def update_employee_profile_image(request):
     return redirect('employee_profile')
 
 
+
 #*******************************************************************
+
 
 # Update Cover Image 
 def update_employee_cover_image(request):
@@ -2622,6 +2635,10 @@ def update_employee_location(request):
 
 #*******************************************************************
 
+# Add this function to your employee/views.py
+# Add this function to your employee/views.py
+
+
 
 def mark_notification_read(request, notification_id):
     """Mark a single notification as read"""
@@ -2645,9 +2662,6 @@ def mark_notification_read(request, notification_id):
         messages.error(request, f"Error updating notification: {str(e)}")
         return redirect('employee_dashboard')
 
-
-#******************************************************
-
 def mark_all_notifications_read(request):
     """Mark all notifications as read"""
     if 'employee_id' not in request.session:
@@ -2670,9 +2684,7 @@ def mark_all_notifications_read(request):
         return redirect('employee_dashboard')
 
 
-#***************************************************************
-
-
+# Add this function to your employee/views.py (this should already exist but seems to be missing)
 def update_employee_notifications(request):
     """Update employee notification preferences"""
     if 'employee_id' not in request.session:
@@ -3083,10 +3095,6 @@ def mark_notification_read(request, notification_id):
     # Redirect back to the page they came from, or notifications page
     return redirect(request.META.get('HTTP_REFERER', 'employee_notifications'))
 
-
-#**********************************************************************
-
-
 def mark_all_notifications_read(request):
     if 'employee_id' not in request.session:
         messages.error(request, "Please login first.")
@@ -3109,6 +3117,7 @@ def mark_all_notifications_read(request):
 
 
 #**************************************************************
+# NOTIFICATIONS - Context Processor
 
 def employee_notifications_processor(request):
     """Context processor to make notifications available in all templates"""
@@ -3173,7 +3182,6 @@ def employee_notifications_processor(request):
         print(f"Error in notification context processor: {e}")
         return {}
 
-#********************************************************************
 
 def submit_employee_site_feedback(request):
     """Handle site feedback submission from employee"""
@@ -3223,8 +3231,9 @@ def submit_employee_site_feedback(request):
 
 
 
-#*********************************************************
 
+
+# Add this new view function in employee/views.py
 def send_rejection_message(request):
     """Send rejection message to employer via chat"""
     if 'employee_id' not in request.session:
@@ -3281,7 +3290,7 @@ def send_rejection_message(request):
                 room=chat_room,
                 sender_type='employee',
                 sender_employee=employee,
-                content=f" **Job Rejected**\n\nI've declined the job '{job.title}'.\n\n**Reason:** {rejection_message}\n\nJob ID: #{job.job_id}\nProposed Date: {job.proposed_date}\nBudget: ₹{job.budget if job.budget else 'Negotiable'}",
+                content=f"❌ **Job Rejected**\n\nI've declined the job '{job.title}'.\n\n**Reason:** {rejection_message}\n\nJob ID: #{job.job_id}\nProposed Date: {job.proposed_date}\nBudget: ₹{job.budget if job.budget else 'Negotiable'}",
                 message_type='job_update',
                 status='sent'
             )
@@ -3327,8 +3336,8 @@ def send_rejection_message(request):
     
     return JsonResponse({'success': False, 'error': 'Invalid request method.'})
 
-#****************************************************
-
+# Also update your existing update_job_status function to handle rejection differently
+# Modify the reject_job_request function (or create a new one)
 def reject_job_with_message(request):
     """Handle job rejection with message"""
     if 'employee_id' not in request.session:
