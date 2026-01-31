@@ -1,3 +1,7 @@
+{% load analytics_filters %}
+{% load math_filters %}
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -6,6 +10,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SkillConnect | Admin Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --sidebar-bg: #1e293b;
@@ -498,15 +503,40 @@
                 <p>Welcome back! Here's your platform overview for {{ current_month }}.</p>
             </div>
             <div class="header-actions">
+
                 {% include 'admin_html/includes/admin_notification.html' %}
+
                 <div class="admin-profile">
-                    <div class="admin-avatar">{{ request.user.username|default:"A"|first|upper }}</div>
-                    <div>
-                        <h4 style="margin-bottom: 2px;">{{ request.user.username|default:"Administrator" }}</h4>
-                        <p style="color: var(--text-light); font-size: 0.85rem;">{{
-                            request.user.email|default:"admin@skillconnect.com" }}</p>
-                    </div>
+                <div class="admin-avatar">
+                    {% if request.user.is_authenticated and request.user.username %}
+                        {{ request.user.username.0|upper }}
+                    {% else %}
+                        A
+                    {% endif %}
                 </div>
+                <div>
+                    <h4 style="margin-bottom: 2px;">
+                        {% if request.user.is_authenticated %}
+                            {% if request.user.get_full_name %}
+                                {{ request.user.get_full_name }}
+                            {% elif request.user.username %}
+                                {{ request.user.username }}
+                            {% else %}
+                                Administrator
+                            {% endif %}
+                        {% else %}
+                            Administrator
+                        {% endif %}
+                    </h4>
+                    <p style="color: var(--text-light); font-size: 0.85rem;">
+                        {% if request.user.is_authenticated and request.user.email %}
+                            {{ request.user.email }}
+                        {% else %}
+                            admin@skillconnect.com
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
             </div>
         </header>
 
@@ -568,17 +598,23 @@
                 <p>Total Platform Commission</p>
 
                 <div style="margin-top: 15px; border-top: 1px solid #e2e8f0; padding-top: 10px;">
-                    <div
-                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                        <span style="font-size: 0.8rem; color: var(--text-light);">Total Paid by Employer:</span>
-                        <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-dark);">{{
-                            formatted_total_spent }}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 0.8rem; color: var(--text-light);">Pending Amount to Pay:</span>
-                        <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-dark);">{{
-                            formatted_pending_amount }}</span>
-                    </div>
+                   
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                    <span style="font-size: 0.8rem; color: var(--text-light);">Total Paid by Employer:</span>
+                    <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-dark);">
+                        {% load analytics_filters %}
+                        {{ total_spent|format_currency }}
+                    </span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 0.8rem; color: var(--text-light);">Pending Amount to Pay:</span>
+                    <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-dark);">
+                        {% load analytics_filters %}
+                        {{ pending_amount|format_currency }}
+                    </span>
+                </div>
+
+
                 </div>
             </div>
         </section>
@@ -596,40 +632,77 @@
                 Predictive analytics based on user trends, seasonality, and booking patterns.
                 AI model analyzes historical data to forecast platform growth.
             </p>
-            <div class="chart-container">
-                <div style="text-align: center; padding: 20px;">
-                    <i class="fas fa-chart-bar" style="font-size: 3.5rem; color: #cbd5e1; margin-bottom: 20px;"></i>
-                    <p style="font-weight: 600; color: var(--text-dark); margin-bottom: 8px;">Prediction Chart
-                        Visualization</p>
-                    <p style="color: var(--text-light); font-size: 0.95rem; margin-bottom: 16px;">
-                        Expected New Users: <strong style="color: var(--primary-color);">~{{ predicted_worker_growth
-                            }}</strong> |
-                        Expected Revenue: <strong style="color: var(--primary-color);">{{ predicted_revenue }}</strong>
+            <div class="chart-container" style="position: relative; height: 350px;">
+                <canvas id="growthChart"></canvas>
+            </div>
+
+            <!-- Feature Importance Section -->
+            <div
+                style="margin-top: 30px; background-color: var(--card-bg); border-radius: 12px; padding: 24px; border: 1px solid #e2e8f0; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--text-dark); margin-bottom: 20px;">
+                    <i class="fas fa-list-ol"></i> Top Model Drivers
+                </h3>
+                <div style="height: 300px;">
+                    <canvas id="featureChart"></canvas>
+                </div>
+            </div>
+
+            <div
+                style="margin-top: 24px; padding: 20px; background-color: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <p style="font-weight: 600; color: var(--text-dark); margin: 0;">
+                        <i class="fas fa-chart-pie"></i> Prediction Summary
                     </p>
-                    <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 20px;">
+                    <span class="prediction-badge" style="margin: 0;">
+                        <i class="fas fa-magic"></i> AI Confidence: High
+                    </span>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                    <div style="background: white; padding: 15px; border-radius: 8px; border: 1px dashed #cbd5e1;">
                         <span
-                            style="background-color: rgba(16, 185, 129, 0.1); color: var(--success-color); padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;">
-                            <i class="fas fa-arrow-up"></i> User Growth: {{ worker_growth|floatformat:1 }}%
-                        </span>
-                        <span
-                            style="background-color: rgba(239, 68, 68, 0.1); color: var(--danger-color); padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;">
-                            <i class="fas fa-exclamation-triangle"></i> Churn Risk: 3.2%
+                            style="font-size: 0.8rem; color: var(--text-light); display: block; margin-bottom: 5px;">Expected
+                            Revenue</span>
+                        <strong style="font-size: 1.1rem; color: var(--primary-color);">{{ predicted_revenue }}</strong>
+                        <span style="font-size: 0.75rem; color: var(--success-color); display: block; margin-top: 5px;">
+                            <i class="fas fa-arrow-up"></i> Growth Trend
                         </span>
                     </div>
 
-                    <!-- Top Categories -->
-                    <div style="margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 15px;">
-                        <p style="font-weight: 600; color: var(--text-dark); margin-bottom: 10px; font-size: 0.95rem;">
-                            <i class="fas fa-star"></i> Top Categories This Month:
-                        </p>
-                        <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 8px;">
-                            {% for category in top_categories %}
-                            <span
-                                style="background-color: #f1f5f9; color: var(--text-dark); padding: 4px 10px; border-radius: 15px; font-size: 0.8rem; font-weight: 500;">
-                                {{ category.category|default:"General" }}: {{ category.count }}
-                            </span>
-                            {% endfor %}
-                        </div>
+                    <div style="background: white; padding: 15px; border-radius: 8px; border: 1px dashed #cbd5e1;">
+                        <span
+                            style="font-size: 0.8rem; color: var(--text-light); display: block; margin-bottom: 5px;">User
+                            Growth</span>
+                        <strong style="font-size: 1.1rem; color: var(--text-dark);">~{{ predicted_worker_growth }}
+                            Users</strong>
+                        <span style="font-size: 0.75rem; color: var(--info-color); display: block; margin-top: 5px;">
+                            +{{ growth_rates.new_users|floatformat:1 }}% vs last month
+                        </span>
+                    </div>
+
+                    <div style="background: white; padding: 15px; border-radius: 8px; border: 1px dashed #cbd5e1;">
+                        <span
+                            style="font-size: 0.8rem; color: var(--text-light); display: block; margin-bottom: 5px;">Churn
+                            Risk</span>
+                        <strong style="font-size: 1.1rem; color: var(--danger-color);">3.2%</strong>
+                        <span style="font-size: 0.75rem; color: var(--text-light); display: block; margin-top: 5px;">
+                            Stable metric
+                        </span>
+                    </div>
+
+                    <div style="background: white; padding: 15px; border-radius: 8px; border: 1px dashed #cbd5e1;">
+                        <span
+                            style="font-size: 0.8rem; color: var(--text-light); display: block; margin-bottom: 5px;">Top
+                            Category</span>
+                        {% if top_categories %}
+                        <strong style="font-size: 1.1rem; color: var(--text-dark);">{{ top_categories.0.category
+                            }}</strong>
+                        <span style="font-size: 0.75rem; color: var(--text-light); display: block; margin-top: 5px;">
+                            Most active sector
+                        </span>
+                        {% else %}
+                        <strong style="font-size: 1.1rem; color: var(--text-dark);">General</strong>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -686,6 +759,137 @@
                     this.style.transform = 'translateY(0)';
                 });
             });
+
+            // Initialize Growth Chart
+            {% if chart_data %}
+            const ctx = document.getElementById('growthChart').getContext('2d');
+
+            // Prepare data from Django context
+            const labels = {{ chart_data.labels|safe }};
+        const revenueData = {{ chart_data.revenue_data|safe }};
+        const bookingsData = {{ chart_data.bookings_data|safe }};
+        const growthData = {{ chart_data.growth_data|safe }};
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Platform Revenue (₹)',
+                        data: revenueData,
+                        borderColor: '#3b82f6', // Primary color
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.3,
+                        fill: true,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'New Users',
+                        data: growthData,
+                        borderColor: '#f59e0b', // Warning/Orange color
+                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.3,
+                        pointBackgroundColor: '#ffffff',
+                        pointBorderColor: '#f59e0b',
+                        fill: true,
+                        yAxisID: 'y1'
+                    },
+                    {
+                        label: 'Completed Bookings',
+                        data: bookingsData,
+                        borderColor: '#10b981', // Success color
+                        backgroundColor: 'rgba(16, 185, 129, 0.05)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        pointBackgroundColor: '#ffffff',
+                        pointBorderColor: '#10b981',
+                        fill: false,
+                        borderDash: [5, 5],
+                        yAxisID: 'y1'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltip: {
+                        backgroundColor: '#1e293b',
+                        padding: 10,
+                        cornerRadius: 8,
+                    }
+                },
+                scales: {
+                    x: { grid: { display: false } },
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: { display: true, text: 'Revenue (₹)' }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        grid: { display: false },
+                        title: { display: true, text: 'Count (Users/Bookings)' }
+                    }
+                }
+            }
+        });
+
+        // Feature Importance Data
+        // Safe parsing of feature importance dict
+        const featureImportanceRaw = {{ feature_importance| safe }};
+        const featureLabels = Object.keys(featureImportanceRaw);
+        const featureValues = Object.values(featureImportanceRaw);
+
+        // Initialize Feature Importance Chart
+        const ctxFeature = document.getElementById('featureChart').getContext('2d');
+        new Chart(ctxFeature, {
+            type: 'bar',
+            data: {
+                labels: featureLabels,
+                datasets: [{
+                    label: 'Impact Score',
+                    data: featureValues,
+                    backgroundColor: '#6366f1', // Indigo color
+                    borderRadius: 6,
+                    barThickness: 20,
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                return 'Importance: ' + context.raw.toFixed(4);
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: true, borderDash: [2, 2] },
+                        title: { display: true, text: 'Relative Importance' }
+                    },
+                    y: { grid: { display: false } }
+                }
+            }
+        });
+        {% endif %}
         });
     </script>
 </body>

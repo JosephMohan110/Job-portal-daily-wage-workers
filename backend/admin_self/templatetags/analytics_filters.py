@@ -1,8 +1,19 @@
-# admin_self/templatetags/analytics_filters.py
 from django import template
+from decimal import Decimal
 
 register = template.Library()
 
+@register.filter
+def format_currency(value):
+    """Format value as Indian Rupees with ₹ symbol"""
+    try:
+        if isinstance(value, (Decimal, float, int)):
+            return f"₹{value:,.2f}"
+        return value
+    except (ValueError, TypeError):
+        return "₹0.00"
+
+# Keep your existing filters
 @register.filter
 def get_item(dictionary, key):
     """Get item from dictionary by key"""

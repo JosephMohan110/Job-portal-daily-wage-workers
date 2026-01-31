@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,14 +12,17 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f5f7fb;
             min-height: 100vh;
         }
-        
-        {% if user_info.type == 'employee' %}
+
+            {
+            % if user_info.type=='employee' %
+        }
+
         /* Employee specific: Body already has flex layout from employee_header */
         .messaging-content-wrapper {
             flex: 1;
@@ -28,13 +32,17 @@
             position: relative;
             z-index: 1;
         }
-        
+
         @media (max-width: 992px) {
             .messaging-content-wrapper {
                 margin-left: 0 !important;
             }
         }
-        {% else %}
+
+            {
+            % else %
+        }
+
         /* Employer specific: Body has display: flex from employer_header */
         .messaging-content-wrapper {
             flex: 1;
@@ -44,21 +52,41 @@
             position: relative;
             z-index: 1;
         }
-        {% endif %}
+
+            {
+            % endif %
+        }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
+
 <body>
     {% if user_info.type == 'employer' %}
-        {% include 'employer_html/employer_header.html' %}
+    {% include 'employer_html/employer_header.html' %}
     {% elif user_info.type == 'employee' %}
-        {% include 'employee_html/employee_header.html' %}
+    {% include 'employee_html/employee_header.html' %}
     {% endif %}
-    
+
     <div class="messaging-content-wrapper">
+        {% if user_info.type == 'employee' %}
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <button class="menu-toggle" id="menuToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="page-title">
+                <h1>MESSAGES</h1>
+                <p>Manage your conversations</p>
+            </div>
+
+            {% include 'employee_html/employee_dropdown.html' %}
+        </div>
+        {% endif %}
+
         {% block content %}{% endblock %}
     </div>
-    
+
     {% block extra_js %}{% endblock %}
 </body>
+
 </html>

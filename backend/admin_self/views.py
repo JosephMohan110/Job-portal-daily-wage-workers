@@ -1,9 +1,6 @@
 from django.shortcuts import render
 
-# Create your views here.
-# ============================================================================
 # STANDARD LIBRARY IMPORTS
-# ============================================================================
 import json
 import hmac
 import hashlib
@@ -16,9 +13,8 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 from io import BytesIO
 
-# ============================================================================
 # DJANGO CORE IMPORTS
-# ============================================================================
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
@@ -34,10 +30,20 @@ from django.core.paginator import Paginator
 from django.core.mail import send_mail
 from django.conf import settings
 import logging
+from .models import Commission, Payout, PlatformRevenue
+from django.core.files.storage import FileSystemStorage
+from django.core.files.base import ContentFile
+from django.urls import reverse
 
-# ============================================================================
+# Import models
+from .models import MLModel, DataCollectionLog, Commission, Payout, PlatformRevenue
+
+import pandas as pd
+from .ml_utils import predictor
+
+
 # THIRD-PARTY IMPORTS (with error handling)
-# ============================================================================
+
 # Razorpay
 try:
     import razorpay
@@ -70,34 +76,22 @@ except ImportError:
     GEOPY_AVAILABLE = False
     print("Warning: Geopy not installed. Location features will be disabled.")
 
-# ============================================================================
 # LOCAL APP IMPORTS
-# ============================================================================
+
 # Home app models
 from home.models import User
 
 # Employer app models
-from employer.models import (
-    Employer, 
-    EmployerLogin, 
-    EmployerFavorite, 
-    Payment, 
-    PaymentInvoice, 
-    SiteReview, 
-    Report
-)
+# from employer.models import Employer
+from employer.models import (Employer, EmployerLogin, EmployerFavorite, Payment, PaymentInvoice, SiteReview, Report)
 # Employee app models
-from employee.models import (
-    Employee,
-    EmployeeCertificate,
-    EmployeeSkill,
-    Review,
-    JobRequest,
-    JobAction,
-)
+from employee.models import (Employee, EmployeeLogin, EmployeeCertificate, EmployeeSkill, Review, JobRequest, JobAction,)
 
 # Message system models
 from message_system.models import ChatRoom, Message
+
+# ML Predictor (Use the fixed version in xg_boost)
+from xg_boost.predictor import predictor
 
 # Admin self models
 try:
@@ -117,8 +111,6 @@ except ImportError:
 
 #******************************************************
 
-
-
 # Helper function for calculating percentage growth
 def calculate_percentage_growth(current, previous):
     """Calculate percentage growth"""
@@ -128,6 +120,8 @@ def calculate_percentage_growth(current, previous):
         return round(((current - previous) / previous) * 100, 1)
     except (TypeError, ZeroDivisionError):
         return 0
+
+#****************************************************************
 
 # Helper function for formatting time ago
 def format_time_ago(dt):
@@ -149,7 +143,7 @@ def format_time_ago(dt):
     else:
         return 'just now'
 
-
+#*******************************************************
 
 # Decorator to check if user is admin
 def admin_required(function=None):
@@ -162,8 +156,7 @@ def admin_required(function=None):
     return actual_decorator
 
 
-
-
+#*****************************************************************************
 
 # Admin login view
 def admin_login_view(request):
@@ -198,12 +191,13 @@ def admin_logout_view(request):
     messages.success(request, 'Logged out successfully.')
     return redirect('index')
 
+
 #************************************************************************************
 
 
 @admin_required
 def admin_dashboard(request):
-    """Admin dashboard view with real statistics"""
+    """Admin dashboard view with real statistics and ML predictions"""
     
     # Get current date and time
     now = timezone.now()
@@ -215,7 +209,6 @@ def admin_dashboard(request):
     
     # 1. Total Registered Workers
     total_workers = Employee.objects.filter(status='Active').count()
-    # Workers registered before this month
     previous_workers = Employee.objects.filter(
         status='Active',
         created_at__lt=month_start
@@ -224,7 +217,6 @@ def admin_dashboard(request):
     
     # 2. Active Employers
     active_employers = Employer.objects.filter(status='Active').count()
-    # Employers registered before this month
     previous_employers = Employer.objects.filter(
         status='Active',
         created_at__lt=month_start
@@ -236,7 +228,6 @@ def admin_dashboard(request):
         status='completed',
         completed_at__gte=month_start
     ).count()
-    # Last month's completed bookings
     last_month_completed = JobRequest.objects.filter(
         status='completed',
         completed_at__gte=month_ago,
@@ -245,8 +236,7 @@ def admin_dashboard(request):
     booking_growth = calculate_percentage_growth(completed_bookings, last_month_completed)
     
     # 4. Total Platform Revenue
-    # Calculate revenue from completed jobs (matching logic with payment dashboard)
-    # Using Payment model is more accurate for actual revenue flow
+    # Calculate revenue from completed jobs
     total_earnings = Payment.objects.filter(
         status='completed'
     ).aggregate(total=Sum('amount'))['total'] or Decimal('0')
@@ -260,11 +250,24 @@ def admin_dashboard(request):
         payment_date__date__gte=month_ago,
         payment_date__date__lt=month_start
     ).aggregate(total=Sum('amount'))['total'] or Decimal('0')
-    last_month_revenue = last_month_earnings * Decimal('0.0010') if last_month_earnings else 0
+    last_month_revenue = last_month_earnings * Decimal('0.0010') if last_month_earnings else Decimal('0')
     
     revenue_growth = calculate_percentage_growth(float(platform_revenue), float(last_month_revenue))
     
-    # 5. Get recent critical activity
+    # 5. Calculate total spent by employers (all completed payments)
+    # This is the total amount employers have paid
+    total_spent = total_earnings
+    
+    # 6. Calculate pending amount (Jobs accepted or in_progress but not completed)
+    pending_jobs = JobRequest.objects.filter(
+        Q(status='accepted') | Q(status='in_progress')
+    )
+    
+    # Calculate total budget for pending jobs
+    pending_amount_result = pending_jobs.aggregate(total=Sum('budget'))
+    pending_amount = pending_amount_result['total'] or Decimal('0')
+    
+    # 7. Get recent critical activity
     recent_activities = []
     
     # Recent worker registrations (last 2 hours)
@@ -274,7 +277,6 @@ def admin_dashboard(request):
     ).order_by('-created_at')[:3]
     
     for worker in recent_workers:
-        # Get worker rating
         avg_rating = Review.objects.filter(employee=worker).aggregate(avg=Avg('rating'))['avg'] or 0
         if avg_rating >= 4.5:
             recent_activities.append({
@@ -303,7 +305,6 @@ def admin_dashboard(request):
     
     # If no recent activities, add some placeholder activities
     if not recent_activities:
-        # Get any recent job completions
         recent_completions = JobRequest.objects.filter(
             status='completed',
             completed_at__gte=now - timedelta(days=1)
@@ -319,16 +320,69 @@ def admin_dashboard(request):
                 'icon': 'fas fa-check-circle'
             })
     
+    # ML PREDICTION DATA SECTION
+    
+    # Get platform analytics data for ML predictions
+    platform_data = get_platform_analytics_data()
+    
+    # Get ML predictions from the XGBoost model
+    try:
+        # Import the predictor here to avoid circular imports if any, or just standard practice
+        from xg_boost.predictor import predictor
+        
+        # force reload if needed or just use the singleton
+        if not predictor.loaded:
+             predictor.load_model()
+
+        ml_predictions_raw = predictor.predict(platform_data)
+        ml_model_loaded = predictor.loaded
+        available_predictions = predictor.get_available_predictions()
+        
+        # Transform raw predictions to context variables if needed
+        # The predictor now handles mapping to 'new_users_next_month' etc.
+        ml_predictions = ml_predictions_raw
+        
+        print(f"DEBUGGING VIEW: Platform Data: {platform_data}")
+        print(f"DEBUGGING VIEW: ML Predictions: {ml_predictions}")
+
+        # If ML model failed to load, use fallback
+        if not ml_model_loaded or not ml_predictions:
+            print("ML model not loaded or predictions failed, using fallback")
+            ml_predictions = get_fallback_predictions(platform_data)
+            feature_importance = get_fallback_feature_importance()
+            ml_model_loaded = False
+            available_predictions = []
+            using_real_ml = False
+        else:
+            using_real_ml = True
+            # Get feature importance if available in the model object, or use static list
+            feature_importance = predictor.get_feature_importance() 
+
+    except Exception as e:
+        print(f"Error getting ML predictions: {str(e)}")
+        # Fallback to statistical predictions
+        ml_predictions = get_fallback_predictions(platform_data)
+        feature_importance = get_fallback_feature_importance()
+        ml_model_loaded = False
+        available_predictions = []
+        using_real_ml = False
 
 
-    #<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+    # 8. Prediction/forecast data
+    # PRIORITIZE ML PREDICTIONS IF AVAILABLE
+    if using_real_ml and ml_predictions:
+        # ML predicts 'new_users_next_month' which is growth count
+        predicted_new_users = ml_predictions.get('new_users_next_month', 0)
+        predicted_worker_growth = int(total_workers + (predicted_new_users * 0.7)) # Assuming 70% of new users are workers
+        
+        # ML predicts 'commission_next_month'
+        predicted_revenue_growth = Decimal(str(ml_predictions.get('commission_next_month', 0)))
+    else:
+        # User simple heuristic if ML failed
+        predicted_worker_growth = int(total_workers * (1 + worker_growth/100)) if worker_growth != 0 else total_workers
+        predicted_revenue_growth = platform_revenue * Decimal(str(1 + revenue_growth/100)) if revenue_growth != 0 else platform_revenue
     
-    # 6. Prediction/forecast data
-    # Simple prediction based on growth trends
-    predicted_worker_growth = int(total_workers * (1 + worker_growth/100)) if worker_growth != 0 else total_workers
-    predicted_revenue_growth = platform_revenue * Decimal(str(1 + revenue_growth/100)) if revenue_growth != 0 else platform_revenue
-    
-    # Get top performing categories (this month)
+    # 9. Get top performing categories (this month)
     top_categories = JobRequest.objects.filter(
         status='completed',
         completed_at__gte=month_start
@@ -337,12 +391,36 @@ def admin_dashboard(request):
         revenue=Sum('budget')
     ).order_by('-revenue')[:5]
     
-    # Calculate pending amount (Jobs accepted or in_progress but not completed)
-    pending_amount = JobRequest.objects.filter(
-        Q(status='accepted') | Q(status='in_progress')
-    ).aggregate(total=Sum('budget'))['total'] or 0
-
+    
+    # Get historical data for charts (last 6 months)
+    historical_data = get_historical_data(6)
+    
+    # Calculate growth rates for display
+    growth_rates = calculate_growth_rates(historical_data, platform_data)
+    
+    # Prepare chart data
+    chart_data = prepare_chart_data(historical_data, ml_predictions)
+    
+    # Calculate next month for display
+    next_month_date = datetime.now().replace(day=28) + timedelta(days=4)
+    next_month = next_month_date.strftime('%B %Y')
+    
+    # FORMATTING FUNCTIONS
+    
+    def format_currency(value):
+        """Format Decimal value as Indian Rupees with ₹ symbol"""
+        try:
+            if isinstance(value, Decimal):
+                return f"₹{value:,.2f}"
+            else:
+                return f"₹{value:,.2f}"
+        except (ValueError, TypeError):
+            return "₹0.00"
+    
+    # CONTEXT PREPARATION
+    
     context = {
+        # Basic Statistics
         'total_workers': total_workers,
         'worker_growth': worker_growth,
         'worker_trend': 'up' if worker_growth > 0 else 'down',
@@ -356,148 +434,219 @@ def admin_dashboard(request):
         'booking_trend': 'up' if booking_growth > 0 else 'down',
         
         'platform_revenue': platform_revenue,
-        'formatted_revenue': f"₹{platform_revenue:,.2f}",
-        'formatted_total_spent': f"₹{total_earnings:,.2f}",
-        'formatted_pending_amount': f"₹{pending_amount:,.2f}",
+        'formatted_revenue': format_currency(platform_revenue),
+        'total_spent': total_spent, 
+        'pending_amount': pending_amount,  
+        'formatted_total_spent': format_currency(total_spent),  
+        'formatted_pending_amount': format_currency(pending_amount),  
+        'formatted_total_spent': format_currency(total_spent),
+        'formatted_pending_amount': format_currency(pending_amount),
         'revenue_growth': revenue_growth,
         'revenue_trend': 'up' if revenue_growth > 0 else 'down',
         
-        'recent_activities': recent_activities[:3],  # Show only 3 most recent
+        # Recent Activity
+        'recent_activities': recent_activities[:3],
         
+        # Simple Predictions
         'predicted_worker_growth': predicted_worker_growth,
-        'predicted_revenue': f"₹{predicted_revenue_growth:,.2f}",
+        'predicted_revenue': format_currency(predicted_revenue_growth),
         
+        # Categories
         'top_categories': top_categories,
         'current_month': month_start.strftime('%B %Y'),
+        
+        # Raw values for debugging (optional)
+        'total_spent_raw': total_spent,
+        'pending_amount_raw': pending_amount,
+        'platform_revenue_raw': platform_revenue,
+        
+        # ML PREDICTION DATA
+        'using_real_ml': using_real_ml,
+        'ml_model_loaded': ml_model_loaded,
+        'ml_predictions': ml_predictions,
+        'feature_importance': feature_importance,
+        'chart_data': chart_data,
+        'growth_rates': growth_rates,
+        'next_month': next_month,
+        'available_predictions': available_predictions,
+        'platform_data': platform_data,  # For debugging
     }
+    
     
     return render(request, 'admin_html/admin_dashboard.html', context)
 
-
-def calculate_percentage_growth(current, previous):
-    """Calculate percentage growth - handle edge cases"""
-    try:
-        if previous == 0:
-            # If no previous data, but we have current data, it's 100% growth
-            return 100.0 if current > 0 else 0.0
-        
-        # Calculate percentage growth
-        growth = ((current - previous) / previous) * 100
-        return round(growth, 1)
-    except (TypeError, ZeroDivisionError, ValueError):
-        return 0.0
-    
-
-
 #**************************************************************
 
-
-@admin_required
-def analytics_prediction(request):
-    """Analytics and prediction view with ML integration"""
+def get_platform_analytics_data():
+    """Collect current platform data for ML predictions"""
+    now = timezone.now()
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     
-    # Get current platform data
-    platform_data = get_platform_analytics_data()
+    # Get current statistics
+    total_workers = Employee.objects.filter(status='Active').count()
+    total_employers = Employer.objects.filter(status='Active').count()
+    total_users = total_workers + total_employers
     
-    # Get ML predictions
-    ml_predictions = get_ml_predictions()
+    # Calculate active users (users with activity in last 7 days)
+    seven_days_ago = now - timedelta(days=7)
     
-    # Get churn risk users
-    churn_users = get_churn_risk_users()
+    # Estimate active users
+    active_workers = Employee.objects.filter(
+        Q(updated_at__gte=seven_days_ago) |
+        Q(job_requests__created_at__gte=seven_days_ago)
+    ).distinct().count()
     
-    # Get feature importance
-    feature_importance = get_feature_importance()
+    active_employers = Employer.objects.filter(
+        Q(updated_at__gte=seven_days_ago) |
+        Q(job_requests__created_at__gte=seven_days_ago)
+    ).distinct().count()
     
-    # Get historical data for charts (last 6 months)
-    historical_data = get_historical_data(6)
+    active_users = active_workers + active_employers
     
-    # Get growth rates
-    growth_rates = calculate_growth_rates(historical_data, platform_data)
+    # Get monthly data
+    new_users_this_month = Employee.objects.filter(
+        created_at__gte=month_start
+    ).count() + Employer.objects.filter(
+        created_at__gte=month_start
+    ).count()
     
-    # Prepare AI insights
-    ai_insights = generate_ai_insights(platform_data, ml_predictions, churn_users)
+    deleted_accounts_this_month = Employee.objects.filter(
+        email__startswith='DELETED_',
+        updated_at__gte=month_start
+    ).count() + Employer.objects.filter(
+        email__startswith='DELETED_',
+        updated_at__gte=month_start
+    ).count()
     
-    # Prepare chart data
-    chart_data = prepare_chart_data(historical_data, ml_predictions)
+    # Booking data
+    total_bookings = JobRequest.objects.count()
+    completed_bookings = JobRequest.objects.filter(status='completed').count()
+    cancelled_bookings = JobRequest.objects.filter(status='cancelled').count()
+    bookings_today = JobRequest.objects.filter(
+        created_at__date=now.date()
+    ).count()
     
-    context = {
-        'platform_data': platform_data,
-        'ml_predictions': ml_predictions,
-        'churn_users': churn_users[:10],  # Top 10
-        'feature_importance': feature_importance,
-        'historical_data': historical_data,
-        'growth_rates': growth_rates,
-        'ai_insights': ai_insights,
-        'chart_data': chart_data,
-        'current_month': datetime.now().strftime('%B %Y'),
-        'next_month': (datetime.now().replace(day=28) + timedelta(days=4)).strftime('%B %Y'),
-        'ml_model_loaded': predictor.loaded,
-        'available_predictions': predictor.get_available_predictions() if predictor.loaded else [],
-    }
+    # Calculate success rate
+    if total_bookings > 0:
+        success_rate = (completed_bookings / total_bookings) * 100
+    else:
+        success_rate = 0
     
-    return render(request, 'admin_html/analytics_prediction.html', context)
-
-
-def calculate_growth_rates(historical_data, current_data):
-    """Calculate growth rates from historical data"""
-    if len(historical_data) < 2:
-        return {
-            'new_users': 12.5,
-            'deleted_accounts': -8.2,
-            'completed_bookings': 18.7,
-            'active_users': 6.8,
-            'revenue': 18.4,
-            'success_rate': 5.5,
-            'retention_rate': 5.5,
-        }
+    # Revenue data
+    total_payment_amount_result = Payment.objects.filter(
+        status='completed'
+    ).aggregate(total=Sum('amount'))
+    total_payment_amount = total_payment_amount_result['total'] or Decimal('0')
     
-    # Get last month's data (second last in historical_data)
-    last_month = historical_data[-2] if len(historical_data) > 1 else historical_data[0]
+    # Platform commission (0.10%)
+    platform_commission = total_payment_amount * Decimal('0.0010')
     
-    # Calculate growth rates
-    def calculate_growth(current, previous):
-        if previous == 0:
-            return 0
-        return ((current - previous) / previous) * 100
+    # Worker earnings
+    worker_earnings_result = JobRequest.objects.filter(
+        status='completed',
+        employee__isnull=False
+    ).aggregate(total=Sum('budget'))
+    worker_earnings = worker_earnings_result['total'] or Decimal('0')
+    
+    # Average ratings
+    avg_rating_result = Review.objects.aggregate(avg=Avg('rating'))
+    avg_rating = avg_rating_result['avg'] or 0
+    
+    total_reviews = Review.objects.count()
+    
+    # Calculate average earnings per job
+    if completed_bookings > 0:
+        avg_earning_per_job = float(worker_earnings) / completed_bookings
+        avg_spending_per_job = float(total_payment_amount) / completed_bookings
+    else:
+        avg_earning_per_job = 0
+        avg_spending_per_job = 0
     
     return {
-        'new_users': calculate_growth(
-            current_data.get('new_users_this_month', 0),
-            last_month.get('new_users', 0)
-        ),
-        'deleted_accounts': calculate_growth(
-            current_data.get('deleted_accounts_this_month', 0),
-            last_month.get('deleted_users', 0)
-        ),
-        'completed_bookings': calculate_growth(
-            current_data.get('completed_bookings', 0),
-            last_month.get('completed_bookings', 0)
-        ),
-        'active_users': calculate_growth(
-            current_data.get('active_users', 0),
-            last_month.get('active_users', 0) if 'active_users' in last_month else 0
-        ),
-        'revenue': calculate_growth(
-            current_data.get('total_revenue', 0),
-            last_month.get('revenue', 0)
-        ),
-        'success_rate': calculate_growth(
-            current_data.get('success_rate', 0),
-            last_month.get('success_rate', 0) if 'success_rate' in last_month else 0
-        ),
-        'retention_rate': calculate_growth(
-            current_data.get('success_rate', 0),  # Using success rate as proxy
-            last_month.get('success_rate', 0) if 'success_rate' in last_month else 0
-        ),
+        'total_users': total_users,
+        'total_workers': total_workers,
+        'total_employers': total_employers,
+        'active_users': active_users,
+        'new_users_this_month': new_users_this_month,
+        'deleted_accounts_this_month': deleted_accounts_this_month,
+        'total_bookings': total_bookings,
+        'completed_bookings': completed_bookings,
+        'cancelled_bookings': cancelled_bookings,
+        'bookings_today': bookings_today,
+        'success_rate': success_rate,
+        'total_revenue': float(total_payment_amount),
+        'total_earnings': float(worker_earnings),
+        'platform_commission': float(platform_commission),
+        'total_payment_amount': float(total_payment_amount),
+        'avg_rating': avg_rating,
+        'total_reviews': total_reviews,
+        'avg_earning_per_job': avg_earning_per_job,
+        'avg_spending_per_job': avg_spending_per_job,
     }
 
+
+#*****************************************************
+
+
+def get_churn_risk_users():
+    """Identify users at risk of churn"""
+    try:
+        thirty_days_ago = timezone.now() - timedelta(days=30)
+        
+        inactive_workers = Employee.objects.filter(
+            Q(updated_at__lt=thirty_days_ago) &
+            Q(status='Active') &
+            Q(job_requests__isnull=True)
+        ).distinct()[:5]
+        
+        inactive_employers = Employer.objects.filter(
+            Q(updated_at__lt=thirty_days_ago) &
+            Q(status='Active') &
+            Q(job_requests__isnull=True)
+        ).distinct()[:5]
+        
+        churn_users = []
+        
+        for worker in inactive_workers:
+            days_inactive = (timezone.now() - worker.updated_at).days
+            churn_score = min(100, days_inactive * 3)
+            
+            churn_users.append({
+                'user_type': 'Worker',
+                'name': worker.full_name,
+                'email': worker.email,
+                'days_inactive': days_inactive,
+                'churn_score': churn_score,
+                'risk_level': 'High' if churn_score > 70 else 'Medium' if churn_score > 40 else 'Low',
+            })
+        
+        for employer in inactive_employers:
+            days_inactive = (timezone.now() - employer.updated_at).days
+            churn_score = min(100, days_inactive * 3)
+            
+            churn_users.append({
+                'user_type': 'Employer',
+                'name': employer.full_name,
+                'email': employer.email,
+                'days_inactive': days_inactive,
+                'churn_score': churn_score,
+                'risk_level': 'High' if churn_score > 70 else 'Medium' if churn_score > 40 else 'Low',
+            })
+        
+        return sorted(churn_users, key=lambda x: x['churn_score'], reverse=True)
+        
+    except Exception as e:
+        print(f"Error getting churn risk users: {str(e)}")
+        return []
+
+#**************************************************************
 
 def get_historical_data(months=6):
     """Get historical data for the last N months"""
     historical = []
     now = timezone.now()
     
-    for i in range(months, 0, -1):  # From oldest to newest
+    for i in range(months, 0, -1):
         month_date = now.replace(day=1) - timedelta(days=(i-1)*30)
         month_start = month_date.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         month_end = (month_start + timedelta(days=32)).replace(day=1) - timedelta(days=1)
@@ -546,9 +695,6 @@ def get_historical_data(months=6):
         ).aggregate(total=Sum('amount'))
         revenue = revenue_payments['total'] or Decimal('0')
         
-        # Estimate active users (simplified)
-        active_users = max(new_users * 0.7, 50)  # 70% of new users stay active
-        
         historical.append({
             'month': month_start.strftime('%b'),
             'year': month_start.year,
@@ -558,10 +704,65 @@ def get_historical_data(months=6):
             'total_bookings': total_bookings,
             'success_rate': success_rate,
             'revenue': float(revenue),
-            'active_users': active_users,
+            'active_users': new_users * 0.7,  # Estimate
         })
     
     return historical
+
+
+#*******************************************************************
+
+
+def calculate_growth_rates(historical_data, current_data):
+    """Calculate growth rates from historical data"""
+    if len(historical_data) < 2:
+        return {
+            'new_users': 12.5,
+            'deleted_accounts': -8.2,
+            'completed_bookings': 18.7,
+            'active_users': 6.8,
+            'revenue': 18.4,
+            'success_rate': 5.5,
+        }
+    
+    # Get last month's data
+    last_month = historical_data[-2] if len(historical_data) > 1 else historical_data[0]
+    
+    # Calculate growth rates
+    def calculate_growth(current, previous):
+        if previous == 0:
+            return 0
+        return ((current - previous) / previous) * 100
+    
+    return {
+        'new_users': calculate_growth(
+            current_data.get('new_users_this_month', 0),
+            last_month.get('new_users', 0)
+        ),
+        'deleted_accounts': calculate_growth(
+            current_data.get('deleted_accounts_this_month', 0),
+            last_month.get('deleted_users', 0)
+        ),
+        'completed_bookings': calculate_growth(
+            current_data.get('completed_bookings', 0),
+            last_month.get('completed_bookings', 0)
+        ),
+        'active_users': calculate_growth(
+            current_data.get('active_users', 0),
+            last_month.get('active_users', 0) if 'active_users' in last_month else 0
+        ),
+        'revenue': calculate_growth(
+            current_data.get('total_revenue', 0),
+            last_month.get('revenue', 0)
+        ),
+        'success_rate': calculate_growth(
+            current_data.get('success_rate', 0),
+            last_month.get('success_rate', 0) if 'success_rate' in last_month else 0
+        ),
+    }
+
+
+#***********************************************************
 
 
 def prepare_chart_data(historical_data, predictions):
@@ -572,18 +773,18 @@ def prepare_chart_data(historical_data, predictions):
     
     # Prepare growth vs deletions data
     growth_data = [item['new_users'] for item in historical_data]
-    growth_data.append(predictions['new_users_next_month'])
+    growth_data.append(int(predictions.get('new_users_next_month', 0)))
     
     deletions_data = [item['deleted_users'] for item in historical_data]
-    deletions_data.append(predictions['deleted_accounts_next_month'])
+    deletions_data.append(int(predictions.get('deleted_accounts_next_month', 0)))
     
     # Prepare revenue data
     revenue_data = [item['revenue'] for item in historical_data]
-    revenue_data.append(predictions['revenue_next_month'])
+    revenue_data.append(float(predictions.get('revenue_next_month', 0)))
     
     # Prepare bookings data
     bookings_data = [item['completed_bookings'] for item in historical_data]
-    bookings_data.append(predictions['completed_bookings_next_month'])
+    bookings_data.append(int(predictions.get('completed_bookings_next_month', 0)))
     
     return {
         'labels': labels,
@@ -593,25 +794,27 @@ def prepare_chart_data(historical_data, predictions):
         'bookings_data': bookings_data,
     }
 
-    
+
+#********************************************************
+
 
 def generate_ai_insights(platform_data, predictions, churn_users):
     """Generate AI insights based on data and predictions"""
     insights = []
     
     # User Growth Insight
-    if predictions['new_users_next_month'] > platform_data['new_users_this_month'] * 1.15:
+    if predictions.get('new_users_next_month', 0) > platform_data.get('new_users_this_month', 0) * 1.15:
         insights.append({
             'title': 'High Growth Opportunity',
             'type': 'growth',
-            'message': f"Next month could see {predictions['new_users_next_month']} new users (+{((predictions['new_users_next_month']/max(platform_data['new_users_this_month'],1))-1)*100:.1f}%)",
+            'message': f"Next month could see {predictions.get('new_users_next_month', 0)} new users",
             'recommendation': 'Increase marketing budget by 20% for maximum impact',
             'icon': 'fa-user-plus',
             'color': 'primary',
         })
     
     # Churn Risk Insight
-    high_churn_count = len([u for u in churn_users if u['risk_level'] == 'High'])
+    high_churn_count = len([u for u in churn_users if u.get('risk_level') == 'High'])
     if high_churn_count > 5:
         insights.append({
             'title': 'Churn Risk Alert',
@@ -623,68 +826,169 @@ def generate_ai_insights(platform_data, predictions, churn_users):
         })
     
     # Revenue Insight
-    if predictions['revenue_next_month'] > platform_data['total_revenue'] * 1.2:
+    if predictions.get('revenue_next_month', 0) > platform_data.get('total_revenue', 0) * 1.2:
         insights.append({
             'title': 'Revenue Surge Expected',
             'type': 'revenue',
-            'message': f"Next month revenue could reach ₹{predictions['revenue_next_month']:,.0f}",
+            'message': f"Next month revenue could reach ₹{predictions.get('revenue_next_month', 0):,.0f}",
             'recommendation': 'Prepare servers for 25% higher transaction volume',
             'icon': 'fa-money-bill-wave',
             'color': 'success',
         })
     
     # Booking Pattern Insight
-    if predictions['completed_bookings_next_month'] > platform_data['completed_bookings'] * 1.15:
+    if predictions.get('completed_bookings_next_month', 0) > platform_data.get('completed_bookings', 0) * 1.15:
         insights.append({
             'title': 'Booking Spike Detected',
             'type': 'bookings',
-            'message': f"Expect {predictions['completed_bookings_next_month']} bookings next month",
+            'message': f"Expect {predictions.get('completed_bookings_next_month', 0)} bookings next month",
             'recommendation': 'Recruit 15% more workers in high-demand categories',
             'icon': 'fa-calendar-check',
             'color': 'warning',
         })
     
     # Quality Insight
-    if predictions['success_rate_next_month'] > platform_data['success_rate'] * 1.05:
+    if predictions.get('success_rate_next_month', 0) > platform_data.get('success_rate', 0) * 1.05:
         insights.append({
             'title': 'Service Quality Improving',
             'type': 'quality',
-            'message': f"Success rate predicted to reach {predictions['success_rate_next_month']:.1f}%",
+            'message': f"Success rate predicted to reach {predictions.get('success_rate_next_month', 0):.1f}%",
             'recommendation': 'Highlight success stories in marketing campaigns',
             'icon': 'fa-star',
             'color': 'info',
         })
     
-    # Add default insights if not enough
-    if len(insights) < 4:
-        default_insights = [
-            {
-                'title': 'Weekend Performance',
-                'type': 'pattern',
-                'message': 'Weekends show 35% higher user engagement',
-                'recommendation': 'Schedule promotions and notifications for weekends',
-                'icon': 'fa-calendar-alt',
-                'color': 'purple',
-            },
-            {
-                'title': 'Mobile Optimization',
-                'type': 'engagement',
-                'message': '75% of bookings come from mobile devices',
-                'recommendation': 'Prioritize mobile app development and optimization',
-                'icon': 'fa-mobile-alt',
-                'color': 'blue',
-            }
-        ]
-        insights.extend(default_insights[:4-len(insights)])
+    return insights[:4]
+
+
+#************************************************************
+
+
+def get_fallback_predictions(platform_data):
+    """Fallback predictions if ML model fails"""
+    return {
+        'new_users_next_month': int(platform_data.get('new_users_this_month', 0) * 1.12),
+        'deleted_accounts_next_month': int(platform_data.get('deleted_accounts_this_month', 0) * 0.92),
+        'completed_bookings_next_month': int(platform_data.get('completed_bookings', 0) * 1.18),
+        'active_users_next_month': int(platform_data.get('active_users', 0) * 1.07),
+        'revenue_next_month': float(platform_data.get('total_revenue', 0) * 1.18),
+        'commission_next_month': float(platform_data.get('platform_commission', 0) * 1.18),
+        'success_rate_next_month': min(100, platform_data.get('success_rate', 0) * 1.05),
+        'avg_rating_next_month': min(5, platform_data.get('avg_rating', 0) * 1.01),
+        'total_bookings_next_month': int(platform_data.get('total_bookings', 0) * 1.12),
+        'raw_predictions': {},
+    }
+
+#***********************************************
+
+
+def get_fallback_feature_importance():
+    """Fallback feature importance for display"""
+    return {
+        'contracts_signed': 0.125,
+        'engagement_score': 0.102,
+        'total_users': 0.095,
+        'user_type': 0.082,
+        'platform_commission': 0.075,
+        'earning_per_job': 0.060,
+        'active_users': 0.052,
+        'days_since_registration': 0.047,
+        'completion_rate': 0.045,
+        'favorite_employee_count': 0.043,
+    }
+
+#******************************************************
+
+def calculate_percentage_growth(current, previous):
+    """Calculate percentage growth - handle edge cases"""
+    try:
+        if previous == 0:
+            # If no previous data, but we have current data, it's 100% growth
+            return 100.0 if current > 0 else 0.0
+        
+        # Calculate percentage growth
+        growth = ((current - previous) / previous) * 100
+        return round(growth, 1)
+    except (TypeError, ZeroDivisionError, ValueError):
+        return 0.0
     
-    return insights[:4]  # Return top 4 insights
+
+
+#**************************************************************
+
+@admin_required
+def get_ml_predictions():
+    """Get ML predictions for platform metrics"""
+    try:
+        # Get current platform data
+        platform_data = get_platform_analytics_data()
+        
+        print("\n" + "="*60)
+        print("GETTING ML PREDICTIONS")
+        print("="*60)
+        
+        if not predictor.loaded:
+            print("Loading ML model...")
+            if not predictor.load_model():
+                print("Failed to load ML model, using fallback")
+                return get_fallback_predictions(platform_data)
+        
+        print(f"ML Model loaded: {predictor.loaded}")
+        
+        # Get predictions from ML model
+        raw_predictions = predictor.predict(platform_data)
+        
+        if not raw_predictions:
+            print("No predictions returned from ML model")
+            return get_fallback_predictions(platform_data)
+            
+        # Calculate heuristics for missing model targets
+        current_new_users = platform_data.get('new_users_this_month', 0)
+        current_deleted = platform_data.get('deleted_accounts_this_month', 0)
+        current_active = platform_data.get('active_users', 0)
+        
+        # Format predictions for display
+        predictions = {
+            # Heuristics for non-modeled targets
+            'new_users_next_month': int(current_new_users * 1.05), # Assume 5% growth
+            'deleted_accounts_next_month': int(current_deleted * 0.95), # Assume 5% reduction
+            'active_users_next_month': int(current_active * 1.05),
+            
+            # Direct mapping from XGBoost predictions
+            'completed_bookings_next_month': int(raw_predictions.get('completed_bookings_next_month', 0)),
+            'revenue_next_month': float(raw_predictions.get('revenue_next_month', 0)),
+            'commission_next_month': float(raw_predictions.get('commission_next_month', 0)),
+            'success_rate_next_month': min(100, max(0, float(raw_predictions.get('success_rate_next_month', 0)))),
+            'avg_rating_next_month': min(5, max(0, float(raw_predictions.get('avg_rating', 0)))), # Model predicts 'avg_rating' value directly
+            'total_bookings_next_month': int(raw_predictions.get('total_bookings_next_month', 0)),
+            
+            'raw_predictions': raw_predictions,
+            'using_real_ml': True,
+            'ml_model_loaded': True,
+        }
+        
+        print("\nFINAL DISPLAY PREDICTIONS:")
+        print("-" * 40)
+        for key, value in predictions.items():
+            if key != 'raw_predictions' and key != 'using_real_ml':
+                print(f"{key}: {value}")
+        print("="*60)
+        
+        return predictions
+        
+    except Exception as e:
+        print(f"Error getting ML predictions: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        # Return fallback if ML fails
+        fallback = get_fallback_predictions(get_platform_analytics_data())
+        fallback['using_real_ml'] = False
+        return fallback
 
 
 
 #********************************************************************
 
-
-# admin_self/views.py - Add this function
 
 @admin_required
 def bookings(request):
@@ -884,6 +1188,7 @@ def bookings(request):
     
     return render(request, 'admin_html/bookings.html', context)
 
+#***********************************************************
 
 @admin_required
 def update_booking_status(request):
@@ -928,6 +1233,8 @@ def update_booking_status(request):
     
     return redirect('bookings')
 
+
+#****************************************************
 
 @admin_required
 def process_refund(request):
@@ -988,6 +1295,7 @@ def process_refund(request):
     
     return redirect('bookings')
 
+#**********************************************************
 
 @admin_required
 def export_bookings_csv(request):
@@ -1236,12 +1544,6 @@ def show_employer_list(request):
         'total_bookings_completed': total_bookings_completed,
         'cancelled_bookings': cancelled_bookings,
         
-        # # Filter options
-        # 'business_type_choices': [
-        #     # ('', 'All Business Types'),
-        #     # ('individual', 'Individual'),
-        #     ('company', 'Company'),
-        # ],
         
         'status_choices': [
             ('', 'All Status'),
@@ -1259,6 +1561,10 @@ def show_employer_list(request):
     }
     
     return render(request, 'admin_html/manage_employer.html', context)
+
+
+#********************************************************
+
 
 def show_employer_details(request, employer_id):
     """Show employer details view"""
@@ -1293,6 +1599,10 @@ def show_employer_details(request, employer_id):
     
     return render(request, 'admin_html/manage_employer.html', context)
 
+
+#******************************************************************
+
+
 def show_edit_employer(request, employer_id):
     """Show edit employer form"""
     employer = get_object_or_404(Employer, employer_id=employer_id)
@@ -1309,6 +1619,9 @@ def show_edit_employer(request, employer_id):
     
     return render(request, 'admin_html/manage_employer.html', context)
 
+
+#******************************************************************
+
 def show_add_employer(request):
     """Show add employer form"""
     context = {
@@ -1320,6 +1633,10 @@ def show_add_employer(request):
     }
     
     return render(request, 'admin_html/manage_employer.html', context)
+
+
+#********************************************************
+
 
 def add_new_employer(request):
     """Add new employer"""
@@ -1386,6 +1703,10 @@ def add_new_employer(request):
     
     return HttpResponseRedirect(reverse('manage_employer') + '?view=add')
 
+
+#*************************************************************************
+
+
 def update_employer(request, employer_id):
     """Update employer details"""
     from django.urls import reverse
@@ -1405,7 +1726,7 @@ def update_employer(request, employer_id):
             # (assuming phone is unique in your model; if not, you can remove this check)
             # Based on add_new_employer, phone seems required but let's be safe
             if new_phone and new_phone != employer.phone and Employer.objects.filter(phone=new_phone).exists():
-                 # Warning: Employer model might not enforce unique phone, but it's good practice.
+                 # Employer model might not enforce unique phone, but it's good practice.
                  # If it's not unique in model, this check is still good for UX.
                  pass 
 
@@ -1449,6 +1770,10 @@ def update_employer(request, employer_id):
             return HttpResponseRedirect(reverse('manage_employer') + f'?view=edit&id={employer.employer_id}')
     
     return HttpResponseRedirect(reverse('manage_employer') + '?view=list')
+
+
+#**********************************************************
+
 
 def handle_bulk_action(request):
     """Handle bulk actions on employers"""
@@ -1512,6 +1837,10 @@ def handle_bulk_action(request):
         messages.success(request, f"Removed {count} employer(s).")
     
     return HttpResponseRedirect(reverse('manage_employer') + '?view=list')
+
+
+#*********************************************************
+
 
 def handle_single_action(request):
     """Handle single employer actions"""
@@ -1610,6 +1939,10 @@ def handle_single_action(request):
     
     return HttpResponseRedirect(reverse('manage_employer') + '?view=list')
 
+
+#*********************************************************
+
+
 @admin_required
 def export_employers_csv(request):
     """Export employers data to CSV"""
@@ -1681,18 +2014,6 @@ def export_employers_csv(request):
 #******************************************************************
 
 
-# Add these imports at the top if not already present
-from employee.models import Employee, EmployeeLogin, Review, JobRequest
-from employer.models import Employer
-from django.db.models import Q, Count, Sum, Avg
-from django.core.paginator import Paginator
-from django.contrib.auth.hashers import make_password
-from datetime import datetime, timedelta
-import csv
-from django.http import HttpResponse
-
-# Add these worker management functions to admin_self/views.py
-
 @admin_required
 def manage_workers(request):
     """Single view handling list, details, edit, and add worker"""
@@ -1715,6 +2036,9 @@ def manage_workers(request):
     else:
         # Default to list view
         return show_worker_list(request)
+    
+
+#**************************************************************
 
 def handle_worker_post_request(request, view_type, worker_id):
     """Handle POST requests for all worker views"""
@@ -1732,6 +2056,8 @@ def handle_worker_post_request(request, view_type, worker_id):
     
     return redirect('manage_workers')
 
+#*****************************************************************
+
 def get_worker_initials(worker):
     """Helper function to get worker initials"""
     initials = ""
@@ -1740,6 +2066,8 @@ def get_worker_initials(worker):
     if worker.last_name:
         initials += worker.last_name[0]
     return initials.upper() if initials else "W"
+
+#*********************************************************
 
 def show_worker_list(request):
     """Show worker list view"""
@@ -1940,6 +2268,10 @@ def show_worker_list(request):
     
     return render(request, 'admin_html/manage_workers.html', context)
 
+
+#******************************************************
+
+
 def show_worker_details(request, worker_id):
     """Show worker details view"""
     worker = get_object_or_404(Employee, employee_id=worker_id)
@@ -1994,6 +2326,10 @@ def show_worker_details(request, worker_id):
     
     return render(request, 'admin_html/manage_workers.html', context)
 
+
+#**********************************************************
+
+
 def show_edit_worker(request, worker_id):
     """Show edit worker form"""
     worker = get_object_or_404(Employee, employee_id=worker_id)
@@ -2020,6 +2356,10 @@ def show_edit_worker(request, worker_id):
     
     return render(request, 'admin_html/manage_workers.html', context)
 
+
+#**********************************************************
+
+
 def show_add_worker(request):
     """Show add worker form"""
     context = {
@@ -2035,6 +2375,8 @@ def show_add_worker(request):
     }
     
     return render(request, 'admin_html/manage_workers.html', context)
+
+#*************************************************
 
 def add_new_worker(request):
     """Add new worker"""
@@ -2112,6 +2454,8 @@ def add_new_worker(request):
             return HttpResponseRedirect(reverse('manage_workers') + '?view=add')
     
     return HttpResponseRedirect(reverse('manage_workers') + '?view=add')
+
+#******************************************************************
 
 def update_worker(request, worker_id):
     """Update worker details"""
@@ -2197,6 +2541,9 @@ def update_worker(request, worker_id):
     
     return HttpResponseRedirect(reverse('manage_workers') + '?view=list')
 
+
+#********************************************************************
+
 def handle_worker_bulk_action(request):
     """Handle bulk actions on workers"""
     from django.urls import reverse
@@ -2259,6 +2606,10 @@ def handle_worker_bulk_action(request):
         messages.success(request, f"Removed {count} worker(s).")
     
     return HttpResponseRedirect(reverse('manage_workers') + '?view=list')
+
+
+#***********************************************************************
+
 
 def handle_worker_single_action(request):
     """Handle single worker actions"""
@@ -2366,6 +2717,10 @@ def handle_worker_single_action(request):
     
     return HttpResponseRedirect(reverse('manage_workers') + '?view=list')
 
+
+#*********************************************************************
+
+
 @admin_required
 def export_workers_csv(request):
     """Export workers data to CSV"""
@@ -2429,12 +2784,6 @@ def export_workers_csv(request):
 
 
 #************************************************************
-
-
-
-
-
-
 
 @admin_required
 def review_ratings(request):
@@ -2865,7 +3214,7 @@ def review_ratings(request):
     return render(request, 'admin_html/review_ratings.html', context)
 
 
-
+#***************************************************************
 
 # Helper function to get initials
 def get_initials(user):
@@ -2881,7 +3230,8 @@ def get_initials(user):
         return "??"
 
 
-# Add this function for handling review actions
+#**********************************************************************
+
 @admin_required
 @require_POST
 def handle_review_action(request):
@@ -2993,7 +3343,10 @@ def handle_review_action(request):
         return JsonResponse({'success': False, 'error': str(e)})
 
 
-# Add this function for exporting reviews
+#***************************************************************
+
+
+# function for exporting reviews
 @admin_required
 def export_reviews_csv(request):
     """Export reviews data to CSV"""
@@ -3083,7 +3436,9 @@ def export_reviews_csv(request):
     return response
 
 
-# Add this function for applying filters
+#**********************************************************************
+
+# function for applying filters
 @admin_required
 def apply_review_filters(request):
     """Apply filters to reviews and redirect"""
@@ -3114,10 +3469,10 @@ def apply_review_filters(request):
 
 
 
-
-
-
 logger = logging.getLogger(__name__)
+
+
+#***********************************************************
 
 def support_page(request):
     """Render the support page"""
@@ -3135,6 +3490,9 @@ def support_page(request):
         'developer_info': developer_info,
         'current_page': 'support'
     })
+
+
+#********************************************************
 
 @csrf_protect
 def send_support_message(request):
@@ -3224,39 +3582,7 @@ def send_support_message(request):
     return redirect('support_page')
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# admin_self/views.py (add these functions)
-
-from datetime import datetime, timedelta
-from django.db.models import Q, Sum, Count, Avg
-from decimal import Decimal
-from .models import Commission, Payout, PlatformRevenue
-
-# admin_self/views.py
-
-
-# admin_self/views.py - Helper functions
+# Helper functions
 
 def calculate_commission(amount):
     """Calculate 0.1% commission for a given amount"""
@@ -3282,6 +3608,9 @@ def get_payment_commission_data(payment):
         'commission_formatted': format_rupees(commission_amount),
     }
 
+#**********************************************************
+
+
 def get_platform_statistics():
     """Calculate platform-wide statistics"""
     total_payments = Payment.objects.filter(status='completed').count()
@@ -3300,7 +3629,7 @@ def get_platform_statistics():
     }
 
 
-
+#*************************************************************
 
 
 @admin_required
@@ -3665,7 +3994,7 @@ def admin_payment_dashboard(request):
         return render(request, 'admin_html/admin_payment_dashboard.html', {})
 
 
-
+#*******************************************************************
 
 
 @admin_required
@@ -3713,6 +4042,7 @@ def create_commissions(request):
     return redirect('admin_payment_dashboard')
 
 
+#******************************************************************
 
 @admin_required
 def create_payout(request):
@@ -3756,6 +4086,10 @@ def create_payout(request):
             messages.error(request, f"Error creating payout: {str(e)}")
     
     return redirect('admin_payment_dashboard')
+
+
+#***************************************************************
+
 
 @admin_required
 def create_payout_view(request):
@@ -3829,6 +4163,9 @@ def create_payout_view(request):
     except Exception as e:
         messages.error(request, f"Error loading payout form: {str(e)}")
         return redirect('admin_payment_dashboard')
+
+
+#*********************************************************
 
 
 @admin_required
@@ -3907,6 +4244,7 @@ def view_all_commissions(request):
     
     return render(request, 'admin_html/view_all_commissions.html', context)
 
+#*************************************************
 
 @admin_required
 def view_all_payouts(request):
@@ -3981,6 +4319,7 @@ def view_all_payouts(request):
     
     return render(request, 'admin_html/view_all_payouts.html', context)
 
+#**************************************************************
 
 @admin_required
 def commission_details(request, commission_id):
@@ -4000,6 +4339,7 @@ def commission_details(request, commission_id):
         messages.error(request, "Commission not found.")
         return redirect('view_all_commissions')
 
+#**************************************************************
 
 @admin_required
 def view_payout_details(request, payout_id):
@@ -4017,6 +4357,7 @@ def view_payout_details(request, payout_id):
         messages.error(request, "Payout not found.")
         return redirect('view_all_payouts')
 
+#******************************************************************
 
 @admin_required
 @require_POST
@@ -4042,6 +4383,7 @@ def process_payout(request, payout_id):
     
     return redirect('view_payout_details', payout_id=payout_id)
 
+#**********************************************************
 
 @admin_required
 def revenue_reports(request):
@@ -4091,6 +4433,7 @@ def revenue_reports(request):
     
     return render(request, 'admin_html/revenue_reports.html', context)
 
+#******************************************************
 
 @admin_required
 def export_commissions(request):
@@ -4150,6 +4493,7 @@ def export_commissions(request):
     
     return response
 
+#*********************************************************
 
 @admin_required
 def export_payouts(request):
@@ -4208,7 +4552,7 @@ def export_payouts(request):
     
     return response
 
-
+#*********************************************************************
 @admin_required
 def update_commission_status(request, commission_id):
     """Update commission status"""
@@ -4237,6 +4581,7 @@ def update_commission_status(request, commission_id):
     
     return redirect('commission_details', commission_id=commission_id)
 
+#***********************************************************************
 
 @admin_required
 def update_payout_status(request, payout_id):
@@ -4268,28 +4613,8 @@ def update_payout_status(request, payout_id):
 
 
 
+#***********************************************************
 
-
-# admin_self/views.py - Algorithm Settings Section
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required, user_passes_test
-from django.utils import timezone
-from django.db.models import Q, Count, Sum, Avg
-from django.http import HttpResponse, JsonResponse
-from django.core.files.storage import FileSystemStorage
-from django.core.files.base import ContentFile
-import csv
-import json
-from django.urls import reverse
-import os
-from datetime import datetime, timedelta
-from decimal import Decimal
-
-# Import models
-from employee.models import Employee, JobRequest, Review
-from employer.models import Employer, Payment
-from .models import MLModel, DataCollectionLog, Commission, Payout, PlatformRevenue
 
 # Admin required decorator
 def admin_required(function=None):
@@ -4301,6 +4626,7 @@ def admin_required(function=None):
         return actual_decorator(function)
     return actual_decorator
 
+#**************************************************
 
 @admin_required
 def algorithm_setting(request):
@@ -4507,8 +4833,8 @@ def algorithm_setting(request):
     
     return render(request, 'admin_html/algorithm_setting.html', context)
 
+#************************************************************
 
-# In upload_ml_model function (around line 4228):
 @admin_required
 def upload_ml_model(request):
     """Handle ML model upload"""
@@ -4585,6 +4911,7 @@ def upload_ml_model(request):
     
     return redirect('{}?tab=model-management'.format(reverse('algorithm_setting')))
 
+#**************************************************************
 
 @admin_required
 def update_model_status(request, model_id):
@@ -4656,6 +4983,8 @@ def update_model_status(request, model_id):
     
     return redirect('{}?tab=model-management'.format(reverse('algorithm_setting')))
 
+#*************************************************************
+
 @admin_required
 def delete_model(request, model_id):
     """Delete ML model"""
@@ -4682,6 +5011,7 @@ def delete_model(request, model_id):
     
     return redirect('{}?tab=model-management'.format(reverse('algorithm_setting')))
 
+#******************************************************
 
 @admin_required
 def export_data_csv(request):
@@ -4992,6 +5322,10 @@ def export_data_csv(request):
         messages.error(request, f"Error exporting data: {str(e)}")
         return redirect('{}?tab=data-collection'.format(reverse('algorithm_setting')))
 
+
+#************************************************************************
+
+
 @admin_required
 def collect_data_now(request):
     """Trigger immediate data collection"""
@@ -5072,6 +5406,7 @@ def collect_data_now(request):
     
     return redirect('{}?tab=data-collection'.format(reverse('algorithm_setting')))
 
+#***************************************************
 
 @admin_required
 def download_model_file(request, model_id):
@@ -5105,6 +5440,7 @@ def download_model_file(request, model_id):
     
     return redirect('algorithm_setting?tab=model-management')
 
+#**********************************************************
 
 @admin_required
 def get_model_details(request, model_id):
@@ -5146,206 +5482,15 @@ def get_model_details(request, model_id):
         messages.error(request, "Model not found.")
         return redirect('algorithm_setting?tab=model-management')
 
-
+#********************************************************************
 
 def redirect_with_tab(tab_name):
     """Helper function to redirect to algorithm_setting with a specific tab"""
     from django.urls import reverse
     return redirect('{}?tab={}'.format(reverse('algorithm_setting'), tab_name))
 
+#********************************************************************************
 
-
-# Add to imports section in admin_self/views.py
-import pandas as pd
-from datetime import datetime, timedelta
-from decimal import Decimal
-from .ml_utils import predictor
-
-
-# admin_self/views.py - Update these functions
-
-def get_platform_analytics_data():
-    """Collect current platform data for ML predictions"""
-    now = timezone.now()
-    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-    
-    # Get current statistics
-    total_workers = Employee.objects.filter(status='Active').count()
-    total_employers = Employer.objects.filter(status='Active').count()
-    total_users = total_workers + total_employers
-    
-    # Calculate active users (users with activity in last 7 days)
-    seven_days_ago = now - timedelta(days=7)
-    
-    # Estimate active users
-    active_workers = Employee.objects.filter(
-        Q(updated_at__gte=seven_days_ago) |
-        Q(job_requests__created_at__gte=seven_days_ago)
-    ).distinct().count()
-    
-    active_employers = Employer.objects.filter(
-        Q(updated_at__gte=seven_days_ago) |
-        Q(job_requests__created_at__gte=seven_days_ago)
-    ).distinct().count()
-    
-    active_users = active_workers + active_employers
-    
-    # Get monthly data
-    new_users_this_month = Employee.objects.filter(
-        created_at__gte=month_start
-    ).count() + Employer.objects.filter(
-        created_at__gte=month_start
-    ).count()
-    
-    deleted_accounts_this_month = Employee.objects.filter(
-        email__startswith='DELETED_',
-        updated_at__gte=month_start
-    ).count() + Employer.objects.filter(
-        email__startswith='DELETED_',
-        updated_at__gte=month_start
-    ).count()
-    
-    # Booking data
-    total_bookings = JobRequest.objects.count()
-    completed_bookings = JobRequest.objects.filter(status='completed').count()
-    cancelled_bookings = JobRequest.objects.filter(status='cancelled').count()
-    bookings_today = JobRequest.objects.filter(
-        created_at__date=now.date()
-    ).count()
-    
-    # Calculate success rate
-    if total_bookings > 0:
-        success_rate = (completed_bookings / total_bookings) * 100
-    else:
-        success_rate = 0
-    
-    # Revenue data
-    total_payment_amount_result = Payment.objects.filter(
-        status='completed'
-    ).aggregate(total=Sum('amount'))
-    total_payment_amount = total_payment_amount_result['total'] or Decimal('0')
-    
-    # Platform commission (0.10%)
-    platform_commission = total_payment_amount * Decimal('0.0010')
-    
-    # Worker earnings
-    worker_earnings_result = JobRequest.objects.filter(
-        status='completed',
-        employee__isnull=False
-    ).aggregate(total=Sum('budget'))
-    worker_earnings = worker_earnings_result['total'] or Decimal('0')
-    
-    # Average ratings
-    avg_rating_result = Review.objects.aggregate(avg=Avg('rating'))
-    avg_rating = avg_rating_result['avg'] or 0
-    
-    total_reviews = Review.objects.count()
-    
-    # Calculate average earnings per job
-    if completed_bookings > 0:
-        avg_earning_per_job = float(worker_earnings) / completed_bookings
-        avg_spending_per_job = float(total_payment_amount) / completed_bookings
-    else:
-        avg_earning_per_job = 0
-        avg_spending_per_job = 0
-    
-    return {
-        'total_users': total_users,
-        'total_workers': total_workers,
-        'total_employers': total_employers,
-        'active_users': active_users,
-        'new_users_this_month': new_users_this_month,
-        'deleted_accounts_this_month': deleted_accounts_this_month,
-        'total_bookings': total_bookings,
-        'completed_bookings': completed_bookings,
-        'cancelled_bookings': cancelled_bookings,
-        'bookings_today': bookings_today,
-        'success_rate': success_rate,
-        'total_revenue': float(total_payment_amount),
-        'total_earnings': float(worker_earnings),
-        'platform_commission': float(platform_commission),
-        'total_payment_amount': float(total_payment_amount),
-        'avg_rating': avg_rating,
-        'total_reviews': total_reviews,
-        'avg_earning_per_job': avg_earning_per_job,
-        'avg_spending_per_job': avg_spending_per_job,
-    }
-
-def get_ml_predictions():
-    """Get ML predictions for platform metrics"""
-    try:
-        # Get current platform data
-        platform_data = get_platform_analytics_data()
-        
-        # Ensure predictor is loaded
-        if not predictor.loaded:
-            predictor.load_model()
-        
-        if not predictor.loaded:
-            print("ML model not loaded, using fallback")
-            return get_fallback_predictions(platform_data)
-        
-        # Get predictions from ML model
-        predictions = predictor.predict(platform_data)
-        
-        print(f"ML Predictions received: {len(predictions)} predictions")
-        
-        if not predictions:
-            print("No predictions returned, using fallback")
-            return get_fallback_predictions(platform_data)
-        
-        # Format predictions for display - map ML predictions to display names
-        formatted_predictions = {
-            # Map ML model outputs to display names
-            'new_users_next_month': int(predictions.get('platform_new_signups', 
-                predictions.get('new_signups', 
-                platform_data['new_users_this_month'] * 1.12))),
-            
-            'deleted_accounts_next_month': int(predictions.get('platform_deletions',
-                platform_data['deleted_accounts_this_month'] * 0.92)),
-            
-            'completed_bookings_next_month': int(predictions.get('completed_bookings',
-                platform_data['completed_bookings'] * 1.18)),
-            
-            'active_users_next_month': int(predictions.get('platform_active_users',
-                platform_data['active_users'] * 1.07)),
-            
-            'revenue_next_month': float(predictions.get('total_transaction_value',
-                predictions.get('total_spent',
-                platform_data['total_revenue'] * 1.18))),
-            
-            'commission_next_month': float(predictions.get('total_commission',
-                platform_data['platform_commission'] * 1.18)),
-            
-            'success_rate_next_month': min(100, max(0, predictions.get('success_rate',
-                platform_data['success_rate'] * 1.05))),
-            
-            'avg_rating_next_month': min(5, max(0, predictions.get('avg_rating',
-                platform_data['avg_rating'] * 1.01))),
-            
-            'total_bookings_next_month': int(predictions.get('total_bookings',
-                platform_data['total_bookings'] * 1.12)),
-            
-            # Add raw predictions for debugging
-            'raw_predictions': predictions,
-        }
-        
-        # Debug output
-        print("="*50)
-        print("ML PREDICTION RESULTS:")
-        print("="*50)
-        for key, value in formatted_predictions.items():
-            if key != 'raw_predictions':
-                print(f"{key}: {value}")
-        print("="*50)
-        
-        return formatted_predictions
-        
-    except Exception as e:
-        print(f"Error getting ML predictions: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        return get_fallback_predictions(get_platform_analytics_data())
 
 def get_fallback_predictions(platform_data):
     """Fallback predictions if ML model fails"""
@@ -5363,7 +5508,9 @@ def get_fallback_predictions(platform_data):
         'raw_predictions': {},
     }
 
-# Update the analytics_prediction view function
+
+#***********************************************
+
 @admin_required
 def analytics_prediction(request):
     """Analytics and prediction view with ML integration"""
@@ -5371,14 +5518,37 @@ def analytics_prediction(request):
     # Get current platform data
     platform_data = get_platform_analytics_data()
     
-    # Get ML predictions - THIS IS THE KEY CONNECTION
-    ml_predictions = get_ml_predictions()
+    # Get ML predictions
+    # Get ML predictions
+    from xg_boost.predictor import predictor
+    
+    try:
+        if not predictor.loaded:
+            predictor.load_model()
+            
+        # Get predictions using future_predictions logic
+        ml_predictions = predictor.predict(platform_data)
+        
+        # Add flag for template
+        ml_predictions['using_real_ml'] = predictor.loaded and len(ml_predictions) > 0
+        
+        # Add raw predictions for compatibility if needed
+        ml_predictions['raw_predictions'] = ml_predictions
+        
+    except Exception as e:
+        print(f"Error in analytics_prediction: {e}")
+        ml_predictions = get_fallback_predictions(platform_data)
+        ml_predictions['using_real_ml'] = False
+
+    # Check if we have real ML predictions
+    ml_model_loaded = predictor.loaded
+    using_real_ml = ml_predictions.get('using_real_ml', False) and ml_model_loaded
+    
+    # Get feature importance
+    feature_importance = get_feature_importance()
     
     # Get churn risk users
     churn_users = get_churn_risk_users()
-    
-    # Get feature importance FROM THE MODEL
-    feature_importance = predictor.get_feature_importance()
     
     # Get historical data for charts (last 6 months)
     historical_data = get_historical_data(6)
@@ -5389,104 +5559,77 @@ def analytics_prediction(request):
     # Prepare AI insights
     ai_insights = generate_ai_insights(platform_data, ml_predictions, churn_users)
     
-    # Prepare chart data - USE ML PREDICTIONS FOR NEXT MONTH
+    # Prepare chart data - Use ML predictions for next month
     chart_data = prepare_chart_data(historical_data, ml_predictions)
     
     # Get available predictions from model
-    available_predictions = predictor.get_available_predictions()
+    available_predictions = predictor.get_available_predictions() if predictor.loaded else []
+    
+    # Calculate next month
+    from datetime import datetime, timedelta
+    next_month_date = datetime.now().replace(day=28) + timedelta(days=4)
+    next_month = next_month_date.strftime('%B %Y')
     
     context = {
         'platform_data': platform_data,
         'ml_predictions': ml_predictions,
-        'churn_users': churn_users[:10],  # Top 10
+        'churn_users': churn_users[:10],
         'feature_importance': feature_importance,
         'historical_data': historical_data,
         'growth_rates': growth_rates,
-        'ai_insights': ai_insights,
+        'ai_insights': ai_insights[:4],
         'chart_data': chart_data,
         'current_month': datetime.now().strftime('%B %Y'),
-        'next_month': (datetime.now().replace(day=28) + timedelta(days=4)).strftime('%B %Y'),
-        'ml_model_loaded': predictor.loaded,
+        'next_month': next_month,
+        'ml_model_loaded': ml_model_loaded,
+        'using_real_ml': using_real_ml,
         'available_predictions': available_predictions,
+        
+        # For debugging in template
+        'prediction_source': 'XGBoost ML Model' if using_real_ml else 'Statistical Trend Analysis',
+        'prediction_count': len(available_predictions),
+        'raw_predictions_count': len(ml_predictions.get('raw_predictions', {})),
     }
     
+    # Debug output
+    print("="*60)
+    print("ANALYTICS PREDICTION VIEW - DEBUG INFO")
+    print("="*60)
+    print(f"ML Model Loaded: {predictor.loaded}")
+    print(f"Using Real ML: {using_real_ml}")
+    print(f"Prediction Source: {context['prediction_source']}")
+    print(f"Available Predictions from Model: {len(available_predictions)}")
+    if ml_predictions.get('raw_predictions'):
+        print(f"Raw predictions received: {list(ml_predictions['raw_predictions'].keys())}")
+    print("="*60)
+    
     return render(request, 'admin_html/analytics_prediction.html', context)
-        
 
 
-
-
-def get_churn_risk_users():
-    """Identify users at risk of churn using ML predictions"""
-    try:
-        # This is a simplified version - in production, you'd use the ML model
-        # to predict churn probability for each user
-        
-        # Get users with no activity in last 30 days
-        thirty_days_ago = timezone.now() - timedelta(days=30)
-        
-        inactive_workers = Employee.objects.filter(
-            Q(updated_at__lt=thirty_days_ago) &
-            Q(status='Active') &
-            Q(job_requests__isnull=True)  # Never had a booking
-        ).distinct()[:10]  # Limit to 10
-        
-        inactive_employers = Employer.objects.filter(
-            Q(updated_at__lt=thirty_days_ago) &
-            Q(status='Active') &
-            Q(job_requests__isnull=True)  # Never posted a job
-        ).distinct()[:10]
-        
-        churn_users = []
-        
-        for worker in inactive_workers:
-            # Calculate simple churn score (0-100)
-            days_inactive = (timezone.now() - worker.updated_at).days
-            churn_score = min(100, days_inactive * 3)  # 3% per day inactive
-            
-            churn_users.append({
-                'user_type': 'Worker',
-                'name': worker.full_name,
-                'email': worker.email,
-                'days_inactive': days_inactive,
-                'churn_score': churn_score,
-                'risk_level': 'High' if churn_score > 70 else 'Medium' if churn_score > 40 else 'Low',
-            })
-        
-        for employer in inactive_employers:
-            days_inactive = (timezone.now() - employer.updated_at).days
-            churn_score = min(100, days_inactive * 3)
-            
-            churn_users.append({
-                'user_type': 'Employer',
-                'name': employer.full_name,
-                'email': employer.email,
-                'days_inactive': days_inactive,
-                'churn_score': churn_score,
-                'risk_level': 'High' if churn_score > 70 else 'Medium' if churn_score > 40 else 'Low',
-            })
-        
-        return sorted(churn_users, key=lambda x: x['churn_score'], reverse=True)[:20]
-        
-    except Exception as e:
-        print(f"Error getting churn risk users: {str(e)}")
-        return []
-
+#*****************************************************
 
 def get_feature_importance():
     """Get feature importance from ML model"""
     try:
-        return predictor.get_feature_importance()
-    except:
-        return {
-            'contracts_signed': 0.125,
-            'engagement_score': 0.102,
-            'total_users': 0.095,
-            'user_type': 0.082,
-            'platform_commission': 0.075,
-            'earning_per_job': 0.060,
-            'active_users': 0.052,
-            'days_since_registration': 0.047,
-            'completion_rate': 0.045,
-            'favorite_employee_count': 0.043,
-        }
+        if not predictor.loaded:
+            predictor.load_model()
+        
+        if not predictor.loaded:
+            print("ML model not loaded for feature importance")
+            return get_fallback_feature_importance()
+        
+        importance = predictor.get_feature_importance()
+        
+        if not importance:
+            print("No feature importance returned from model")
+            return get_fallback_feature_importance()
+        
+        print(f"Feature importance retrieved: {len(importance)} features")
+        return importance
+        
+    except Exception as e:
+        print(f"Error getting feature importance: {str(e)}")
+        return get_fallback_feature_importance()
+
+
+#**************************************************

@@ -163,7 +163,7 @@ USE_TZ = True
 
 
 # Add ML model path
-ML_MODEL_PATH = os.path.join(BASE_DIR, 'xg_boost', 'jobportal_xgboost_models_complete.pkl')
+ML_MODEL_PATH = os.path.join(BASE_DIR, 'xg_boost', 'complete_xgboost_package.pkl')
 
 # Ensure the directory exists
 XG_BOOST_DIR = os.path.join(BASE_DIR, 'xg_boost')

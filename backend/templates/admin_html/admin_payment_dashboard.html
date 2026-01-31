@@ -1496,7 +1496,7 @@
         <!-- Header -->
         <header class="page-header">
             <div class="header-title">
-                <h1>Revenue Analytics & Payouts</h1>
+                <h1>Payouts & Revenue Analytics  </h1>
                 <p>Track revenue, commissions, and manage payouts</p>
             </div>
             <div class="header-actions">
@@ -1508,12 +1508,36 @@
                 </button>
                 {% include 'admin_html/includes/admin_notification.html' %}
                 <div class="admin-profile">
-                    <div class="admin-avatar">{{ request.user.username|default:"A"|first|upper }}</div>
-                    <div>
-                        <h4 style="margin-bottom: 2px;">{{ request.user.username|default:"Administrator" }}</h4>
-                        <p style="color: var(--text-light); font-size: 0.85rem;">{{ request.user.email|default:"admin@skillconnect.com" }}</p>
-                    </div>
+                    <div class="admin-avatar">
+                    {% if request.user.is_authenticated and request.user.username %}
+                        {{ request.user.username.0|upper }}
+                    {% else %}
+                        A
+                    {% endif %}
                 </div>
+                <div>
+                    <h4 style="margin-bottom: 2px;">
+                        {% if request.user.is_authenticated %}
+                            {% if request.user.get_full_name %}
+                                {{ request.user.get_full_name }}
+                            {% elif request.user.username %}
+                                {{ request.user.username }}
+                            {% else %}
+                                Administrator
+                            {% endif %}
+                        {% else %}
+                            Administrator
+                        {% endif %}
+                    </h4>
+                    <p style="color: var(--text-light); font-size: 0.85rem;">
+                        {% if request.user.is_authenticated and request.user.email %}
+                            {{ request.user.email }}
+                        {% else %}
+                            admin@skillconnect.com
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
             </div>
         </header>
 
