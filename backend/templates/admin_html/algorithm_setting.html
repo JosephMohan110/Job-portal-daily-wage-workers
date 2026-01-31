@@ -1664,6 +1664,7 @@
                             </div>
                         </div>
 
+                        
                         <!-- Model Configuration -->
                         <div style="margin-top: 30px;">
                             <h4 style="margin-bottom: 16px; color: var(--text-dark);">Model Configuration</h4>
@@ -1671,23 +1672,26 @@
                                 <div class="form-group">
                                     <label class="form-label">Model Name *</label>
                                     <input type="text" name="model_name" class="form-control" required
-                                        placeholder="e.g., User Churn Predictor">
+                                        placeholder="e.g., User Churn Predictor v2.0">
                                 </div>
 
-                                <div class="form-group">
+                                <div class="form-group" style="display: none;">  <!-- Hidden but still required -->
                                     <label class="form-label">Model Type *</label>
                                     <select name="model_type" class="form-control" required>
-                                        <option value="">Select Model Type</option>
-                                        {% for choice in model_type_choices %}
-                                        <option value="{{ choice.0 }}">{{ choice.1 }}</option>
-                                        {% endfor %}
+                                        <!-- Only show relevant options -->
+                                        <option value="prediction">Platform Prediction</option>
+                                        <option value="revenue" selected>Revenue Forecast</option>
+                                        <option value="matching">Worker-Employer Matching</option>
                                     </select>
+                                    <small style="color: var(--text-light); font-size: 0.85rem;">
+                                        This model will replace the current XGBoost model
+                                    </small>
                                 </div>
 
                                 <div class="form-group">
                                     <label class="form-label">Version</label>
-                                    <input type="text" name="version" class="form-control" value="1.0.0"
-                                        placeholder="e.g., 1.0.0">
+                                    <input type="text" name="version" class="form-control" 
+                                        value="{% now 'Y.m.d' %}" placeholder="e.g., 2024.12.25">
                                 </div>
                             </div>
 
@@ -1697,49 +1701,50 @@
                                     placeholder="Describe the purpose and features of this model..."></textarea>
                             </div>
 
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label class="form-label">n_estimators</label>
-                                    <input type="number" name="n_estimators" class="form-control" value="100" min="1">
+                            <!-- Current Model Info -->
+                            <div style="background-color: #f0f9ff; padding: 15px; border-radius: 8px; border-left: 4px solid var(--primary-color); margin-bottom: 20px;">
+                                <h5 style="margin-bottom: 10px; color: var(--primary-color); display: flex; align-items: center; gap: 8px;">
+                                    <i class="fas fa-info-circle"></i> Upload Information
+                                </h5>
+                                <div style="font-size: 0.9rem; color: var(--text-light);">
+                                    <p><strong>Standardized Filename:</strong> Your uploaded model will be automatically renamed to <code>complete_xgboost_package.pkl</code></p>
+                                    <p><strong>Current Model:</strong> If a model already exists, it will be moved to the <code>old_version_model</code> folder</p>
+                                    <p><strong>Auto-deployment:</strong> Uploaded models are automatically deployed and activated</p>
                                 </div>
+                            </div>
 
-                                <div class="form-group">
-                                    <label class="form-label">max_depth</label>
-                                    <input type="number" name="max_depth" class="form-control" value="6" min="1">
-                                </div>
+                            <!-- Model Parameters (Optional) -->
+                            <div style="margin-top: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 8px;">
+                                <h5 style="margin-bottom: 15px; color: var(--text-dark);">XGBoost Parameters (Optional)</h5>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label class="form-label">n_estimators</label>
+                                        <input type="number" name="n_estimators" class="form-control" value="100" min="1">
+                                        <small style="color: var(--text-light); font-size: 0.85rem;">Number of trees</small>
+                                    </div>
 
-                                <div class="form-group">
-                                    <label class="form-label">learning_rate</label>
-                                    <input type="number" step="0.01" name="learning_rate" class="form-control"
-                                        value="0.3" min="0.01">
-                                </div>
+                                    <div class="form-group">
+                                        <label class="form-label">max_depth</label>
+                                        <input type="number" name="max_depth" class="form-control" value="6" min="1">
+                                        <small style="color: var(--text-light); font-size: 0.85rem;">Maximum tree depth</small>
+                                    </div>
 
-                                <div class="form-group">
-                                    <label class="form-label">min_child_weight</label>
-                                    <input type="number" name="min_child_weight" class="form-control" value="1" min="1">
-                                </div>
-
-                                <div class="form-group">
-                                    <label class="form-label">subsample</label>
-                                    <input type="number" step="0.01" name="subsample" class="form-control" value="1.0"
-                                        min="0.1" max="1.0">
-                                </div>
-
-                                <div class="form-group">
-                                    <label class="form-label">colsample_bytree</label>
-                                    <input type="number" step="0.01" name="colsample_bytree" class="form-control"
-                                        value="1.0" min="0.1" max="1.0">
+                                    <div class="form-group">
+                                        <label class="form-label">learning_rate</label>
+                                        <input type="number" step="0.01" name="learning_rate" class="form-control" value="0.3" min="0.01">
+                                        <small style="color: var(--text-light); font-size: 0.85rem;">Learning rate</small>
+                                    </div>
                                 </div>
                             </div>
 
                             <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
-                                <button type="button" class="btn btn-secondary"
-                                    onclick="hideUploadForm()">Cancel</button>
+                                <button type="button" class="btn btn-secondary" onclick="hideUploadForm()">Cancel</button>
                                 <button type="submit" class="btn btn-primary">
                                     <i class="fas fa-upload"></i> Upload & Deploy Model
                                 </button>
                             </div>
                         </div>
+
                     </form>
                 </div>
 
@@ -1855,6 +1860,8 @@
                                         <i class="fas fa-eye"></i>
                                     </a>
 
+
+
                                     <!-- Status Actions -->
                                     {% if item.model.status == 'pending' %}
                                     <!-- Approve Button -->
@@ -1879,6 +1886,29 @@
                                         </button>
                                     </form>
 
+                                    <!-- Test Button -->
+                                    <form method="post" action="{% url 'update_model_status' item.model.model_id %}"
+                                        style="display: inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="test">
+                                        <button type="submit" class="btn-icon" title="Mark for Testing"
+                                            style="color: var(--warning-color);">
+                                            <i class="fas fa-vial"></i>
+                                        </button>
+                                    </form>
+
+                                    {% elif item.model.status == 'testing' %}
+                                    <!-- Deploy from Testing -->
+                                    <form method="post" action="{% url 'update_model_status' item.model.model_id %}"
+                                        style="display: inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="deploy">
+                                        <button type="submit" class="btn-icon" title="Deploy Model"
+                                            style="color: var(--success-color);">
+                                            <i class="fas fa-rocket"></i>
+                                        </button>
+                                    </form>
+
                                     {% elif item.model.status == 'deployed' and item.model.is_active %}
                                     <!-- Deactivate Button -->
                                     <form method="post" action="{% url 'update_model_status' item.model.model_id %}"
@@ -1891,6 +1921,13 @@
                                         </button>
                                     </form>
 
+                                    <!-- Restore from Backup Button (with modal) -->
+                                    <button type="button" class="btn-icon" title="Restore from Backup"
+                                        style="color: var(--info-color);"
+                                        onclick="showRestoreModal('{{ item.model.model_id }}')">
+                                        <i class="fas fa-history"></i>
+                                    </button>
+
                                     {% elif item.model.status == 'deployed' and not item.model.is_active %}
                                     <!-- Activate Button -->
                                     <form method="post" action="{% url 'update_model_status' item.model.model_id %}"
@@ -1900,6 +1937,18 @@
                                         <button type="submit" class="btn-icon" title="Activate Model"
                                             style="color: var(--success-color);">
                                             <i class="fas fa-play"></i>
+                                        </button>
+                                    </form>
+
+                                    {% elif item.model.status == 'failed' %}
+                                    <!-- Retry Button -->
+                                    <form method="post" action="{% url 'update_model_status' item.model.model_id %}"
+                                        style="display: inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="test">
+                                        <button type="submit" class="btn-icon" title="Retry Testing"
+                                            style="color: var(--warning-color);">
+                                            <i class="fas fa-redo"></i>
                                         </button>
                                     </form>
 
@@ -1928,6 +1977,9 @@
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </form>
+
+
+
                                 </td>
                             </tr>
                             {% empty %}
@@ -1963,6 +2015,59 @@
                     </div>
                     {% endif %}
                 </div>
+
+
+                <!-- Restore Modal -->
+                <div id="restoreModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
+                    <div class="modal-content" style="background-color: var(--card-bg); margin: 10% auto; padding: 20px; border-radius: 8px; width: 500px; max-width: 90%;">
+                        <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h3 style="color: var(--text-dark);">
+                                <i class="fas fa-history"></i> Restore from Backup
+                            </h3>
+                            <span class="close-modal" onclick="closeRestoreModal()" style="font-size: 28px; cursor: pointer; color: var(--text-light);">&times;</span>
+                        </div>
+                        
+                        <div class="modal-body">
+                            <form id="restoreForm" method="post" action="">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="restore">
+                                <input type="hidden" id="restoreModelId" name="model_id">
+                                
+                                <div class="form-group">
+                                    <label class="form-label">Select Backup Version</label>
+                                    <select name="version_num" class="form-control" required id="versionSelect">
+                                        <option value="">Select a backup version...</option>
+                                        <!-- Options will be populated by JavaScript -->
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">Restore Notes (Optional)</label>
+                                    <textarea name="notes" class="form-control" rows="3" placeholder="Add notes about why you're restoring this version..."></textarea>
+                                </div>
+                                
+                                <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px;">
+                                    <button type="button" class="btn btn-secondary" onclick="closeRestoreModal()">Cancel</button>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-history"></i> Restore & Deploy
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Backup Management Section -->
+                <div id="backupManagement" style="display: none; margin-top: 20px; padding: 20px; background-color: #f8f9fa; border-radius: 8px;">
+                    <h4 style="margin-bottom: 15px; color: var(--text-dark);">
+                        <i class="fas fa-archive"></i> Backup Versions
+                    </h4>
+                    <div id="backupList">
+                        <!-- Backup list will be populated here -->
+                    </div>
+                </div>
+
+
 
                 <!-- Deployed Models Section -->
                 {% if deployed_models %}
@@ -2176,6 +2281,181 @@
         const urlParams = new URLSearchParams(window.location.search);
         const initialTab = urlParams.get('tab') || 'data-collection';
         switchTab(initialTab);
+
+
+
+        // Add this to the existing JavaScript section
+        function updateFileInfo() {
+            const modelFileInput = document.getElementById('modelFile');
+            const fileNameDisplay = document.getElementById('fileName');
+            
+            if (modelFileInput && fileNameDisplay) {
+                modelFileInput.addEventListener('change', function () {
+                    if (this.files.length > 0) {
+                        const file = this.files[0];
+                        const fileSize = (file.size / (1024 * 1024)).toFixed(2);
+                        
+                        // Show both original and standardized filename
+                        fileNameDisplay.innerHTML = `
+                            <div style="margin-bottom: 5px;">
+                                <strong>Original:</strong> ${file.name} (${fileSize} MB)
+                            </div>
+                            <div style="color: var(--success-color);">
+                                <strong>Will be saved as:</strong> complete_xgboost_package.pkl
+                            </div>
+                        `;
+                    } else {
+                        fileNameDisplay.textContent = '';
+                    }
+                });
+
+                // Drag and drop functionality
+                const uploadArea = document.getElementById('uploadArea');
+                if (uploadArea) {
+                    uploadArea.addEventListener('dragover', function (e) {
+                        e.preventDefault();
+                        this.classList.add('dragover');
+                    });
+
+                    uploadArea.addEventListener('dragleave', function () {
+                        this.classList.remove('dragover');
+                    });
+
+                    uploadArea.addEventListener('drop', function (e) {
+                        e.preventDefault();
+                        this.classList.remove('dragover');
+
+                        const files = e.dataTransfer.files;
+                        if (files.length > 0) {
+                            modelFileInput.files = files;
+                            const file = files[0];
+                            const fileSize = (file.size / (1024 * 1024)).toFixed(2);
+                            
+                            fileNameDisplay.innerHTML = `
+                                <div style="margin-bottom: 5px;">
+                                    <strong>Original:</strong> ${file.name} (${fileSize} MB)
+                                </div>
+                                <div style="color: var(--success-color);">
+                                    <strong>Will be saved as:</strong> complete_xgboost_package.pkl
+                                </div>
+                            `;
+                        }
+                    });
+                }
+            }
+        }
+
+
+
+
+        // Show restore modal
+        function showRestoreModal(modelId) {
+            document.getElementById('restoreModelId').value = modelId;
+            document.getElementById('restoreForm').action = `/admin_self/algorithm/model/${modelId}/update-status/`;
+            
+            // Fetch backup versions
+            fetch('/admin_self/algorithm/old-models/')
+                .then(response => response.json())
+                .then(data => {
+                    const versionSelect = document.getElementById('versionSelect');
+                    versionSelect.innerHTML = '<option value="">Select a backup version...</option>';
+                    
+                    if (data.old_models && data.old_models.length > 0) {
+                        data.old_models.forEach(backup => {
+                            const option = document.createElement('option');
+                            option.value = backup.filename.replace('xgboost_model_', '').replace('.pkl', '');
+                            option.textContent = `Version ${backup.filename.replace('xgboost_model_', '').replace('.pkl', '')} - ${backup.size_mb} MB - ${new Date(backup.modified).toLocaleString()}`;
+                            versionSelect.appendChild(option);
+                        });
+                        
+                        // Show backup management section
+                        showBackupManagement(data.old_models);
+                    } else {
+                        versionSelect.innerHTML += '<option value="" disabled>No backups available</option>';
+                        document.getElementById('backupManagement').style.display = 'none';
+                    }
+                });
+            
+            document.getElementById('restoreModal').style.display = 'block';
+        }
+
+        // Close restore modal
+        function closeRestoreModal() {
+            document.getElementById('restoreModal').style.display = 'none';
+        }
+
+        // Show backup management
+        function showBackupManagement(backups) {
+            const backupList = document.getElementById('backupList');
+            backupList.innerHTML = '';
+            
+            if (backups.length === 0) {
+                backupList.innerHTML = '<p style="color: var(--text-light); text-align: center;">No backup versions available.</p>';
+                return;
+            }
+            
+            // Create table for backups
+            let tableHTML = `
+                <table class="data-table" style="width: 100%;">
+                    <thead>
+                        <tr>
+                            <th>Version</th>
+                            <th>Size</th>
+                            <th>Modified</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            backups.forEach(backup => {
+                const versionNum = backup.filename.replace('xgboost_model_', '').replace('.pkl', '');
+                const modifiedDate = new Date(backup.modified).toLocaleString();
+                
+                tableHTML += `
+                    <tr>
+                        <td>Version ${versionNum}</td>
+                        <td>${backup.size_mb} MB</td>
+                        <td>${modifiedDate}</td>
+                        <td>
+                            <form method="post" action="/admin_self/algorithm/model/0/update-status/" style="display: inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="download_backup">
+                                <input type="hidden" name="version_num" value="${versionNum}">
+                                <button type="submit" class="btn-icon" title="Download Backup" style="color: var(--info-color);">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                            </form>
+                            <form method="post" action="/admin_self/algorithm/model/0/update-status/" style="display: inline;"
+                                onsubmit="return confirm('Are you sure you want to delete backup version ${versionNum}?');">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="delete_backup">
+                                <input type="hidden" name="version_num" value="${versionNum}">
+                                <button type="submit" class="btn-icon" title="Delete Backup" style="color: var(--danger-color);">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tableHTML += `
+                    </tbody>
+                </table>
+            `;
+            
+            backupList.innerHTML = tableHTML;
+            document.getElementById('backupManagement').style.display = 'block';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('restoreModal');
+            if (event.target == modal) {
+                closeRestoreModal();
+            }
+        }
     </script>
 </body>
 
