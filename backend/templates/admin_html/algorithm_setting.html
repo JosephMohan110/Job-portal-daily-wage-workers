@@ -46,6 +46,7 @@
             background-color: var(--body-bg);
             color: var(--text-dark);
             min-height: 100vh;
+            overflow-x: hidden;
         }
 
         /* ---------- MOBILE HEADER ---------- */
@@ -345,6 +346,8 @@
             transition: margin-left 0.3s ease;
             min-height: 100vh;
             padding-top: 24px;
+            overflow-x: hidden;
+            max-width: 100%;
         }
 
         /* Header */
@@ -621,6 +624,25 @@
             margin-bottom: 30px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
             border: 1px solid #e2e8f0;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .data-table-container::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .data-table-container::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        .data-table-container::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        .data-table-container::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
         }
 
         /* ========== CSV PREVIEW STYLES ========== */
@@ -635,13 +657,18 @@
 
         .csv-preview-wrapper {
             overflow-x: auto;
-            overflow-y: hidden;
+            overflow-y: auto;
             width: 100%;
+            max-height: 400px;
             margin-bottom: 15px;
             -webkit-overflow-scrolling: touch;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            background-color: #ffffff;
         }
 
         .csv-preview-wrapper::-webkit-scrollbar {
+            width: 8px;
             height: 8px;
         }
 
@@ -659,18 +686,33 @@
             background: #64748b;
         }
 
+        /* Scrollbar for Firefox */
+        .csv-preview-wrapper {
+            scrollbar-color: #94a3b8 #e2e8f0;
+            scrollbar-width: thin;
+        }
+
         .csv-preview {
-            font-family: 'Consolas', 'Monaco', monospace;
-            font-size: 0.85rem;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 0.8rem;
             color: var(--text-dark);
-            line-height: 1.5;
-            white-space: nowrap;
-            min-width: max-content;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            padding: 12px;
+            margin: 0;
+            background-color: #ffffff;
         }
 
         .csv-preview pre {
             margin: 0;
-            font-family: 'Consolas', 'Monaco', monospace;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 0.8rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
 
         .csv-preview-header {
@@ -698,9 +740,24 @@
             margin-top: 15px;
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
             flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .export-buttons {
+            display: flex;
             gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .export-buttons form {
+            flex: 0 1 auto;
+            min-width: 130px;
+        }
+
+        .export-buttons .btn {
+            white-space: nowrap;
         }
 
         /* ========== RECENT EXPORTS SECTION ========== */
@@ -1156,7 +1213,11 @@
 
             .csv-preview-footer {
                 flex-direction: column;
-                align-items: flex-start;
+                align-items: stretch;
+            }
+
+            .csv-preview-footer > div:first-child {
+                width: 100%;
             }
 
             .csv-preview-footer .export-buttons {
@@ -1164,6 +1225,31 @@
                 flex-wrap: wrap;
                 gap: 8px;
                 margin-top: 10px;
+                width: 100%;
+            }
+
+            .csv-preview-footer .export-buttons form {
+                flex: 1 1 auto;
+                min-width: 120px;
+            }
+
+            .csv-preview-footer .export-buttons .btn {
+                width: 100%;
+                font-size: 0.85rem;
+                padding: 8px 12px;
+            }
+
+            .csv-preview {
+                font-size: 0.75rem;
+                padding: 10px;
+            }
+
+            .csv-preview pre {
+                font-size: 0.75rem;
+            }
+
+            .csv-preview-wrapper {
+                max-height: 350px;
             }
         }
 
@@ -1217,7 +1303,42 @@
             }
 
             .csv-preview {
+                font-size: 0.7rem;
+                padding: 8px;
+            }
+
+            .csv-preview pre {
+                font-size: 0.7rem;
+                line-height: 1.5;
+            }
+
+            .csv-preview-wrapper {
+                max-height: 300px;
+                border: 1px solid #cbd5e1;
+                border-radius: 4px;
+            }
+
+            .csv-preview-footer {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+            }
+
+            .csv-preview-footer .export-buttons {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 8px;
+                width: 100%;
+            }
+
+            .csv-preview-footer .export-buttons form {
+                width: 100%;
+            }
+
+            .csv-preview-footer .export-buttons .btn {
+                width: 100%;
                 font-size: 0.8rem;
+                padding: 8px 12px;
             }
         }
 
@@ -1473,30 +1594,30 @@
                                 Total records available: {{
                                 total_users|add:total_bookings|add:total_revenue|floatformat:0 }}
                             </div>
-                            <div class="export-buttons" style="display: flex; gap: 10px;">
+                            <div class="export-buttons">
                                 <!-- Export Users Data -->
-                                <form method="post" action="{% url 'export_data_csv' %}" style="display: inline;">
+                                <form method="post" action="{% url 'export_data_csv' %}" style="flex: 1; min-width: 150px;">
                                     {% csrf_token %}
                                     <input type="hidden" name="export_type" value="users">
-                                    <button type="submit" class="btn btn-secondary">
+                                    <button type="submit" class="btn btn-secondary" style="width: 100%;">
                                         <i class="fas fa-user"></i> Export Users
                                     </button>
                                 </form>
 
                                 <!-- Export Bookings Data -->
-                                <form method="post" action="{% url 'export_data_csv' %}" style="display: inline;">
+                                <form method="post" action="{% url 'export_data_csv' %}" style="flex: 1; min-width: 150px;">
                                     {% csrf_token %}
                                     <input type="hidden" name="export_type" value="bookings">
-                                    <button type="submit" class="btn btn-secondary">
+                                    <button type="submit" class="btn btn-secondary" style="width: 100%;">
                                         <i class="fas fa-handshake"></i> Export Bookings
                                     </button>
                                 </form>
 
                                 <!-- Export Revenue Data -->
-                                <form method="post" action="{% url 'export_data_csv' %}" style="display: inline;">
+                                <form method="post" action="{% url 'export_data_csv' %}" style="flex: 1; min-width: 150px;">
                                     {% csrf_token %}
                                     <input type="hidden" name="export_type" value="revenue">
-                                    <button type="submit" class="btn btn-secondary">
+                                    <button type="submit" class="btn btn-secondary" style="width: 100%;">
                                         <i class="fas fa-money-bill-wave"></i> Export Revenue
                                     </button>
                                 </form>
@@ -2145,79 +2266,66 @@
             <div id="self-training" class="tab-content {% if tab == 'self-training' %}active{% endif %}">
                 <div class="model-management-header">
                     <h2><i class="fas fa-dumbbell"></i> Self Learning & Training</h2>
-                    <div style="display: flex; align-items: center; gap: 12px;">
-                        <button class="btn btn-primary" onclick="startSelfTraining()">
-                            <i class="fas fa-play"></i> Start New Training Session
-                        </button>
-                    </div>
                 </div>
 
-                <!-- Training Configuration (Hidden by default, shown when Start New Training is clicked) -->
-                <div class="upload-model-container" id="trainingConfigContainer" style="display: none;">
+                <!-- Train with Custom Dataset Section -->
+                <div class="upload-model-container" id="customDatasetTrainingContainer">
                     <h3
                         style="margin-bottom: 20px; color: var(--text-dark); display: flex; align-items: center; gap: 8px;">
-                        <i class="fas fa-sliders-h"></i> Configure Self Training
+                        <i class="fas fa-file-upload"></i> Train with Custom Dataset
                     </h3>
 
-                    <form method="post" action="{% url 'start_self_training' %}" id="trainingForm">
+                    <form method="post" action="{% url 'train_from_uploaded_data' %}" enctype="multipart/form-data"
+                        id="customTrainingForm">
                         {% csrf_token %}
+
                         <div class="alert alert-info">
                             <i class="fas fa-info-circle"></i>
-                            The system will automatically collect new data from the platform and retrain the XGBoost
-                            model.
+                            Upload your custom dataset (CSV or Excel). The system will clean the data, train an XGBoost
+                            model, and provide the trained model for download.
                         </div>
 
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label">Training Data Source</label>
-                                <select name="data_source" class="form-control">
-                                    <option value="combined" selected>All Available Data (Recommended)</option>
-                                    <option value="user_data">User Data Only</option>
-                                    <option value="booking_data">Booking Data Only</option>
-                                    <option value="revenue_data">Revenue Data Only</option>
-                                </select>
+                        <div class="upload-area" id="datasetUploadArea"
+                            onclick="document.getElementById('trainingFile').click()">
+                            <div class="upload-icon">
+                                <i class="fas fa-cloud-upload-alt"></i>
                             </div>
-
-                            <div class="form-group">
-                                <label class="form-label">Model Version Strategy</label>
-                                <select name="version_strategy" class="form-control">
-                                    <option value="minor" selected>Increment Minor Version (e.g., 1.1.0 -> 1.2.0)
-                                    </option>
-                                    <option value="patch">Increment Patch Version (e.g., 1.1.0 -> 1.1.1)</option>
-                                    <option value="major">Increment Major Version (e.g., 1.0.0 -> 2.0.0)</option>
-                                </select>
+                            <h4>Upload your training dataset</h4>
+                            <p>Click to browse or drag and drop your dataset file here</p>
+                            <input type="file" id="trainingFile" name="training_file" class="upload-input"
+                                accept=".csv,.xlsx,.xls" required>
+                            <div class="upload-formats">
+                                <span class="format-badge">.csv (CSV)</span>
+                                <span class="format-badge">.xlsx (Excel)</span>
+                                <span class="format-badge">.xls (Excel)</span>
+                            </div>
+                            <div id="datasetFileName"
+                                style="margin-top: 10px; color: var(--primary-color); font-weight: 500;">
                             </div>
                         </div>
 
-                        <div style="background-color: #f8fafc; padding: 16px; border-radius: 8px; margin-top: 10px;">
-                            <h4 style="font-size: 1rem; margin-bottom: 12px; color: var(--text-dark);">Training
-                                Parameters (Advanced)</h4>
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label class="form-label">Limit Training Samples</label>
-                                    <select name="sample_limit" class="form-control">
-                                        <option value="0" selected>Use All Records</option>
-                                        <option value="1000">Last 1,000 Records</option>
-                                        <option value="5000">Last 5,000 Records</option>
-                                        <option value="10000">Last 10,000 Records</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">Test Split Ratio</label>
-                                    <select name="test_split" class="form-control">
-                                        <option value="0.2" selected>20% (Standard)</option>
-                                        <option value="0.3">30% (Robust Evaluation)</option>
-                                        <option value="0.1">10% (Maximize Training)</option>
-                                    </select>
-                                </div>
+                        <!-- Dataset Info -->
+                        <div
+                            style="background-color: #f0f9ff; padding: 15px; border-radius: 8px; border-left: 4px solid var(--primary-color); margin: 20px 0;">
+                            <h5
+                                style="margin-bottom: 10px; color: var(--primary-color); display: flex; align-items: center; gap: 8px;">
+                                <i class="fas fa-info-circle"></i> Dataset Requirements
+                            </h5>
+                            <div style="font-size: 0.9rem; color: var(--text-light);">
+                                <p><strong>Required Columns:</strong> Your dataset should include columns like:
+                                    timestamp, user_id, user_type, total_bookings, completed_bookings, total_spent,
+                                    platform_commission, avg_rating, etc.</p>
+                                <p><strong>Data Cleaning:</strong> The system will automatically clean and prepare your
+                                    data</p>
+                                <p><strong>Model Output:</strong> The trained model will be saved as
+                                    <code>complete_xgboost_package.pkl</code> and automatically downloaded
+                                </p>
                             </div>
                         </div>
 
                         <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
-                            <button type="button" class="btn btn-secondary"
-                                onclick="hideTrainingConfig()">Cancel</button>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-rocket"></i> Start Training
+                            <button type="submit" class="btn btn-primary" id="trainBtn">
+                                <i class="fas fa-rocket"></i> Train & Download Model
                             </button>
                         </div>
                     </form>
@@ -2637,6 +2745,50 @@
             const modal = document.getElementById('restoreModal');
             if (event.target == modal) {
                 closeRestoreModal();
+            }
+        }
+
+        // Handle dataset file upload display
+        const trainingFileInput = document.getElementById('trainingFile');
+        const datasetFileNameDisplay = document.getElementById('datasetFileName');
+        const datasetUploadArea = document.getElementById('datasetUploadArea');
+
+        if (trainingFileInput && datasetFileNameDisplay) {
+            trainingFileInput.addEventListener('change', function () {
+                if (this.files.length > 0) {
+                    const file = this.files[0];
+                    const fileSize = (file.size / (1024 * 1024)).toFixed(2);
+                    datasetFileNameDisplay.textContent = `${file.name} (${fileSize} MB)`;
+                    datasetFileNameDisplay.style.color = 'var(--success-color)';
+                } else {
+                    datasetFileNameDisplay.textContent = '';
+                }
+            });
+
+            // Drag and drop functionality for dataset
+            if (datasetUploadArea) {
+                datasetUploadArea.addEventListener('dragover', function (e) {
+                    e.preventDefault();
+                    this.classList.add('dragover');
+                });
+
+                datasetUploadArea.addEventListener('dragleave', function () {
+                    this.classList.remove('dragover');
+                });
+
+                datasetUploadArea.addEventListener('drop', function (e) {
+                    e.preventDefault();
+                    this.classList.remove('dragover');
+
+                    const files = e.dataTransfer.files;
+                    if (files.length > 0) {
+                        trainingFileInput.files = files;
+                        const file = files[0];
+                        const fileSize = (file.size / (1024 * 1024)).toFixed(2);
+                        datasetFileNameDisplay.textContent = `${file.name} (${fileSize} MB)`;
+                        datasetFileNameDisplay.style.color = 'var(--success-color)';
+                    }
+                });
             }
         }
     </script>

@@ -40,7 +40,11 @@ urlpatterns = [
 
     # Payment Dashboard URLs
     path('admin/payment/dashboard/', views.admin_payment_dashboard, name='admin_payment_dashboard'),
-    path('admin/payment/payouts/create/', views.create_payout, name='create_payout'),    path('admin/payment/commissions/create/', views.create_commissions, name='create_commissions'),
+    path('admin/payment/dashboard/stats/', views.get_dashboard_stats, name='get_dashboard_stats'),
+    path('admin/payment/payouts/create/', views.create_payout, name='create_payout'),
+    path('admin/payment/payouts/verify-razorpay/', views.verify_razorpay_payout, name='verify_razorpay_payout'),
+    path('admin/payment/payouts/create-ajax/', views.create_payout_ajax, name='create_payout_ajax'),
+    path('admin/payment/commissions/create/', views.create_commissions, name='create_commissions'),
     path('admin/payment/commissions/', views.view_all_commissions, name='view_all_commissions'),
     path('admin/payment/commissions/<int:commission_id>/', views.commission_details, name='commission_details'),
     path('admin/payment/commissions/<int:commission_id>/update/', views.update_commission_status, name='update_commission_status'),
@@ -66,6 +70,7 @@ urlpatterns = [
     path('algorithm/export-data/', views.export_data_csv, name='export_data_csv'),
     path('algorithm/collect-data/', views.collect_data_now, name='collect_data_now'),
     path('algorithm/start-training/', views.start_self_training, name='start_self_training'),
+    path('algorithm/train-upload/', views.train_from_uploaded_data, name='train_from_uploaded_data'),
 
 
     path('algorithm/old-models/', views.get_old_models_list, name='get_old_models_list'),

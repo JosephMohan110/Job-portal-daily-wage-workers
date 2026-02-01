@@ -119,7 +119,8 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'jobportal_database',
+        # 'NAME': 'jobportal_database',work_nest_data_base
+        'NAME': 'work_nest_data_base',
         'USER': 'root',
         'PASSWORD':'',
         'HOST':'localhost',

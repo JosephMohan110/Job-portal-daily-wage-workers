@@ -42,6 +42,7 @@ class XGBoostPredictor:
     def prepare_current_platform_data(self, historical_data):
         """
         Prepare current platform data for prediction
+        IMPORTANT: Only include the 14 features the model was trained on
         historical_data: dict containing current platform metrics
         """
         # Get the latest date from existing data or use current date
@@ -50,7 +51,8 @@ class XGBoostPredictor:
         else:
             latest_date = timezone.now().date()
         
-        # Create a base feature set based on current platform state
+        # Create ONLY the 14 ML features that the model was trained on
+        # Derived features (days_since_*, *_rate, avg_earning_per_booking) are NOT used in the model
         features = {
             'timestamp': pd.Timestamp(latest_date).timestamp(),
             'user_id': 0,  # Placeholder for platform-level prediction
@@ -65,12 +67,116 @@ class XGBoostPredictor:
             'platform_commission': historical_data.get('platform_commission', 0),
             'avg_rating': historical_data.get('avg_rating', 4.5),
             'total_reviews': historical_data.get('total_reviews', 0),
+            'last_active': pd.Timestamp(latest_date).timestamp()
+        }
+        
+        return pd.DataFrame([features])
+    
+    def predict_all_targets(self, historical_data):
+        """
+        Predict ALL 19 targets using complete_xgboost_package.pkl
+        Each model uses ONLY the features it was trained on (excluding the target itself)
+        Returns predictions for all targets
+        """
+        if not self.model_package:
+            return None
+        
+        try:
+            # Get data info from the package
+            data_info = self.model_package.get('data_info', {})
+            all_original_features = data_info.get('original_features', [])
+            
+            # Create full input dataframe with all 19 features
+            full_input_data = self._create_full_input_dataframe(historical_data, all_original_features)
+            
+            predictions = {}
+            
+            # Get all models from package
+            all_models_dict = self.model_package.get('all_models', {})
+            all_targets = list(all_models_dict.keys())
+            
+            logger.info(f"Predicting for {len(all_targets)} targets: {all_targets}")
+            
+            for target in all_targets:
+                try:
+                    model_info = all_models_dict[target]
+                    
+                    # Extract actual model and metadata
+                    if isinstance(model_info, dict) and 'model' in model_info:
+                        actual_model = model_info['model']
+                        is_classification = model_info.get('is_classification', False)
+                        label_encoder = model_info.get('label_encoder', None)
+                        model_feature_names = model_info.get('feature_names', [])
+                    else:
+                        actual_model = model_info
+                        is_classification = False
+                        label_encoder = None
+                        model_feature_names = []
+                    
+                    # If model_feature_names is not available, derive it (all features except target)
+                    if not model_feature_names:
+                        model_feature_names = [f for f in all_original_features if f != target]
+                    
+                    logger.info(f"Predicting {target} with {len(model_feature_names)} features")
+                    
+                    # Prepare input with ONLY the features this model needs
+                    X_input = full_input_data[model_feature_names].copy()
+                    
+                    # Make prediction
+                    if is_classification:
+                        # For classification, get probability of positive class if available
+                        if hasattr(actual_model, 'predict_proba'):
+                            pred = actual_model.predict_proba(X_input)[0][1]
+                        else:
+                            pred = actual_model.predict(X_input)[0]
+                            if label_encoder:
+                                pred = label_encoder.transform([pred])[0] if hasattr(label_encoder, 'transform') else pred
+                    else:
+                        # For regression
+                        pred = actual_model.predict(X_input)[0]
+                    
+                    predictions[target] = float(pred)
+                    logger.info(f"Successfully predicted {target}: {pred}")
+                    
+                except Exception as pred_error:
+                    logger.error(f"Error predicting {target}: {str(pred_error)}")
+                    # Use fallback value
+                    predictions[target] = float(historical_data.get(target, 0))
+            
+            return predictions
+            
+        except Exception as e:
+            logger.error(f"Error predicting all targets: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            return None
+    
+    def _create_full_input_dataframe(self, historical_data, all_features):
+        """
+        Create a dataframe with all 19 features for prediction input
+        """
+        latest_date = historical_data.get('latest_date', timezone.now().date())
+        
+        features = {
+            'timestamp': pd.Timestamp(latest_date).timestamp(),
+            'user_id': historical_data.get('user_id', 0),
+            'user_type': historical_data.get('user_type', 0),
+            'registration_date': pd.Timestamp(historical_data.get('registration_date', latest_date - timedelta(days=30))).timestamp(),
+            'account_status': historical_data.get('account_status', 1),
+            'total_bookings': float(historical_data.get('total_bookings', 0)),
+            'completed_bookings': float(historical_data.get('completed_bookings', 0)),
+            'cancelled_bookings': float(historical_data.get('cancelled_bookings', 0)),
+            'total_spent': float(historical_data.get('total_spent', 0)),
+            'total_earned': float(historical_data.get('total_earned', 0)),
+            'platform_commission': float(historical_data.get('platform_commission', 0)),
+            'avg_rating': float(historical_data.get('avg_rating', 4.5)),
+            'total_reviews': float(historical_data.get('total_reviews', 0)),
             'last_active': pd.Timestamp(latest_date).timestamp(),
-            'days_since_registration': 30,
-            'days_since_last_active': 0,
-            'completion_rate': historical_data.get('completion_rate', 0.85),
-            'cancellation_rate': historical_data.get('cancellation_rate', 0.05),
-            'avg_earning_per_booking': historical_data.get('avg_earning_per_booking', 0)
+            'days_since_registration': float(historical_data.get('days_since_registration', 30)),
+            'days_since_last_active': float(historical_data.get('days_since_last_active', 1)),
+            'completion_rate': float(historical_data.get('completion_rate', 0.8)),
+            'cancellation_rate': float(historical_data.get('cancellation_rate', 0.05)),
+            'avg_earning_per_booking': float(historical_data.get('avg_earning_per_booking', 500)),
         }
         
         return pd.DataFrame([features])
@@ -84,47 +190,13 @@ class XGBoostPredictor:
             return None
         
         try:
-            # Prepare input data
-            input_df = self.prepare_current_platform_data(historical_data)
+            # Use the comprehensive all-targets prediction
+            all_predictions = self.predict_all_targets(historical_data)
             
-            # Get feature names from the model (exclude target columns)
-            target_columns = list(self.model_package['all_models'].keys())
+            if not all_predictions:
+                return None
             
-            predictions = {}
-            
-            # Predict key metrics we care about for dashboard
-            key_targets = [
-                'platform_commission',  # Revenue prediction
-                'total_bookings',  # Booking prediction
-                'completed_bookings',  # Completed bookings
-                'total_spent',  # Total amount spent on platform
-                'avg_rating',  # Average rating
-                'cancellation_rate'  # Churn indicator
-            ]
-            
-            for target in key_targets:
-                if target in self.model_package['all_models']:
-                    model = self.model_package['all_models'][target]
-                    logger.info(f"Predicting for {target}. Model type: {type(model)}")
-                    if isinstance(model, dict):
-                         logger.error(f"Model for {target} is a dict, keys: {model.keys()}")
-                         # Try to extract actual model if it's nested
-                         if 'model' in model:
-                             model = model['model']
-                    
-                    
-                    # Prepare features (exclude the target column)
-                    feature_cols = [col for col in input_df.columns if col != target]
-                    X_input = input_df[feature_cols]
-                    
-                    # Make prediction
-                    if self.model_package['performance'][target].get('type') == 'regression':
-                        pred = model.predict(X_input)[0]
-                    else:
-                        # For classification, get probability or class
-                        pred = model.predict_proba(X_input)[0][1]  # Probability of positive class
-                    
-                    predictions[target] = float(pred)
+            predictions = all_predictions.copy()
             
             # Calculate derived predictions
             if 'platform_commission' in predictions:
@@ -141,7 +213,7 @@ class XGBoostPredictor:
                     predictions['booking_growth_percent'] = booking_growth
             
             # Get feature importance for visualization
-            if 'platform_commission' in self.model_package['feature_importance']:
+            if 'platform_commission' in self.model_package.get('feature_importance', {}):
                 # Sort feature importance for the revenue model
                 feature_importance = self.model_package['feature_importance']['platform_commission']
                 sorted_features = dict(sorted(feature_importance.items(), 

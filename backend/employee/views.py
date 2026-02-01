@@ -922,11 +922,95 @@ def employee_job_request(request):
                 job = JobRequest.objects.get(job_id=job_id, employee=employee)
                 actions = JobAction.objects.filter(job=job).order_by('-created_at')
                 
+                # Get payment details related to this job
+                from employer.models import Payment
+                payments = Payment.objects.filter(job=job).order_by('-created_at')
+                
+                # Calculate timeline events
+                timeline_events = []
+                
+                # Add job creation event
+                if job.created_at:
+                    timeline_events.append({
+                        'date': job.created_at,
+                        'event': 'Job Request Created',
+                        'status': 'created',
+                        'icon': 'fa-plus-circle',
+                        'color': '#3b82f6',
+                        'amount': None
+                    })
+                
+                # Add job accepted event
+                if job.accepted_at:
+                    timeline_events.append({
+                        'date': job.accepted_at,
+                        'event': 'Job Accepted',
+                        'status': 'accepted',
+                        'icon': 'fa-check-circle',
+                        'color': '#10b981',
+                        'amount': None
+                    })
+                
+                # Add job completed event
+                if job.completed_at:
+                    timeline_events.append({
+                        'date': job.completed_at,
+                        'event': 'Job Completed',
+                        'status': 'completed',
+                        'icon': 'fa-check-double',
+                        'color': '#f59e0b',
+                        'amount': None
+                    })
+                
+                # Add payment timeline events
+                for payment in payments:
+                    if payment.status == 'completed':
+                        payment_icon = 'fa-money-bill-wave'
+                        payment_color = '#059669'
+                    elif payment.status == 'failed':
+                        payment_icon = 'fa-exclamation-circle'
+                        payment_color = '#dc2626'
+                    elif payment.status == 'processing':
+                        payment_icon = 'fa-hourglass-half'
+                        payment_color = '#f59e0b'
+                    else:
+                        payment_icon = 'fa-credit-card'
+                        payment_color = '#06b6d4'
+                    
+                    timeline_events.append({
+                        'date': payment.updated_at if payment.updated_at else payment.created_at,
+                        'event': f'Payment {payment.get_status_display()}',
+                        'status': payment.status,
+                        'icon': payment_icon,
+                        'color': payment_color,
+                        'amount': str(payment.amount),
+                        'payment_id': payment.payment_id
+                    })
+                
+                # Sort timeline by date
+                timeline_events.sort(key=lambda x: x['date'])
+                
+                # Get payment summary - ALWAYS calculate it
+                total_payments_sum = sum(p.amount for p in payments) if payments else 0
+                completed_payments_sum = sum(p.amount for p in payments if p.status == 'completed') if payments else 0
+                pending_payments_sum = sum(p.amount for p in payments if p.status == 'pending') if payments else 0
+                
+                payment_summary = {
+                    'total_amount': total_payments_sum,
+                    'completed_amount': completed_payments_sum,
+                    'pending_amount': pending_payments_sum,
+                    'total_payments': payments.count() if payments else 0,
+                    'completed_payments': payments.filter(status='completed').count() if payments else 0,
+                }
+                
                 context = {
                     'employee': employee,
                     'employee_name': employee.full_name,
                     'job_details': job,
                     'actions': actions,
+                    'payments': payments,
+                    'payment_summary': payment_summary,
+                    'timeline_events': timeline_events,
                 }
                 return render(request, 'employee_html/employee_job_request.html', context)
                 

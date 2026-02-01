@@ -1173,7 +1173,6 @@
             margin-bottom: 16px;
             display: block;
         }
-    </style>
 
     </style>
 </head>
@@ -1366,8 +1365,7 @@
                     <div class="stat-value">{{ platform_data.deleted_accounts_this_month }}</div>
                     <div class="stat-label">Deleted Accounts ({{ current_month }})</div>
                     <div class="stat-prediction">
-                        <i class="fas fa-chart-line"></i> {{ next_month }}: ~{{
-                        ml_predictions.deleted_accounts_next_month }} accounts
+                        <i class="fas fa-chart-line"></i> {{ next_month }}: ~{{ ml_predictions.deleted_accounts_next_month }} accounts
                         <br>
                         <small>ML Confidence: 92%</small>
                     </div>
@@ -1388,8 +1386,7 @@
                     <div class="stat-value">{{ platform_data.completed_bookings }}</div>
                     <div class="stat-label">Completed Bookings</div>
                     <div class="stat-prediction">
-                        <i class="fas fa-chart-line"></i> {{ next_month }}: ~{{
-                        ml_predictions.completed_bookings_next_month }} bookings
+                        <i class="fas fa-chart-line"></i> {{ next_month }}: ~{{ ml_predictions.completed_bookings_next_month }} bookings
                         <br>
                         <small>ML Confidence: 96%</small>
                     </div>
@@ -1410,8 +1407,7 @@
                     <div class="stat-value">{{ platform_data.success_rate|floatformat:1 }}%</div>
                     <div class="stat-label">Success Rate</div>
                     <div class="stat-prediction">
-                        <i class="fas fa-chart-line"></i> {{ next_month }}: ~{{
-                        ml_predictions.success_rate_next_month|floatformat:1 }}%
+                        <i class="fas fa-chart-line"></i> {{ next_month }}: ~{{ ml_predictions.success_rate_next_month|floatformat:1 }}%
                         <br>
                         <small>ML Confidence: 98%</small>
                     </div>
@@ -1543,79 +1539,76 @@
                 <tbody>
                     <tr>
                         <td><strong>New Users</strong></td>
-                        <td>{{ platform_data.new_users_this_month }}</td>
-                        <td>{{ platform_data.new_users_this_month|add:"-100" }}</td>
-                        <td><span class="metric-change positive">+{{ growth_rates.new_users|floatformat:1 }}%</span>
+                        <td>{{ platform_data.new_users_this_month|default:0 }}</td>
+                        <td>{{ platform_data.new_users_previous_month|default:0 }}</td>
+                        <td><span class="metric-change positive">+{{ growth_rates.new_users|floatformat:1|default:"0.0" }}%</span>
                         </td>
-                        <td>{{ ml_predictions.new_users_next_month }}</td>
+                        <td>{{ ml_predictions.new_users_next_month|default:0|floatformat:0 }}</td>
                         <td><i class="fas fa-shield-alt" style="color: var(--success-color);"></i> 94%</td>
                     </tr>
 
                     <tr>
                         <td><strong>Deleted Accounts</strong></td>
-                        <td>{{ platform_data.deleted_accounts_this_month }}</td>
-                        <td>{{ platform_data.deleted_accounts_this_month|add:"5" }}</td>
-                        <td><span class="metric-change positive">-{{ growth_rates.deleted_accounts|floatformat:1
-                                }}%</span></td>
-                        <td>{{ ml_predictions.deleted_accounts_next_month }}</td>
+                        <td>{{ platform_data.deleted_accounts_this_month|default:0 }}</td>
+                        <td>{{ platform_data.deleted_accounts_previous_month|default:0 }}</td>
+                        <td><span class="metric-change positive">-{{ growth_rates.deleted_accounts|floatformat:1|default:"0.0" }}%</span></td>
+                        <td>{{ ml_predictions.deleted_accounts_next_month|default:0|floatformat:0 }}</td>
                         <td><i class="fas fa-shield-alt" style="color: var(--success-color);"></i> 92%</td>
                     </tr>
 
                     <tr>
                         <td><strong>Active Users</strong></td>
-                        <td>{{ platform_data.active_users }}</td>
-                        <td>{{ platform_data.active_users|add:"-100" }}</td>
-                        <td><span class="metric-change positive">+{{ growth_rates.active_users|floatformat:1 }}%</span>
+                        <td>{{ platform_data.active_users|default:0 }}</td>
+                        <td>{{ platform_data.active_users|default:0 }}</td>
+                        <td><span class="metric-change positive">+{{ growth_rates.active_users|floatformat:1|default:"0.0" }}%</span>
                         </td>
-                        <td>{{ ml_predictions.active_users_next_month }}</td>
+                        <td>{{ ml_predictions.active_users_next_month|default:0|floatformat:0 }}</td>
                         <td><i class="fas fa-shield-alt" style="color: var(--success-color);"></i> 91%</td>
                     </tr>
 
                     <tr>
                         <td><strong>Completed Bookings</strong></td>
-                        <td>{{ platform_data.completed_bookings }}</td>
-                        <td>{{ platform_data.completed_bookings|add:"-45" }}</td>
-                        <td><span class="metric-change positive">+{{ growth_rates.completed_bookings|floatformat:1
-                                }}%</span></td>
-                        <td>{{ ml_predictions.completed_bookings_next_month }}</td>
+                        <td>{{ platform_data.completed_bookings|default:0 }}</td>
+                        <td>{{ platform_data.completed_bookings_previous_month|default:0 }}</td>
+                        <td><span class="metric-change positive">+{{ growth_rates.completed_bookings|floatformat:1|default:"0.0" }}%</span></td>
+                        <td>{{ ml_predictions.completed_bookings_next_month|default:0|floatformat:0 }}</td>
                         <td><i class="fas fa-shield-alt" style="color: var(--success-color);"></i> 96%</td>
                     </tr>
 
                     <tr>
                         <td><strong>Success Rate</strong></td>
-                        <td>{{ platform_data.success_rate|floatformat:1 }}%</td>
-                        <td>{{ platform_data.success_rate|add:"-2.5"|floatformat:1 }}%</td>
-                        <td><span class="metric-change positive">+{{ growth_rates.success_rate|floatformat:1 }}%</span>
+                        <td>{{ platform_data.success_rate|default:0|floatformat:1 }}%</td>
+                        <td>{{ platform_data.success_rate_previous_month|default:0|floatformat:1 }}%</td>
+                        <td><span class="metric-change positive">+{{ growth_rates.success_rate|floatformat:1|default:"0.0" }}%</span>
                         </td>
-                        <td>{{ ml_predictions.success_rate_next_month|floatformat:1 }}%</td>
+                        <td>{{ ml_predictions.success_rate_next_month|default:0|floatformat:1 }}%</td>
                         <td><i class="fas fa-shield-alt" style="color: var(--success-color);"></i> 98%</td>
                     </tr>
 
                     <tr>
                         <td><strong>Platform Revenue</strong></td>
-                        <td>₹{{ platform_data.total_revenue|floatformat:0 }}</td>
-                        <td>₹{{ platform_data.total_revenue|add:"-15000"|floatformat:0 }}</td>
-                        <td><span class="metric-change positive">+{{ growth_rates.revenue|floatformat:1 }}%</span></td>
-                        <td>₹{{ ml_predictions.revenue_next_month|floatformat:0 }}</td>
+                        <td>₹{{ platform_data.total_revenue|default:0|floatformat:0 }}</td>
+                        <td>₹{{ platform_data.total_revenue_previous_month|default:0|floatformat:0 }}</td>
+                        <td><span class="metric-change positive">+{{ growth_rates.revenue|floatformat:1|default:"0.0" }}%</span></td>
+                        <td>₹{{ ml_predictions.revenue_next_month|default:0|floatformat:0 }}</td>
                         <td><i class="fas fa-shield-alt" style="color: var(--success-color);"></i> 95%</td>
                     </tr>
 
                     <tr>
                         <td><strong>Platform Commission</strong></td>
-                        <td>₹{{ platform_data.platform_commission|floatformat:0 }}</td>
-                        <td>₹{{ platform_data.platform_commission|add:"-150"|floatformat:0 }}</td>
-                        <td><span class="metric-change positive">+{{ growth_rates.revenue|floatformat:1 }}%</span></td>
-                        <td>₹{{ ml_predictions.commission_next_month|floatformat:0 }}</td>
+                        <td>₹{{ platform_data.platform_commission|default:0|floatformat:0 }}</td>
+                        <td>₹{{ platform_data.platform_commission_previous_month|default:0|floatformat:0 }}</td>
+                        <td><span class="metric-change positive">+{{ growth_rates.revenue|floatformat:1|default:"0.0" }}%</span></td>
+                        <td>₹{{ ml_predictions.commission_next_month|default:0|floatformat:0 }}</td>
                         <td><i class="fas fa-shield-alt" style="color: var(--success-color);"></i> 95%</td>
                     </tr>
 
                     <tr>
                         <td><strong>Avg. Rating</strong></td>
-                        <td>{{ platform_data.avg_rating|floatformat:1 }}</td>
-                        <td>{{ platform_data.avg_rating|add:"-0.1"|floatformat:1 }}</td>
-                        <td><span class="metric-change positive">+{{ growth_rates.retention_rate|floatformat:1
-                                }}%</span></td>
-                        <td>{{ ml_predictions.avg_rating_next_month|floatformat:1 }}</td>
+                        <td>{{ platform_data.avg_rating|default:0|floatformat:1 }}</td>
+                        <td>{{ platform_data.avg_rating|default:0|floatformat:1 }}</td>
+                        <td><span class="metric-change positive">+{{ growth_rates.retention_rate|floatformat:1|default:"0.0" }}%</span></td>
+                        <td>{{ ml_predictions.avg_rating_next_month|default:0|floatformat:1 }}</td>
                         <td><i class="fas fa-shield-alt" style="color: var(--success-color);"></i> 99%</td>
                     </tr>
                 </tbody>

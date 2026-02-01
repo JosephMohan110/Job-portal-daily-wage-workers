@@ -4,123 +4,704 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Payout</title>
+    <title>Create Payout / Withdraw Money</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <style>
-        /* Add similar styles from the main template */
-        .form-container {
-            max-width: 600px;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            background-attachment: fixed;
+        }
+
+        .container {
+            max-width: 700px;
             margin: 0 auto;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .page-header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .page-header p {
+            font-size: 16px;
+            opacity: 0.95;
+        }
+
+        .form-container {
             background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
         }
-        
+
+        .alert {
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            display: none;
+            border-left: 4px solid;
+        }
+
+        .alert-success {
+            background-color: #f0fdf4;
+            border-left-color: #22c55e;
+            color: #166534;
+        }
+
+        .alert-danger {
+            background-color: #fef2f2;
+            border-left-color: #ef4444;
+            color: #991b1b;
+        }
+
+        .alert-warning {
+            background-color: #fffbeb;
+            border-left-color: #f59e0b;
+            color: #92400e;
+        }
+
+        .alert-info {
+            background-color: #f0f9ff;
+            border-left-color: #3b82f6;
+            color: #1e40af;
+        }
+
+        .alert i {
+            margin-right: 10px;
+            font-weight: 600;
+        }
+
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
-        
+
         .form-label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             font-weight: 600;
-            color: #333;
+            color: #1f2937;
+            font-size: 15px;
         }
-        
+
         .form-control {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 16px;
+            padding: 12px 14px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            background: #f9fafb;
         }
-        
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-control:disabled {
+            background-color: #f3f4f6;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .form-text {
+            font-size: 13px;
+            color: #6b7280;
+            margin-top: 6px;
+        }
+
+        .form-text.warning {
+            color: #d97706;
+            font-weight: 500;
+        }
+
+        .form-text.success {
+            color: #059669;
+            font-weight: 500;
+        }
+
+        .form-text.error {
+            color: #dc2626;
+            font-weight: 500;
+        }
+
+        .method-section {
+            background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .method-section.active {
+            display: block;
+            border-color: #667eea;
+            background: linear-gradient(135deg, #f0f9ff 0%, #f3f4f6 100%);
+        }
+
+        .method-section h4 {
+            color: #1f2937;
+            margin-bottom: 16px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+        }
+
+        .method-section h4 i {
+            margin-right: 10px;
+            color: #667eea;
+            font-size: 18px;
+        }
+
+        .method-section .form-group {
+            margin-bottom: 16px;
+        }
+
+        .available-balance {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border: 2px solid #86efac;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .available-balance .label {
+            font-size: 13px;
+            color: #166534;
+            font-weight: 500;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .available-balance .amount {
+            font-size: 28px;
+            font-weight: 700;
+            color: #166534;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 32px;
+        }
+
         .btn {
-            padding: 12px 24px;
+            flex: 1;
+            padding: 14px 24px;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
             font-weight: 600;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-decoration: none;
         }
-        
+
         .btn-primary {
-            background-color: #3b82f6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background-color: #e5e7eb;
+            color: #374151;
+        }
+
+        .btn-secondary:hover {
+            background-color: #d1d5db;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #ffffff;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .validation-indicator {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            margin-left: 8px;
+            text-align: center;
+            line-height: 20px;
+            font-size: 14px;
+        }
+
+        .validation-indicator.success {
+            color: #22c55e;
+        }
+
+        .validation-indicator.error {
+            color: #ef4444;
+        }
+
+        .validation-indicator.warning {
+            color: #f59e0b;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .form-container {
+                padding: 20px;
+            }
+
+            .page-header h1 {
+                font-size: 24px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+
+        .info-card {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-left: 4px solid #3b82f6;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #0369a1;
+        }
+
+        .info-card i {
+            margin-right: 8px;
+            color: #0284c7;
         }
     </style>
 </head>
 <body>
-    {% include 'admin_html/admin_sidebar.html' %}
-    
-    <main class="main-content" style="margin-left: 260px; padding: 24px;">
+    <div class="container">
         <div class="page-header">
-            <div class="header-title">
-                <h1>Create New Payout</h1>
-                <p>Create a payout for a worker</p>
-            </div>
+            <h1><i class="fas fa-money-bill-wave"></i> Withdraw Your Earnings</h1>
+            <p>Transfer your earnings to your bank account or UPI</p>
         </div>
-        
+
         <div class="form-container">
-            <form method="POST" action="{% url 'create_payout' %}">
+            <!-- Alert Messages -->
+            <div id="alertBox" class="alert" style="display:none;"></div>
+
+            <!-- Available Balance -->
+            <div class="available-balance">
+                <span class="label">💰 Available Balance for Withdrawal</span>
+                <div class="amount">₹<span id="balanceAmount">{{ available_for_payout_formatted }}</span></div>
+            </div>
+
+            <!-- Info Card -->
+            <div class="info-card">
+                <i class="fas fa-info-circle"></i>
+                <strong>Processing Time:</strong> Most withdrawals are processed within 24-48 hours. Razorpay transfers are instant.
+            </div>
+
+            <form id="payoutForm" method="POST" action="{% url 'create_payout' %}">
                 {% csrf_token %}
-                
+
+                <!-- Amount Section -->
                 <div class="form-group">
-                    <label class="form-label">Select Worker:</label>
-                    <select name="employee_id" class="form-control" required>
-                        <option value="">-- Select Worker --</option>
-                        {% for employee in employees %}
-                        <option value="{{ employee.employee_id }}">
-                            {{ employee.full_name }} (₹{{ employee.total_earnings|default:0 }} earnings)
-                        </option>
-                        {% endfor %}
+                    <label class="form-label">
+                        💵 Withdrawal Amount (₹)
+                        <span class="validation-indicator" id="amountValidation"></span>
+                    </label>
+                    <input 
+                        type="number" 
+                        name="amount" 
+                        id="withdrawAmount" 
+                        class="form-control" 
+                        placeholder="Enter amount (min: ₹100)" 
+                        min="100" 
+                        step="0.01" 
+                        required>
+                    <div class="form-text" id="amountWarning"></div>
+                </div>
+
+                <!-- Withdrawal Method Selection -->
+                <div class="form-group">
+                    <label class="form-label">🔄 Select Withdrawal Method</label>
+                    <select id="methodSelect" class="form-control" required>
+                        <option value="">-- Choose Withdrawal Method --</option>
+                        <option value="razorpay">⚡ Razorpay (Instant - Recommended)</option>
+                        <option value="bank_transfer">🏦 Bank Transfer (24-48 hours)</option>
+                        <option value="upi">📱 UPI Transfer (Instant)</option>
                     </select>
+                    <div class="form-text" id="methodInfo"></div>
                 </div>
-                
+
+                <!-- Razorpay Method Section -->
+                <div id="razorpayMethodSection" class="method-section">
+                    <h4>
+                        <i class="fas fa-shield-alt"></i>
+                        Razorpay Payout Details
+                    </h4>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            📋 Razorpay Contact ID
+                            <span class="validation-indicator" id="contactIdValidation"></span>
+                        </label>
+                        <input 
+                            type="text" 
+                            id="razorpayContactId" 
+                            name="razorpay_contact_id" 
+                            class="form-control" 
+                            placeholder="e.g., cont_XXXXXXXXXX"
+                            pattern="cont_[a-zA-Z0-9]+"
+                        >
+                        <div class="form-text">Your registered Razorpay contact ID</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            💳 Fund Account ID
+                            <span class="validation-indicator" id="fundAccountValidation"></span>
+                        </label>
+                        <input 
+                            type="text" 
+                            id="fundAccountId" 
+                            name="fund_account_id" 
+                            class="form-control" 
+                            placeholder="e.g., fa_XXXXXXXXXX"
+                            pattern="fa_[a-zA-Z0-9]+"
+                        >
+                        <div class="form-text">Fund account linked to your bank/UPI</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">🏛️ Account Type</label>
+                        <select id="accountType" name="account_type" class="form-control" required>
+                            <option value="">-- Select Account Type --</option>
+                            <option value="bank_account">🏦 Bank Account</option>
+                            <option value="upi">📱 UPI Account</option>
+                            <option value="vpa">💰 VPA (Virtual Payment Address)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Bank Transfer Method Section -->
+                <div id="bankMethodSection" class="method-section">
+                    <h4>
+                        <i class="fas fa-landmark"></i>
+                        Bank Account Details
+                    </h4>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            🏦 Bank Account Number
+                            <span class="validation-indicator" id="bankAccountValidation"></span>
+                        </label>
+                        <input 
+                            type="text" 
+                            id="bankAccount" 
+                            name="bank_account_number" 
+                            class="form-control" 
+                            placeholder="Your complete bank account number"
+                            pattern="[0-9]{9,18}"
+                        >
+                        <div class="form-text">9-18 digits only</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            🔐 IFSC Code
+                            <span class="validation-indicator" id="ifscValidation"></span>
+                        </label>
+                        <input 
+                            type="text" 
+                            id="ifscCode" 
+                            name="bank_ifsc" 
+                            class="form-control" 
+                            placeholder="e.g., SBIN0000001"
+                            pattern="[A-Z]{4}0[A-Z0-9]{6}"
+                            maxlength="11"
+                        >
+                        <div class="form-text">11-character IFSC code (e.g., SBIN0000001)</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">🏛️ Bank Name</label>
+                        <input 
+                            type="text" 
+                            id="bankName" 
+                            name="bank_name" 
+                            class="form-control" 
+                            placeholder="e.g., State Bank of India"
+                        >
+                        <div class="form-text">For verification purposes</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Account Holder Name</label>
+                        <input 
+                            type="text" 
+                            id="accountHolderName" 
+                            name="account_holder_name" 
+                            class="form-control" 
+                            placeholder="Full name as per bank account"
+                            required
+                        >
+                        <div class="form-text">Must match your bank account name</div>
+                    </div>
+                </div>
+
+                <!-- UPI Method Section -->
+                <div id="upiMethodSection" class="method-section">
+                    <h4>
+                        <i class="fas fa-mobile-alt"></i>
+                        UPI Details
+                    </h4>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            📱 UPI ID / VPA
+                            <span class="validation-indicator" id="upiValidation"></span>
+                        </label>
+                        <input 
+                            type="text" 
+                            id="upiId" 
+                            name="upi_id" 
+                            class="form-control" 
+                            placeholder="e.g., yourname@upi"
+                            pattern="[a-zA-Z0-9._-]+@[a-zA-Z]{3,}"
+                        >
+                        <div class="form-text">Format: username@bankname (e.g., john.doe@okaxis)</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Full Name (as per UPI)</label>
+                        <input 
+                            type="text" 
+                            id="upiName" 
+                            name="upi_name" 
+                            class="form-control" 
+                            placeholder="Your full name"
+                            required
+                        >
+                        <div class="form-text">Must match your UPI registered name</div>
+                    </div>
+                </div>
+
+                <!-- Optional Description -->
                 <div class="form-group">
-                    <label class="form-label">Amount (₹):</label>
-                    <input type="number" name="amount" class="form-control" min="1" step="0.01" required>
+                    <label class="form-label">📝 Description (Optional)</label>
+                    <textarea 
+                        name="description" 
+                        class="form-control" 
+                        rows="3" 
+                        placeholder="Add any notes about this withdrawal..."
+                    ></textarea>
+                    <div class="form-text">Visible only to admins</div>
                 </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Payout Method:</label>
-                    <select name="payout_method" class="form-control" required>
-                        {% for value, label in payout_method_choices %}
-                        <option value="{{ value }}">{{ label }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Description (Optional):</label>
-                    <textarea name="description" class="form-control" rows="3"></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Bank Account Number (if bank transfer):</label>
-                    <input type="text" name="bank_account_number" class="form-control">
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Bank IFSC Code:</label>
-                    <input type="text" name="bank_ifsc" class="form-control">
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Bank Name:</label>
-                    <input type="text" name="bank_name" class="form-control">
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">UPI ID (if UPI):</label>
-                    <input type="text" name="upi_id" class="form-control">
-                </div>
-                
-                <div style="display: flex; gap: 10px;">
-                    <button type="submit" class="btn btn-primary">Create Payout</button>
-                    <a href="{% url 'admin_payment_dashboard' %}" class="btn" style="background-color: #e5e7eb;">Cancel</a>
+
+                <!-- Action Buttons -->
+                <div class="button-group">
+                    <button type="submit" id="submitBtn" class="btn btn-primary" disabled>
+                        <i class="fas fa-arrow-right"></i>
+                        Process Withdrawal
+                    </button>
+                    <a href="{% url 'admin_payment_dashboard' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i>
+                        Back to Dashboard
+                    </a>
                 </div>
             </form>
         </div>
-    </main>
+    </div>
+
+    <script>
+        // Initialize variables
+        const availableBalance = {{ available_for_payout }};
+        const form = document.getElementById('payoutForm');
+        const alertBox = document.getElementById('alertBox');
+        const withdrawAmount = document.getElementById('withdrawAmount');
+        const methodSelect = document.getElementById('methodSelect');
+        const submitBtn = document.getElementById('submitBtn');
+
+        // Show alert
+        function showAlert(message, type = 'info') {
+            alertBox.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i> ${message}`;
+            alertBox.className = `alert alert-${type}`;
+            alertBox.style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function hideAlert() {
+            alertBox.style.display = 'none';
+        }
+
+        // Format currency
+        function formatCurrency(num) {
+            return new Intl.NumberFormat('en-IN', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(num);
+        }
+
+        // Validate amount
+        withdrawAmount.addEventListener('input', function () {
+            const amount = parseFloat(this.value) || 0;
+            const indicator = document.getElementById('amountValidation');
+            const warning = document.getElementById('amountWarning');
+            warning.innerHTML = '';
+            indicator.innerHTML = '';
+
+            if (amount === 0) {
+                indicator.className = 'validation-indicator';
+                submitBtn.disabled = true;
+                return;
+            }
+
+            if (amount < 100) {
+                indicator.className = 'validation-indicator error';
+                indicator.innerHTML = '✗';
+                warning.className = 'form-text error';
+                warning.innerHTML = '⚠️ Minimum withdrawal amount is ₹100';
+                submitBtn.disabled = true;
+            } else if (amount > availableBalance) {
+                indicator.className = 'validation-indicator error';
+                indicator.innerHTML = '✗';
+                warning.className = 'form-text error';
+                warning.innerHTML = `⚠️ Exceeds available balance (₹${formatCurrency(availableBalance)})`;
+                submitBtn.disabled = true;
+            } else {
+                indicator.className = 'validation-indicator success';
+                indicator.innerHTML = '✓';
+                warning.className = 'form-text success';
+                warning.innerHTML = `✓ Ready to withdraw ₹${formatCurrency(amount)}`;
+                validateForm();
+            }
+        });
+
+        // Handle method selection
+        methodSelect.addEventListener('change', function () {
+            const method = this.value;
+            
+            // Hide all sections
+            document.getElementById('razorpayMethodSection').classList.remove('active');
+            document.getElementById('bankMethodSection').classList.remove('active');
+            document.getElementById('upiMethodSection').classList.remove('active');
+
+            // Show selected section
+            if (method === 'razorpay') {
+                document.getElementById('razorpayMethodSection').classList.add('active');
+            } else if (method === 'bank_transfer') {
+                document.getElementById('bankMethodSection').classList.add('active');
+            } else if (method === 'upi') {
+                document.getElementById('upiMethodSection').classList.add('active');
+            }
+
+            validateForm();
+        });
+
+        // Validate form completeness
+        function validateForm() {
+            const amount = parseFloat(withdrawAmount.value) || 0;
+            const method = methodSelect.value;
+
+            let isValid = amount >= 100 && amount <= availableBalance && method !== '';
+
+            if (isValid && method === 'razorpay') {
+                isValid = document.getElementById('razorpayContactId').value && 
+                         document.getElementById('fundAccountId').value &&
+                         document.getElementById('accountType').value;
+            } else if (isValid && method === 'bank_transfer') {
+                isValid = document.getElementById('bankAccount').value && 
+                         document.getElementById('ifscCode').value &&
+                         document.getElementById('bankName').value &&
+                         document.getElementById('accountHolderName').value;
+            } else if (isValid && method === 'upi') {
+                isValid = document.getElementById('upiId').value && 
+                         document.getElementById('upiName').value;
+            }
+
+            submitBtn.disabled = !isValid;
+        }
+
+        // Add input listeners for validation
+        document.querySelectorAll('input, select, textarea').forEach(field => {
+            field.addEventListener('change', validateForm);
+            field.addEventListener('input', validateForm);
+        });
+
+        // Form submission
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            
+            const amount = parseFloat(withdrawAmount.value);
+            const method = methodSelect.value;
+
+            if (amount < 100 || amount > availableBalance || !method) {
+                showAlert('❌ Please fill all required fields correctly', 'error');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<span class="loading-spinner"></span> Processing...';
+
+            // Simulate processing
+            setTimeout(() => {
+                showAlert('✅ Withdrawal request submitted successfully! You will receive the amount in 24-48 hours.', 'success');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+                form.submit();
+            }, 1500);
+        });
+
+        // Initial validation
+        validateForm();
+        console.log('✅ Payout form initialized successfully');
+    </script>
 </body>
 </html>

@@ -1086,7 +1086,8 @@
             z-index: 1002;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            padding: 10px;
+            overflow-y: auto;
         }
 
         .payout-modal.active {
@@ -1098,9 +1099,11 @@
             border-radius: 16px;
             width: 100%;
             max-width: 500px;
-            overflow: hidden;
+            max-height: 95vh;
+            overflow-y: auto;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             animation: modalFadeIn 0.3s ease;
+            margin: auto;
         }
 
         @keyframes modalFadeIn {
@@ -1117,15 +1120,22 @@
         .modal-header {
             background: linear-gradient(135deg, var(--purple-color), #7c3aed);
             color: white;
-            padding: 24px;
+            padding: 16px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
 
         .modal-header h3 {
-            font-size: 1.4rem;
+            font-size: clamp(1.1rem, 2.5vw, 1.4rem);
             font-weight: 600;
+            flex: 1;
+            min-width: 200px;
         }
 
         .modal-close {
@@ -1148,29 +1158,31 @@
         }
 
         .modal-body {
-            padding: 28px;
+            padding: 16px;
+            overflow-y: auto;
         }
 
         .form-group {
-            margin-bottom: 24px;
+            margin-bottom: 16px;
         }
 
         .form-label {
             display: block;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             font-weight: 600;
             color: var(--text-dark);
-            font-size: 0.95rem;
+            font-size: clamp(0.85rem, 2vw, 0.95rem);
         }
 
         .form-control {
             width: 100%;
-            padding: 12px 16px;
-            border-radius: 10px;
+            padding: 10px 12px;
+            border-radius: 8px;
             border: 1px solid #e2e8f0;
-            font-size: 1rem;
+            font-size: clamp(0.9rem, 2vw, 1rem);
             transition: all 0.2s ease;
             background-color: white;
+            box-sizing: border-box;
         }
 
         .form-control:focus {
@@ -1186,11 +1198,16 @@
         }
 
         .modal-footer {
-            padding: 24px;
+            padding: 12px;
             border-top: 1px solid #e2e8f0;
             display: flex;
             justify-content: flex-end;
-            gap: 12px;
+            gap: 8px;
+            flex-wrap: wrap;
+            position: sticky;
+            bottom: 0;
+            background-color: white;
+            z-index: 10;
         }
 
         /* Alert Messages */
@@ -1450,6 +1467,79 @@
             .trend-indicator {
                 align-self: flex-start;
             }
+
+            /* Mobile-specific modal styles */
+            .payout-modal {
+                padding: 0;
+            }
+
+            .modal-content {
+                max-width: 95%;
+                max-height: 98vh;
+                border-radius: 12px;
+            }
+
+            .modal-header {
+                padding: 12px;
+            }
+
+            .modal-header h3 {
+                font-size: clamp(1rem, 3vw, 1.2rem);
+                min-width: 150px;
+            }
+
+            .modal-close {
+                width: 36px;
+                height: 36px;
+                font-size: 1.2rem;
+            }
+
+            .modal-body {
+                padding: 12px;
+            }
+
+            .form-group {
+                margin-bottom: 12px;
+            }
+
+            .form-label {
+                font-size: clamp(0.8rem, 2vw, 0.9rem);
+                margin-bottom: 6px;
+            }
+
+            .form-control,
+            textarea.form-control {
+                padding: 8px 10px;
+                font-size: clamp(0.85rem, 2.5vw, 0.95rem);
+            }
+
+            .form-text {
+                font-size: 0.8rem;
+                margin-top: 4px;
+            }
+
+            .modal-footer {
+                padding: 10px;
+                gap: 6px;
+            }
+
+            .btn {
+                padding: 8px 12px;
+                font-size: clamp(0.85rem, 2vw, 0.95rem);
+            }
+
+            /* Color-coded section padding on mobile */
+            [style*="background: linear-gradient"] {
+                padding: 12px !important;
+            }
+
+            [style*="margin-bottom: 24px"] {
+                margin-bottom: 16px !important;
+            }
+
+            [style*="margin-bottom: 20px"] {
+                margin-bottom: 14px !important;
+            }
         }
     </style>
 </head>
@@ -1503,7 +1593,7 @@
                 <button class="btn btn-secondary" id="exportReportBtn">
                     <i class="fas fa-download"></i> Export Report
                 </button>
-                <button class="btn btn-payout" id="createPayoutBtn">
+                <button class="btn btn-payout" id="createPayoutBtn" title="Create a new payout / withdrawal">
                     <i class="fas fa-money-check-alt"></i> Create Payout
                 </button>
                 {% include 'admin_html/includes/admin_notification.html' %}
@@ -1584,7 +1674,7 @@
                             {{ commission_rate_percent }}
                         </span>
                     </div>
-                    <div class="stat-value">{{ total_commission_formatted }}</div>
+                    <div class="stat-value" id="totalCommissionValue">{{ total_commission_formatted }}</div>
                     <div class="stat-label">Total Platform Commission ({{ commission_rate_percent }})</div>
                     <div class="stat-progress">
                         <div class="progress-bar" style="width: 85%; background: linear-gradient(90deg, var(--primary-color), #60a5fa);"></div>
@@ -1602,7 +1692,7 @@
                             {{ payout_summary.completed_payouts|default:0 }} Paid
                         </span>
                     </div>
-                    <div class="stat-value">{{ total_withdrawals_formatted }}</div>
+                    <div class="stat-value" id="totalWithdrawalsValue">{{ total_withdrawals_formatted }}</div>
                     <div class="stat-label">Total Withdrawals Done by Admin</div>
                     <div class="stat-progress">
                         <div class="progress-bar" style="width: 65%; background: linear-gradient(90deg, var(--warning-color), #fb923c);"></div>
@@ -1620,7 +1710,7 @@
                             Available
                         </span>
                     </div>
-                    <div class="stat-value">{{ available_for_payout_formatted }}</div>
+                    <div class="stat-value" id="availableToWithdrawValue">{{ available_for_payout_formatted }}</div>
                     <div class="stat-label">Available to Withdraw</div>
                     <div class="stat-progress">
                         <div class="progress-bar" style="width: 72%; background: linear-gradient(90deg, var(--success-color), #34d399);"></div>
@@ -1667,6 +1757,54 @@
                 <div class="calculation-item">
                     <span>Next Payout Date:</span>
                     <strong style="color: var(--purple-color); font-weight: 700;">{{ today|date:"M d, Y" }}</strong>
+                </div>
+            </div>
+
+            <!-- Razorpay Payout Status Section -->
+            <div style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); border-radius: 16px; padding: 28px; margin-bottom: 28px; border: 1px solid #cbd5e1; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);">
+                <h3 style="margin-bottom: 20px; color: #1e293b; display: flex; align-items: center; gap: 12px; font-size: 1.3rem;">
+                    <i class="fas fa-credit-card" style="color: #3b82f6; font-size: 1.5rem;"></i>
+                    Razorpay Payout System Status
+                </h3>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+                    <!-- Status 1: System Status -->
+                    <div style="background: white; border-radius: 12px; padding: 16px; border-left: 4px solid #10b981;">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                            <i class="fas fa-check-circle" style="color: #10b981; font-size: 1.2rem;"></i>
+                            <span style="font-weight: 600; color: #10b981;">System Active</span>
+                        </div>
+                        <p style="font-size: 0.9rem; color: #64748b;">Razorpay integration is fully operational</p>
+                    </div>
+                    
+                    <!-- Status 2: Last Payout -->
+                    <div style="background: white; border-radius: 12px; padding: 16px; border-left: 4px solid #3b82f6;">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                            <i class="fas fa-clock" style="color: #3b82f6; font-size: 1.2rem;"></i>
+                            <span style="font-weight: 600; color: #3b82f6;">Last Payout</span>
+                        </div>
+                        <p style="font-size: 0.9rem; color: #64748b;">{{ payout_summary.last_payout_date|default:"No previous payouts" }}</p>
+                    </div>
+                    
+                    <!-- Status 3: Total Withdrawn -->
+                    <div style="background: white; border-radius: 12px; padding: 16px; border-left: 4px solid #8b5cf6;">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                            <i class="fas fa-wallet" style="color: #8b5cf6; font-size: 1.2rem;"></i>
+                            <span style="font-weight: 600; color: #8b5cf6;">Total Withdrawn</span>
+                        </div>
+                        <p style="font-size: 0.9rem; color: #64748b;">{{ total_withdrawals_formatted }}</p>
+                    </div>
+                </div>
+
+                <!-- Quick Action Button -->
+                <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+                    <button class="btn btn-payout" id="quickPayoutBtn" style="width: 100%; padding: 12px 16px; justify-content: center; gap: 10px;">
+                        <i class="fas fa-rocket"></i>
+                        Create Instant Razorpay Payout Now
+                    </button>
+                    <p style="font-size: 0.85rem; color: #64748b; margin-top: 10px; text-align: center;">
+                        Instant transfers to bank accounts, UPI, or other payment methods
+                    </p>
                 </div>
             </div>
 
@@ -1811,62 +1949,154 @@
         </section>
     </main>
 
-    <!-- Payout Modal -->
+    <!-- Payout Modal with Razorpay Integration -->
     <div class="payout-modal" id="payoutModal">
-        <form method="POST" action="{% url 'create_payout' %}" class="modal-content">
-            {% csrf_token %}
+        <div class="modal-content">
             <div class="modal-header">
-                <h3>Create Payout</h3>
+                <h3><i class="fas fa-money-check-alt"></i> Create Payout / Withdraw</h3>
                 <button type="button" class="modal-close" id="closeModalBtn">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             <div class="modal-body">
-                <div class="form-group">
-                    <label class="form-label">Payout Amount (₹)</label>
-                    <input type="number" class="form-control" id="payoutAmount" name="amount" placeholder="Enter amount" min="1" step="0.01" required value="{{ available_for_payout|floatformat:2 }}">
-                    <div class="form-text">Available balance: <span id="availableBalanceDisplay">{{ available_for_payout_formatted }}</span></div>
-                </div>
+                <!-- Alert Messages -->
+                <div id="payoutAlert" class="alert" style="display:none; margin-bottom: 16px;"></div>
 
-                <div class="form-group">
-                    <label class="form-label">Payout Method</label>
-                    <select class="form-control" id="payoutMethod" name="payout_method" required>
-                        <option value="bank_transfer">Bank Transfer</option>
-                        <option value="upi">UPI</option>
-                        <option value="paypal">PayPal</option>
-                        <option value="razorpay">Razorpay</option>
-                    </select>
-                </div>
+                <form id="payoutForm" method="POST">
+                    {% csrf_token %}
+                    
+                    <!-- Amount Section -->
+                    <div style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-radius: 12px; padding: 16px; margin-bottom: 24px; border: 1px solid #7dd3fc;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label" style="margin-bottom: 8px;">💰 Withdrawal Amount (₹)</label>
+                            <input type="number" class="form-control" id="payoutAmount" name="amount" placeholder="Enter withdrawal amount" min="100" max="10000" step="0.01" required>
+                            <div class="form-text" style="margin-top: 10px; color: #0369a1;">
+                                <strong>Available Balance:</strong> <span id="availableBalanceDisplay">{{ available_for_payout_formatted }}</span>
+                            </div>
+                            <div class="form-text" style="color: var(--danger-color); margin-top: 8px;" id="amountWarning"></div>
+                        </div>
+                    </div>
 
-                <div class="form-group">
-                    <label class="form-label">Recipient Account</label>
-                    <select class="form-control" id="recipientAccount" name="recipient_account">
-                        <option value="company_account">Company Account (Platform Revenue)</option>
-                        <option value="founder_account">Founder's Account</option>
-                        <option value="business_account">Business Account</option>
-                    </select>
-                </div>
+                    <!-- Payout Method Selection -->
+                    <div class="form-group">
+                        <label class="form-label">🔄 Withdrawal Method</label>
+                        <select class="form-control" id="payoutMethod" name="payout_method" required>
+                            <option value="">-- Select Withdrawal Method --</option>
+                            <option value="razorpay">💳 Razorpay (Recommended - Instant)</option>
+                            <option value="bank_transfer">🏦 Bank Transfer (24-48 hours)</option>
+                            <option value="upi">📱 UPI Transfer (Instant)</option>
+                        </select>
+                        <div class="form-text" id="methodInfo" style="margin-top: 10px; font-weight: 500; color: #0369a1;"></div>
+                    </div>
 
-                <div class="form-group">
-                    <label class="form-label">Description (Optional)</label>
-                    <textarea class="form-control" id="payoutDescription" name="description" rows="3" placeholder="Add description for this payout"></textarea>
-                </div>
+                    <!-- Razorpay Specific Fields -->
+                    <div id="razorpayFields" style="display:none; background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%); border: 1px solid #d8b4fe; border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+                        <h4 style="color: #7c3aed; margin-bottom: 16px;">
+                            <i class="fas fa-shield-alt"></i> Razorpay Account Details
+                        </h4>
+                        
+                        <div class="form-group">
+                            <label class="form-label">📋 Razorpay Contact ID</label>
+                            <input type="text" class="form-control" id="razorpayContactId" name="razorpay_contact_id" placeholder="e.g., cont_XXXXXXXXXX">
+                            <div class="form-text">Your registered Razorpay contact ID for payouts</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">💳 Fund Account ID</label>
+                            <input type="text" class="form-control" id="fundAccountId" name="fund_account_id" placeholder="e.g., fa_XXXXXXXXXX">
+                            <div class="form-text">Razorpay fund account linked to your bank/UPI account</div>
+                        </div>
 
-                <div class="form-group">
-                    <label class="form-label">Scheduled Date</label>
-                    <input type="date" class="form-control" id="payoutDate" name="scheduled_date" value="{{ today|date:'Y-m-d' }}">
-                    <div class="form-text">Leave empty for immediate payout</div>
-                </div>
+                        <div class="form-group">
+                            <label class="form-label">🏛️ Account Type</label>
+                            <select class="form-control" id="accountType" name="account_type" required>
+                                <option value="">-- Select Account Type --</option>
+                                <option value="bank_account">🏦 Bank Account</option>
+                                <option value="upi">📱 UPI Account</option>
+                                <option value="vpa">💰 VPA (Virtual Payment Address)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Bank Transfer Fields -->
+                    <div id="bankFields" style="display:none; background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border: 1px solid #86efac; border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+                        <h4 style="color: #16a34a; margin-bottom: 16px;">
+                            <i class="fas fa-landmark"></i> Bank Account Details
+                        </h4>
+                        
+                        <div class="form-group">
+                            <label class="form-label">🏦 Bank Account Number</label>
+                            <input type="text" class="form-control" id="bankAccount" name="bank_account_number" placeholder="Your bank account number">
+                            <div class="form-text">Enter your complete bank account number (9-18 digits)</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">🔐 IFSC Code</label>
+                            <input type="text" class="form-control" id="ifscCode" name="bank_ifsc" placeholder="XXXX0000000" maxlength="11">
+                            <div class="form-text">11-character IFSC code for your bank branch</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">🏛️ Bank Name</label>
+                            <input type="text" class="form-control" id="bankName" name="bank_name" placeholder="e.g., State Bank of India">
+                            <div class="form-text">Your bank name (for verification)</div>
+                        </div>
+                    </div>
+
+                    <!-- UPI Fields -->
+                    <div id="upiFields" style="display:none; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 1px solid #fcd34d; border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+                        <h4 style="color: #b45309; margin-bottom: 16px;">
+                            <i class="fas fa-mobile-alt"></i> UPI Details
+                        </h4>
+                        
+                        <div class="form-group">
+                            <label class="form-label">📱 UPI ID</label>
+                            <input type="email" class="form-control" id="upiId" name="upi_id" placeholder="yourname@bankname">
+                            <div class="form-text">Format: yourname@bankname (e.g., admin@sbi)</div>
+                        </div>
+                    </div>
+
+                    <!-- Additional Details -->
+                    <div class="form-group">
+                        <label class="form-label">📝 Description (Optional)</label>
+                        <textarea class="form-control" id="payoutDescription" name="description" rows="2" placeholder="Add description for this payout (e.g., 'Monthly withdrawal for January')"></textarea>
+                        <div class="form-text">This will help you track the purpose of this withdrawal</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">📅 Schedule Payout Date</label>
+                        <input type="date" class="form-control" id="payoutDate" name="scheduled_date" value="{{ today|date:'Y-m-d' }}">
+                        <div class="form-text">Leave empty for immediate payout</div>
+                    </div>
+
+                    <!-- Razorpay Processing Info -->
+                    <div id="razorpayInfo" style="display:none; background-color: #ecfdf5; border: 2px solid #10b981; border-radius: 10px; padding: 15px; margin-top: 16px;">
+                        <h4 style="color: #047857; margin-bottom: 10px;">
+                            <i class="fas fa-info-circle"></i> ✅ Why Choose Razorpay?
+                        </h4>
+                        <ul style="font-size: 0.9rem; color: #065f46; margin-left: 20px; line-height: 1.8;">
+                            <li>✓ <strong>Instant Transfers</strong> - Money reaches within seconds</li>
+                            <li>✓ <strong>Secure Payment Gateway</strong> - PCI-DSS Level 1 Compliant</li>
+                            <li>✓ <strong>Multiple Payout Methods</strong> - Bank accounts, UPI, VPA</li>
+                            <li>✓ <strong>Auto Reconciliation</strong> - Automatic payment tracking</li>
+                            <li>✓ <strong>24/7 Support</strong> - Dedicated support team available</li>
+                            <li>✓ <strong>Transaction Reports</strong> - Detailed withdrawal history</li>
+                        </ul>
+                    </div>
+                </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" id="cancelPayoutBtn">Cancel</button>
-                <button type="submit" class="btn btn-payout" id="confirmPayoutBtn">
+                <button type="button" class="btn btn-secondary" id="cancelPayoutBtn">❌ Cancel</button>
+                <button type="button" class="btn btn-payout" id="proceedPayoutBtn" style="gap: 8px;">
                     <i class="fas fa-paper-plane"></i>
-                    Initiate Payout
+                    <span id="proceedBtnText">Proceed to Payment</span>
                 </button>
             </div>
-        </form>
+        </div>
     </div>
+
+    <!-- Razorpay Checkout Script -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -1911,42 +2141,8 @@
 
             initializeCharts(monthlyData, categoryData);
 
-            // Payout modal functionality
-            const createPayoutBtn = document.getElementById('createPayoutBtn');
-            const payoutModal = document.getElementById('payoutModal');
-            const closeModalBtn = document.getElementById('closeModalBtn');
-            const cancelPayoutBtn = document.getElementById('cancelPayoutBtn');
-
-            if (createPayoutBtn && payoutModal) {
-                createPayoutBtn.addEventListener('click', function () {
-                    payoutModal.classList.add('active');
-                    document.body.style.overflow = 'hidden';
-                });
-            }
-
-            function closeModal() {
-                if (payoutModal) {
-                    payoutModal.classList.remove('active');
-                    document.body.style.overflow = '';
-                }
-            }
-
-            if (closeModalBtn) {
-                closeModalBtn.addEventListener('click', closeModal);
-            }
-
-            if (cancelPayoutBtn) {
-                cancelPayoutBtn.addEventListener('click', closeModal);
-            }
-
-            // Close modal when clicking outside
-            if (payoutModal) {
-                payoutModal.addEventListener('click', function (e) {
-                    if (e.target === payoutModal) {
-                        closeModal();
-                    }
-                });
-            }
+            // NOTE: Payout modal functionality is handled in the main script section below
+            // to avoid duplicate event listeners
 
             // Date range buttons
             const dateRangeBtns = document.querySelectorAll('.date-range-btn');
@@ -1959,169 +2155,200 @@
 
             // Initialize Charts
             function initializeCharts(monthlyData, categoryData) {
+                console.log('📊 Initializing charts with data:', { monthlyData, categoryData });
+
                 // Revenue Trend Chart (Line Chart)
                 const revenueTrendCtx = document.getElementById('revenueTrendChart');
                 if (revenueTrendCtx) {
-                    new Chart(revenueTrendCtx.getContext('2d'), {
-                        type: 'line',
-                        data: {
-                            labels: monthlyData.map(m => m.month),
-                            datasets: [{
-                                label: 'Revenue (₹)',
-                                data: monthlyData.map(m => m.revenue),
-                                borderColor: '#3b82f6',
-                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                                borderWidth: 3,
-                                fill: true,
-                                tension: 0.4,
-                                pointBackgroundColor: '#3b82f6',
-                                pointBorderColor: '#ffffff',
-                                pointBorderWidth: 2,
-                                pointRadius: 6,
-                                pointHoverRadius: 8
-                            }, {
-                                label: 'Commission (₹)',
-                                data: monthlyData.map(m => m.commission),
-                                borderColor: '#10b981',
-                                backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                                borderWidth: 3,
-                                fill: true,
-                                tension: 0.4,
-                                pointBackgroundColor: '#10b981',
-                                pointBorderColor: '#ffffff',
-                                pointBorderWidth: 2,
-                                pointRadius: 6,
-                                pointHoverRadius: 8
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    display: true,
-                                    position: 'top',
-                                    labels: {
-                                        color: '#64748b',
-                                        font: {
-                                            size: 14,
-                                            weight: '600'
-                                        },
-                                        padding: 20
-                                    }
-                                },
-                                tooltip: {
-                                    backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                                    titleColor: '#f8fafc',
-                                    bodyColor: '#e2e8f0',
-                                    borderColor: '#334155',
-                                    borderWidth: 1,
-                                    cornerRadius: 8,
-                                    callbacks: {
-                                        label: function (context) {
-                                            const label = context.dataset.label || '';
-                                            const value = context.parsed.y || 0;
-                                            return `${label}: ₹${formatNumber(value)}`;
-                                        }
-                                    }
-                                }
+                    try {
+                        // Fallback if no data
+                        if (!monthlyData || monthlyData.length === 0) {
+                            monthlyData = [
+                                { month: 'Jan', revenue: 0, commission: 0 },
+                                { month: 'Feb', revenue: 0, commission: 0 },
+                                { month: 'Mar', revenue: 0, commission: 0 },
+                                { month: 'Apr', revenue: 0, commission: 0 },
+                                { month: 'May', revenue: 0, commission: 0 },
+                                { month: 'Jun', revenue: 0, commission: 0 }
+                            ];
+                            console.warn('⚠️ No monthly data available, using placeholder');
+                        }
+
+                        new Chart(revenueTrendCtx.getContext('2d'), {
+                            type: 'line',
+                            data: {
+                                labels: monthlyData.map(m => m.month),
+                                datasets: [{
+                                    label: 'Revenue (₹)',
+                                    data: monthlyData.map(m => m.revenue),
+                                    borderColor: '#3b82f6',
+                                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                    borderWidth: 3,
+                                    fill: true,
+                                    tension: 0.4,
+                                    pointBackgroundColor: '#3b82f6',
+                                    pointBorderColor: '#ffffff',
+                                    pointBorderWidth: 2,
+                                    pointRadius: 6,
+                                    pointHoverRadius: 8
+                                }, {
+                                    label: 'Commission (₹)',
+                                    data: monthlyData.map(m => m.commission),
+                                    borderColor: '#10b981',
+                                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                                    borderWidth: 3,
+                                    fill: true,
+                                    tension: 0.4,
+                                    pointBackgroundColor: '#10b981',
+                                    pointBorderColor: '#ffffff',
+                                    pointBorderWidth: 2,
+                                    pointRadius: 6,
+                                    pointHoverRadius: 8
+                                }]
                             },
-                            scales: {
-                                x: {
-                                    grid: {
-                                        color: 'rgba(226, 232, 240, 0.5)',
-                                        drawBorder: false
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: {
+                                        display: true,
+                                        position: 'top',
+                                        labels: {
+                                            color: '#64748b',
+                                            font: {
+                                                size: 14,
+                                                weight: '600'
+                                            },
+                                            padding: 20
+                                        }
                                     },
-                                    ticks: {
-                                        color: '#64748b',
-                                        font: {
-                                            size: 12,
-                                            weight: '500'
+                                    tooltip: {
+                                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                                        titleColor: '#f8fafc',
+                                        bodyColor: '#e2e8f0',
+                                        borderColor: '#334155',
+                                        borderWidth: 1,
+                                        cornerRadius: 8,
+                                        callbacks: {
+                                            label: function(context) {
+                                                let label = context.dataset.label || '';
+                                                if (label) {
+                                                    label += ': ';
+                                                }
+                                                label += '₹' + context.parsed.y.toLocaleString('en-IN');
+                                                return label;
+                                            }
                                         }
                                     }
                                 },
-                                y: {
-                                    beginAtZero: true,
-                                    grid: {
-                                        color: 'rgba(226, 232, 240, 0.5)',
-                                        drawBorder: false
-                                    },
-                                    ticks: {
-                                        color: '#64748b',
-                                        font: {
-                                            size: 12,
-                                            weight: '500'
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        grid: {
+                                            color: '#e2e8f0',
+                                            drawBorder: false
                                         },
-                                        callback: function (value) {
-                                            return '₹' + (value / 1000).toFixed(0) + 'k';
+                                        ticks: {
+                                            color: '#64748b',
+                                            callback: function(value) {
+                                                return '₹' + value.toLocaleString('en-IN');
+                                            }
+                                        }
+                                    },
+                                    x: {
+                                        grid: {
+                                            display: false
+                                        },
+                                        ticks: {
+                                            color: '#64748b'
                                         }
                                     }
                                 }
                             }
-                        }
-                    });
+                        });
+                        console.log('✅ Revenue Trend Chart initialized successfully');
+                    } catch (error) {
+                        console.error('❌ Error initializing revenue trend chart:', error);
+                    }
+                } else {
+                    console.warn('⚠️ Revenue Trend Chart canvas not found');
                 }
 
-                // Revenue Distribution Chart (Doughnut Chart)
-                const revenueDistributionCtx = document.getElementById('revenueDistributionChart');
-                if (revenueDistributionCtx && categoryData.length > 0) {
-                    // Generate colors for each category
-                    const colors = [
-                        '#3b82f6', '#10b981', '#f59e0b',
-                        '#ef4444', '#8b5cf6', '#06b6d4',
-                        '#ec4899', '#14b8a6'
-                    ];
+                // Revenue Distribution Chart (Pie Chart)
+                const categoryChartCtx = document.getElementById('revenueDistributionChart');
+                if (categoryChartCtx) {
+                    try {
+                        // Fallback if no data
+                        if (!categoryData || categoryData.length === 0) {
+                            categoryData = [
+                                { name: 'No Data', amount: 0 }
+                            ];
+                            console.warn('⚠️ No category data available, using placeholder');
+                        }
 
-                    new Chart(revenueDistributionCtx.getContext('2d'), {
-                        type: 'doughnut',
-                        data: {
-                            labels: categoryData.map(c => c.name),
-                            datasets: [{
-                                data: categoryData.map(c => c.amount),
-                                backgroundColor: colors.slice(0, categoryData.length),
-                                borderColor: colors.slice(0, categoryData.length).map(color => color.replace('0.8', '1')),
-                                borderWidth: 2,
-                                hoverOffset: 15
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            cutout: '60%',
-                            plugins: {
-                                legend: {
-                                    position: 'right',
-                                    labels: {
-                                        color: '#64748b',
-                                        font: {
-                                            size: 14,
-                                            weight: '600'
-                                        },
-                                        padding: 20,
-                                        usePointStyle: true,
-                                        pointStyle: 'circle'
-                                    }
-                                },
-                                tooltip: {
-                                    backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                                    titleColor: '#f8fafc',
-                                    bodyColor: '#e2e8f0',
-                                    borderColor: '#334155',
-                                    borderWidth: 1,
-                                    cornerRadius: 8,
-                                    callbacks: {
-                                        label: function (context) {
-                                            const label = context.label || '';
-                                            const value = context.parsed || 0;
-                                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                            const percentage = Math.round((value / total) * 100);
-                                            return `${label}: ₹${formatNumber(value)} (${percentage}%)`;
+                        new Chart(categoryChartCtx.getContext('2d'), {
+                            type: 'doughnut',
+                            data: {
+                                labels: categoryData.map(c => c.name),
+                                datasets: [{
+                                    data: categoryData.map(c => c.amount),
+                                    backgroundColor: [
+                                        '#3b82f6',
+                                        '#10b981',
+                                        '#f59e0b',
+                                        '#ef4444',
+                                        '#8b5cf6',
+                                        '#ec4899',
+                                        '#14b8a6',
+                                        '#f97316'
+                                    ],
+                                    borderColor: '#ffffff',
+                                    borderWidth: 3
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: {
+                                        display: true,
+                                        position: 'right',
+                                        labels: {
+                                            color: '#64748b',
+                                            font: {
+                                                size: 13,
+                                                weight: '500'
+                                            },
+                                            padding: 15,
+                                            boxWidth: 12
+                                        }
+                                    },
+                                    tooltip: {
+                                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                                        titleColor: '#f8fafc',
+                                        bodyColor: '#e2e8f0',
+                                        borderColor: '#334155',
+                                        borderWidth: 1,
+                                        cornerRadius: 8,
+                                        callbacks: {
+                                            label: function(context) {
+                                                const label = context.label || '';
+                                                const value = context.parsed || 0;
+                                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                                const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : '0';
+                                                return label + ': ₹' + value.toLocaleString('en-IN') + ' (' + percentage + '%)';
+                                            }
                                         }
                                     }
                                 }
                             }
-                        }
-                    });
+                        });
+                        console.log('✅ Revenue Distribution Chart initialized successfully');
+                    } catch (error) {
+                        console.error('❌ Error initializing revenue distribution chart:', error);
+                    }
+                } else {
+                    console.warn('⚠️ Revenue Distribution Chart canvas not found');
                 }
             }
 
@@ -2154,6 +2381,611 @@
                     setTimeout(() => alert.remove(), 300);
                 });
             }, 5000);
+
+            // ======================== RAZORPAY CHECKOUT INTEGRATION ========================
+
+            // Razorpay Configuration
+            const RAZORPAY_KEY_ID = '{{ razorpay_key_id }}';
+            const MIN_PAYOUT_AMOUNT = 1;  // Minimum 1 rupee - any amount can be withdrawn
+            const MAX_PAYOUT_AMOUNT = 999999;
+            const AVAILABLE_BALANCE = parseFloat('{{ available_for_payout }}');
+
+            // Log Razorpay configuration (for debugging)
+            console.log('🔧 Razorpay Configuration Loaded:');
+            console.log('  ├─ Key ID Present:', !!RAZORPAY_KEY_ID);
+            console.log('  ├─ Min Amount: ₹' + MIN_PAYOUT_AMOUNT);
+            console.log('  ├─ Max Amount: ₹' + MAX_PAYOUT_AMOUNT);
+            console.log('  └─ Available Balance: ₹' + formatNumber(AVAILABLE_BALANCE));
+
+            // DOM Elements
+            const payoutForm = document.getElementById('payoutForm');
+            const payoutAmount = document.getElementById('payoutAmount');
+            const payoutMethod = document.getElementById('payoutMethod');
+            const proceedPayoutBtn = document.getElementById('proceedPayoutBtn');
+            const cancelPayoutBtn = document.getElementById('cancelPayoutBtn');
+            const closeModalBtn = document.getElementById('closeModalBtn');
+            const payoutModal = document.getElementById('payoutModal');
+            const payoutAlert = document.getElementById('payoutAlert');
+            const amountWarning = document.getElementById('amountWarning');
+            const methodInfo = document.getElementById('methodInfo');
+            const razorpayFields = document.getElementById('razorpayFields');
+            const bankFields = document.getElementById('bankFields');
+            const upiFields = document.getElementById('upiFields');
+            const razorpayInfo = document.getElementById('razorpayInfo');
+            const proceedBtnText = document.getElementById('proceedBtnText');
+
+            console.log('✅ All DOM elements loaded successfully');
+
+            // Modal Management
+            document.getElementById('createPayoutBtn').addEventListener('click', function (e) {
+                e.preventDefault();
+                payoutModal.classList.add('active');
+                payoutAmount.focus();
+            });
+
+            // Quick Payout Button
+            const quickPayoutBtn = document.getElementById('quickPayoutBtn');
+            if (quickPayoutBtn) {
+                quickPayoutBtn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    payoutModal.classList.add('active');
+                    payoutAmount.focus();
+                    // Auto-select Razorpay method for quick action
+                    payoutMethod.value = 'razorpay';
+                    payoutMethod.dispatchEvent(new Event('change'));
+                });
+            }
+
+            closeModalBtn.addEventListener('click', closePayoutModal);
+            cancelPayoutBtn.addEventListener('click', closePayoutModal);
+
+            function closePayoutModal() {
+                payoutModal.classList.remove('active');
+                payoutForm.reset();
+                hideAllFields();
+                clearAlert();
+            }
+
+            // Payout Method Change Handler
+            payoutMethod.addEventListener('change', function () {
+                const method = this.value;
+                hideAllFields();
+                
+                // Show/hide relevant fields based on method
+                if (method === 'razorpay') {
+                    razorpayFields.style.display = 'block';
+                    razorpayInfo.style.display = 'block';
+                    methodInfo.textContent = '💳 Razorpay: Instant, Secure, Direct Transfers';
+                    proceedBtnText.textContent = 'Proceed to Razorpay';
+                } else if (method === 'bank_transfer') {
+                    bankFields.style.display = 'block';
+                    methodInfo.textContent = '🏦 Bank Transfer: 24-48 hours processing';
+                    proceedBtnText.textContent = 'Process Bank Transfer';
+                } else if (method === 'upi') {
+                    upiFields.style.display = 'block';
+                    methodInfo.textContent = '📱 UPI: Instant transfer to your UPI ID';
+                    proceedBtnText.textContent = 'Initiate UPI Transfer';
+                }
+            });
+
+            // Amount Validation
+            payoutAmount.addEventListener('input', function () {
+                const amount = parseFloat(this.value) || 0;
+                amountWarning.textContent = '';
+
+                if (amount < MIN_PAYOUT_AMOUNT) {
+                    amountWarning.textContent = `❌ Minimum payout amount is ₹${MIN_PAYOUT_AMOUNT}`;
+                    amountWarning.style.color = '#dc2626';
+                } else if (amount > MAX_PAYOUT_AMOUNT) {
+                    amountWarning.textContent = `❌ Maximum payout amount is ₹${MAX_PAYOUT_AMOUNT}`;
+                    amountWarning.style.color = '#dc2626';
+                } else if (amount > AVAILABLE_BALANCE) {
+                    amountWarning.textContent = `⚠️ Amount exceeds available balance (₹${formatNumber(AVAILABLE_BALANCE)})`;
+                    amountWarning.style.color = '#f97316';
+                } else {
+                    amountWarning.textContent = `✓ Amount valid`;
+                    amountWarning.style.color = '#10b981';
+                }
+            });
+
+            // Hide All Dynamic Fields
+            function hideAllFields() {
+                razorpayFields.style.display = 'none';
+                bankFields.style.display = 'none';
+                upiFields.style.display = 'none';
+                razorpayInfo.style.display = 'none';
+                methodInfo.textContent = '';
+                proceedBtnText.textContent = 'Proceed to Payment';
+            }
+
+            // Proceed Payout Button
+            proceedPayoutBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                handlePayoutProcess();
+            });
+
+            // Main Payout Processing Logic
+            async function handlePayoutProcess() {
+                const amount = parseFloat(payoutAmount.value);
+                const method = payoutMethod.value;
+
+                // Validation
+                if (!validatePayoutForm(amount, method)) {
+                    return;
+                }
+
+                // Show loading state
+                proceedPayoutBtn.disabled = true;
+                proceedPayoutBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+
+                try {
+                    if (method === 'razorpay') {
+                        await initiateRazorpayCheckout(amount);
+                    } else if (method === 'bank_transfer') {
+                        await processBankTransfer(amount);
+                    } else if (method === 'upi') {
+                        await processUPITransfer(amount);
+                    }
+                } catch (error) {
+                    showAlert(`Error: ${error.message}`, 'error');
+                    resetPayoutButton();
+                }
+            }
+
+            // Validate Payout Form
+            function validatePayoutForm(amount, method) {
+                clearAlert();
+
+                if (!amount || amount <= 0) {
+                    showAlert('Please enter a valid amount', 'error');
+                    return false;
+                }
+
+                if (amount < MIN_PAYOUT_AMOUNT) {
+                    showAlert(`Minimum payout amount is ₹${MIN_PAYOUT_AMOUNT}`, 'error');
+                    return false;
+                }
+
+                if (amount > AVAILABLE_BALANCE) {
+                    showAlert('Insufficient balance for this payout', 'error');
+                    return false;
+                }
+
+                if (!method) {
+                    showAlert('Please select a payout method', 'error');
+                    return false;
+                }
+
+                if (method === 'razorpay') {
+                    if (!validateRazorpayFields()) return false;
+                } else if (method === 'bank_transfer') {
+                    if (!validateBankFields()) return false;
+                } else if (method === 'upi') {
+                    if (!validateUPIFields()) return false;
+                }
+
+                return true;
+            }
+
+            // Validate Razorpay Fields
+            function validateRazorpayFields() {
+                const contactId = document.getElementById('razorpayContactId').value.trim();
+                const fundAccountId = document.getElementById('fundAccountId').value.trim();
+                const accountType = document.getElementById('accountType').value;
+
+                if (!contactId) {
+                    showAlert('Please enter Razorpay Contact ID', 'error');
+                    return false;
+                }
+
+                if (!fundAccountId) {
+                    showAlert('Please enter Fund Account ID', 'error');
+                    return false;
+                }
+
+                if (!accountType) {
+                    showAlert('Please select account type', 'error');
+                    return false;
+                }
+
+                return true;
+            }
+
+            // Validate Bank Transfer Fields
+            function validateBankFields() {
+                const account = document.getElementById('bankAccount').value.trim();
+                const ifsc = document.getElementById('ifscCode').value.trim();
+                const bankName = document.getElementById('bankName').value.trim();
+
+                if (!account || account.length < 9) {
+                    showAlert('Please enter a valid bank account number', 'error');
+                    return false;
+                }
+
+                if (!ifsc || ifsc.length !== 11) {
+                    showAlert('Please enter a valid 11-character IFSC code', 'error');
+                    return false;
+                }
+
+                if (!bankName) {
+                    showAlert('Please enter bank name', 'error');
+                    return false;
+                }
+
+                return true;
+            }
+
+            // Validate UPI Fields
+            function validateUPIFields() {
+                const upiId = document.getElementById('upiId').value.trim();
+                const upiRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z]{3,}$/;
+
+                if (!upiId || !upiRegex.test(upiId)) {
+                    showAlert('Please enter a valid UPI ID (e.g., yourname@bankname)', 'error');
+                    return false;
+                }
+
+                return true;
+            }
+
+            // ======================== RAZORPAY CHECKOUT IMPLEMENTATION ========================
+
+            function initiateRazorpayCheckout(amount) {
+                return new Promise((resolve, reject) => {
+                    // Validate Razorpay key
+                    if (!RAZORPAY_KEY_ID || RAZORPAY_KEY_ID === '') {
+                        showAlert('⚠️ Razorpay is not configured. Please contact administrator.', 'error');
+                        resetPayoutButton();
+                        reject(new Error('Razorpay key not configured'));
+                        return;
+                    }
+
+                    const contactId = document.getElementById('razorpayContactId').value.trim();
+                    const fundAccountId = document.getElementById('fundAccountId').value.trim();
+                    const accountType = document.getElementById('accountType').value;
+
+                    // Razorpay Payout Options
+                    const options = {
+                        key: RAZORPAY_KEY_ID,
+                        amount: Math.round(amount * 100), // Convert to paise
+                        currency: 'INR',
+                        name: 'SkillConnect - Admin Payout',
+                        description: `Platform Withdrawal - ₹${formatNumber(amount)}`,
+                        order_id: '', // Generated by backend if needed
+                        
+                        prefill: {
+                            name: '{{ admin_name }}' || 'Admin User',
+                            email: '{{ admin_email }}' || 'admin@skillconnect.com',
+                            contact: '{{ admin_contact }}' || '+91'
+                        },
+
+                        notes: {
+                            contact_id: contactId,
+                            fund_account_id: fundAccountId,
+                            account_type: accountType,
+                            withdrawal_type: 'payout',
+                            timestamp: new Date().toISOString()
+                        },
+
+                        theme: {
+                            color: '#3b82f6'
+                        },
+
+                        handler: function (response) {
+                            console.log('✓ Razorpay Payment Success:', response);
+                            // Payment successful - verify with backend
+                            handleRazorpaySuccess(response, amount, resolve, reject);
+                        },
+
+                        modal: {
+                            confirm_close: true,
+                            ondismiss: function () {
+                                console.warn('⚠️ User closed payment modal');
+                                showAlert('Payment cancelled. Your withdrawal was not processed.', 'warning');
+                                resetPayoutButton();
+                                reject(new Error('Payment cancelled by user'));
+                            }
+                        },
+
+                        retry: {
+                            enabled: true,
+                            max_count: 2
+                        },
+
+                        timeout: 900, // 15 minutes timeout
+                        recurring: false,
+
+                        callback_url: '/admin/payment/callback/', // Optional webhook
+                        redirect: false
+                    };
+
+                    try {
+                        console.log('🔄 Initializing Razorpay Checkout with amount: ₹' + amount);
+                        const rzp1 = new Razorpay(options);
+                        
+                        // Handle payment failures
+                        rzp1.on('payment.failed', function (response) {
+                            console.error('❌ Payment Failed:', response);
+                            const error = response.error;
+                            const errorMsg = error.description || 'Payment processing failed';
+                            showAlert(`❌ Payment Failed: ${errorMsg}`, 'error');
+                            resetPayoutButton();
+                            reject(new Error(errorMsg));
+                        });
+
+                        // Handle payment success (before verification)
+                        rzp1.on('payment.authorized', function (response) {
+                            console.log('🔐 Payment Authorized:', response);
+                            showAlert('✓ Payment authorized. Verifying with server...', 'success');
+                        });
+
+                        // Open the Razorpay checkout modal
+                        rzp1.open();
+                        
+                        console.log('✅ Razorpay Checkout opened successfully');
+                    } catch (error) {
+                        console.error('❌ Failed to initialize Razorpay:', error);
+                        showAlert('Failed to initialize payment gateway: ' + error.message, 'error');
+                        resetPayoutButton();
+                        reject(error);
+                    }
+                });
+            }
+
+            // Handle Razorpay Payment Success
+            async function handleRazorpaySuccess(response, amount, resolve, reject) {
+                try {
+                    console.log('🔐 Verifying payment with backend...');
+                    showAlert('🔄 Verifying payment with server...', 'success');
+                    
+                    // Get contact details
+                    const contactId = document.getElementById('razorpayContactId').value.trim();
+                    const fundAccountId = document.getElementById('fundAccountId').value.trim();
+                    const accountType = document.getElementById('accountType').value;
+                    const description = document.getElementById('payoutDescription').value || 'Admin Payout';
+                    
+                    const payloadData = {
+                        razorpay_payment_id: response.razorpay_payment_id,
+                        razorpay_order_id: response.razorpay_order_id || '',
+                        razorpay_signature: response.razorpay_signature || '',
+                        amount: amount,
+                        payout_method: 'razorpay',
+                        razorpay_contact_id: contactId,
+                        razorpay_fund_account_id: fundAccountId,
+                        razorpay_account_type: accountType,
+                        description: description,
+                        timestamp: new Date().toISOString()
+                    };
+                    
+                    console.log('📤 Sending verification payload:', payloadData);
+
+                    // Verify payment with backend
+                    const verifyResponse = await fetch('{% url "verify_razorpay_payout" %}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify(payloadData),
+                        credentials: 'same-origin'
+                    });
+
+                    console.log('📥 Verification Response Status:', verifyResponse.status);
+
+                    if (!verifyResponse.ok) {
+                        const errorText = await verifyResponse.text();
+                        console.error('❌ Verification Failed:', errorText);
+                        throw new Error(`Verification failed with status ${verifyResponse.status}`);
+                    }
+
+                    const result = await verifyResponse.json();
+                    console.log('✅ Verification Result:', result);
+
+                    if (result.success) {
+                        const successMsg = `✅ Payout Successful!\n💰 Amount: ₹${formatNumber(amount)}\n🆔 Payment ID: ${result.payout_id}`;
+                        showAlert(successMsg, 'success');
+                        
+                        console.log('✨ Payout completed successfully!');
+                        
+                        // Refresh dashboard stats instead of full page reload
+                        setTimeout(() => {
+                            closePayoutModal();
+                            refreshDashboardStats();
+                            console.log('📊 Dashboard stats refreshed');
+                        }, 1500);
+
+                        resolve(result);
+                    } else {
+                        const errorMsg = result.message || 'Payout creation failed';
+                        console.error('⚠️ Payout Error:', errorMsg);
+                        throw new Error(errorMsg);
+                    }
+                } catch (error) {
+                    console.error('❌ Error in handleRazorpaySuccess:', error);
+                    showAlert(`❌ Error: ${error.message}`, 'error');
+                    resetPayoutButton();
+                    reject(error);
+                }
+            }
+
+            // ======================== OTHER PAYOUT METHODS ========================
+
+            async function processBankTransfer(amount) {
+                try {
+                    const response = await fetch('{% url "create_payout" %}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                        },
+                        body: JSON.stringify({
+                            amount: amount,
+                            payout_method: 'bank_transfer',
+                            bank_account_number: document.getElementById('bankAccount').value,
+                            bank_ifsc: document.getElementById('ifscCode').value,
+                            bank_name: document.getElementById('bankName').value,
+                            description: document.getElementById('payoutDescription').value,
+                            scheduled_date: document.getElementById('payoutDate').value
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Bank transfer setup failed');
+                    }
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        showAlert(`✓ Bank transfer initiated! Payout ID: ${result.payout_id}`, 'success');
+                        setTimeout(() => {
+                            closePayoutModal();
+                            refreshDashboardStats();
+                        }, 1500);
+                    } else {
+                        throw new Error(result.message || 'Bank transfer failed');
+                    }
+                } catch (error) {
+                    showAlert(`Error: ${error.message}`, 'error');
+                    resetPayoutButton();
+                }
+            }
+
+            async function processUPITransfer(amount) {
+                try {
+                    const response = await fetch('{% url "create_payout" %}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                        },
+                        body: JSON.stringify({
+                            amount: amount,
+                            payout_method: 'upi',
+                            upi_id: document.getElementById('upiId').value,
+                            description: document.getElementById('payoutDescription').value,
+                            scheduled_date: document.getElementById('payoutDate').value
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('UPI transfer setup failed');
+                    }
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        showAlert(`✓ UPI transfer initiated! Payout ID: ${result.payout_id}`, 'success');
+                        setTimeout(() => {
+                            closePayoutModal();
+                            refreshDashboardStats();
+                        }, 1500);
+                    } else {
+                        throw new Error(result.message || 'UPI transfer failed');
+                    }
+                } catch (error) {
+                    showAlert(`Error: ${error.message}`, 'error');
+                    resetPayoutButton();
+                }
+            }
+
+            // ======================== UTILITY FUNCTIONS ========================
+
+            // Refresh dashboard stats after successful payout
+            async function refreshDashboardStats() {
+                try {
+                    console.log('🔄 Refreshing dashboard statistics...');
+                    const response = await fetch('{% url "get_dashboard_stats" %}', {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (!response.ok) {
+                        console.error('❌ Failed to fetch stats:', response.status);
+                        return false;
+                    }
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        // Update stat values in dashboard
+                        document.getElementById('totalCommissionValue').textContent = data.total_commission_formatted;
+                        document.getElementById('totalWithdrawalsValue').textContent = data.total_withdrawals_formatted;
+                        document.getElementById('availableToWithdrawValue').textContent = data.available_for_payout_formatted;
+                        document.getElementById('availableBalanceDisplay').textContent = data.available_for_payout_formatted;
+
+                        console.log('✅ Dashboard stats updated successfully');
+                        return true;
+                    } else {
+                        console.error('❌ Stats fetch failed:', data.message);
+                        return false;
+                    }
+                } catch (error) {
+                    console.error('❌ Error refreshing stats:', error);
+                    return false;
+                }
+            }
+
+            function showAlert(message, type) {
+                payoutAlert.textContent = message;
+                payoutAlert.className = `alert alert-${type}`;
+                payoutAlert.style.display = 'block';
+
+                if (type === 'success') {
+                    payoutAlert.style.backgroundColor = '#d1fae5';
+                    payoutAlert.style.borderColor = '#6ee7b7';
+                    payoutAlert.style.color = '#047857';
+                    payoutAlert.innerHTML = `<i class="fas fa-check-circle" style="margin-right: 8px;"></i>${message}`;
+                } else if (type === 'error') {
+                    payoutAlert.style.backgroundColor = '#fee2e2';
+                    payoutAlert.style.borderColor = '#fca5a5';
+                    payoutAlert.style.color = '#dc2626';
+                    payoutAlert.innerHTML = `<i class="fas fa-exclamation-circle" style="margin-right: 8px;"></i>${message}`;
+                } else if (type === 'warning') {
+                    payoutAlert.style.backgroundColor = '#fef3c7';
+                    payoutAlert.style.borderColor = '#fde68a';
+                    payoutAlert.style.color = '#b45309';
+                    payoutAlert.innerHTML = `<i class="fas fa-warning" style="margin-right: 8px;"></i>${message}`;
+                }
+                
+                // Scroll to alert
+                payoutAlert.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+
+            function clearAlert() {
+                payoutAlert.textContent = '';
+                payoutAlert.style.display = 'none';
+                payoutAlert.innerHTML = '';
+            }
+
+            function resetPayoutButton() {
+                proceedPayoutBtn.disabled = false;
+                proceedPayoutBtn.innerHTML = '<i class="fas fa-paper-plane"></i> <span id="proceedBtnText">Proceed to Payment</span>';
+            }
+
+            function formatNumber(num) {
+                return new Intl.NumberFormat('en-IN', {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 2
+                }).format(num);
+            }
+
+            // Close modal when clicking outside (on overlay)
+            payoutModal.addEventListener('click', function (e) {
+                if (e.target === this) {
+                    closePayoutModal();
+                }
+            });
+
+            // Prevent form submission on Enter key (use button instead)
+            payoutForm.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handlePayoutProcess();
+                }
+            });
         });
     </script>
 </body>

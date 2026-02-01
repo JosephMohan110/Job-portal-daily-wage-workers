@@ -1142,10 +1142,115 @@
             display: none;
         }
 
+        /* Payment and Timeline Enhancements */
+        .payment-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 25px;
+        }
+
+        .payment-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .payment-summary-item {
+            background: rgba(255,255,255,0.1);
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid;
+        }
+
+        .timeline-container {
+            position: relative;
+            padding-left: 30px;
+            margin-top: 20px;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border: 3px solid;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            left: -38px;
+            top: 5px;
+            box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .timeline-event {
+            background: white;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border-left: 3px solid;
+            margin-bottom: 25px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .timeline-event-label {
+            flex: 1;
+        }
+
+        .timeline-event-status {
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .status-badge-small {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        .status-completed {
+            background: #dcfce7;
+            color: #059669;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .status-failed {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .payment-transaction {
+            background: rgba(255,255,255,0.08);
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.95rem;
+        }
+
         /* Responsive Design */
         @media (max-width: 1024px) {
             .job-requests {
                 grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            }
+            
+            .payment-summary-grid {
+                grid-template-columns: repeat(2, 1fr);
             }
 
             .notification-dropdown {
@@ -1220,6 +1325,20 @@
 
             .user-info {
                 display: none;
+            }
+            
+            .payment-summary-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .timeline-container {
+                padding-left: 20px;
+            }
+            
+            .timeline-dot {
+                left: -32px;
+                width: 20px;
+                height: 20px;
             }
 
             .notification-dropdown {
@@ -1497,7 +1616,7 @@
                         </div>
                         <div class="detail-item">
                             <span class="detail-label">Duration</span>
-                            <span class="detail-value">{{ job_details.estimated_duration|default:"Not specified" }}</span>
+                            <span class="detail-value">{% if job_details.estimated_duration %}{{ job_details.estimated_duration }}{% else %}Not specified{% endif %}</span>
                         </div>
                         <div class="detail-item">
                             <span class="detail-label">Job ID</span>
@@ -1528,6 +1647,225 @@
                         <strong><i class="fas fa-sticky-note"></i> Note from Employer:</strong>
                         <p style="margin-bottom: 0; margin-top: 5px; font-style: italic;">"{{ job_details.employer_notes }}"</p>
                     </div>
+                    {% endif %}
+
+                    <!-- Payment Status Section - Show for Accepted, Completed, or when there are payments -->
+                    {% if job_details.status == 'accepted' or job_details.status == 'completed' or payments %}
+                    <div style="margin-top: 25px; padding: 20px; background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                            <i class="fas fa-wallet" style="font-size: 1.3rem; color: #3b82f6;"></i>
+                            <h4 style="margin: 0; font-size: 1.1rem; color: #1e293b;">Payment Status</h4>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                            <div style="background: #f8fafc; padding: 12px; border-radius: 8px; border-left: 4px solid #10b981;">
+                                <div style="font-size: 0.9rem; color: #64748b;">Total Budget</div>
+                                <div style="font-size: 1.4rem; font-weight: bold; margin-top: 5px; color: #1e293b;">{% if job_details.budget %}₹{{ job_details.budget }}{% else %}N/A{% endif %}</div>
+                            </div>
+                            
+                            <div style="background: #f8fafc; padding: 12px; border-radius: 8px; border-left: 4px solid #059669;">
+                                <div style="font-size: 0.9rem; color: #64748b;">Amount Paid</div>
+                                <div style="font-size: 1.4rem; font-weight: bold; margin-top: 5px; color: #1e293b;">₹{{ payment_summary.completed_amount }}</div>
+                            </div>
+                            
+                            <div style="background: #f8fafc; padding: 12px; border-radius: 8px; border-left: 4px solid #f59e0b;">
+                                <div style="font-size: 0.9rem; color: #64748b;">Pending Payment</div>
+                                <div style="font-size: 1.4rem; font-weight: bold; margin-top: 5px; color: #1e293b;">₹{{ payment_summary.pending_amount }}</div>
+                            </div>
+                            
+                            <div style="background: #f8fafc; padding: 12px; border-radius: 8px; border-left: 4px solid #3b82f6;">
+                                <div style="font-size: 0.9rem; color: #64748b;">Payment Status</div>
+                                <div style="font-size: 1.4rem; font-weight: bold; margin-top: 5px;">
+                                    {% if payment_summary.total_payments > 0 and payment_summary.total_payments == payment_summary.completed_payments %}
+                                    <span style="background: #dcfce7; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; color: #059669; font-weight: 600;">✓ Completed</span>
+                                    {% elif payment_summary.completed_payments > 0 %}
+                                    <span style="background: #fef3c7; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; color: #d97706; font-weight: 600;">⏳ Partial</span>
+                                    {% elif payment_summary.total_payments > 0 %}
+                                    <span style="background: #fee2e2; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; color: #dc2626; font-weight: 600;">⏸ Pending</span>
+                                    {% else %}
+                                    <span style="background: #e0e7ff; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; color: #3b82f6; font-weight: 600;">- No Payments</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if payments %}
+                        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e2e8f0;">
+                            <strong style="display: block; margin-bottom: 10px; color: #1e293b;">Payment Transactions ({{ payments|length }})</strong>
+                            <div style="max-height: 200px; overflow-y: auto;">
+                                {% for payment in payments %}
+                                <div style="background: #f8fafc; padding: 12px; border-radius: 6px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 3px solid {% if payment.status == 'completed' %}#10b981{% elif payment.status == 'pending' %}#f59e0b{% elif payment.status == 'failed' %}#dc2626{% else %}#3b82f6{% endif %};">
+                                    <div>
+                                        <div style="font-weight: 600; color: #1e293b;">Transaction #{{ payment.payment_id }}</div>
+                                        <div style="font-size: 0.85rem; color: #64748b;">{{ payment.created_at|date:"M d, Y H:i" }}</div>
+                                    </div>
+                                    <div style="text-align: right;">
+                                        <div style="font-weight: bold; font-size: 1.1rem; color: #1e293b;">₹{{ payment.amount }}</div>
+                                        <div style="font-size: 0.85rem; font-weight: 600;
+                                            {% if payment.status == 'completed' %}color: #10b981;{% elif payment.status == 'pending' %}color: #f59e0b;{% elif payment.status == 'failed' %}color: #dc2626;{% else %}color: #3b82f6;{% endif %}
+                                        ">
+                                            {{ payment.get_status_display|upper }}
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% else %}
+                        <div style="margin-top: 15px; padding: 12px; background: #f1f5f9; border-radius: 8px; text-align: center; font-size: 0.9rem; color: #64748b;">
+                            No payment transactions yet
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Job Status Timeline - Key Milestones -->
+                    <div style="margin-top: 25px; padding: 20px; background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                            <i class="fas fa-clock" style="font-size: 1.3rem; color: #3b82f6;"></i>
+                            <h4 style="margin: 0; font-size: 1.1rem; color: #1e293b;">Job Timeline</h4>
+                        </div>
+
+                        <!-- Timeline Steps -->
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                            <!-- Job Requested -->
+                            <div style="position: relative; padding: 15px; background: #f8fafc; border-radius: 8px; border-left: 4px solid #3b82f6;">
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                                    <i class="fas fa-plus-circle" style="color: #3b82f6; font-size: 1.2rem;"></i>
+                                    <span style="font-weight: 600; color: #1e293b;">Job Requested</span>
+                                </div>
+                                <div style="font-size: 0.95rem; color: #1e293b; font-weight: 500;">{{ job_details.created_at|date:"M d, Y" }}</div>
+                                <div style="font-size: 0.85rem; color: #64748b;">{{ job_details.created_at|date:"H:i A" }}</div>
+                                <div style="margin-top: 8px; display: inline-block; background: #dbeafe; color: #2563eb; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">✓ CREATED</div>
+                            </div>
+
+                            <!-- Job Accepted -->
+                            <div style="position: relative; padding: 15px; background: #f8fafc; border-radius: 8px; border-left: 4px solid {% if job_details.accepted_at %}#10b981{% else %}#cbd5e1{% endif %};">
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                                    <i class="fas fa-check-circle" style="color: {% if job_details.accepted_at %}#10b981{% else %}#cbd5e1{% endif %}; font-size: 1.2rem;"></i>
+                                    <span style="font-weight: 600; color: #1e293b;">Job Accepted</span>
+                                </div>
+                                {% if job_details.accepted_at %}
+                                <div style="font-size: 0.95rem; color: #1e293b; font-weight: 500;">{{ job_details.accepted_at|date:"M d, Y" }}</div>
+                                <div style="font-size: 0.85rem; color: #64748b;">{{ job_details.accepted_at|date:"H:i A" }}</div>
+                                <div style="margin-top: 8px; display: inline-block; background: #dcfce7; color: #059669; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">✓ ACCEPTED</div>
+                                {% else %}
+                                <div style="font-size: 0.9rem; color: #cbd5e1;">Awaiting acceptance</div>
+                                <div style="margin-top: 8px; display: inline-block; background: #f1f5f9; color: #64748b; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">⏳ PENDING</div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Job Completed -->
+                            <div style="position: relative; padding: 15px; background: #f8fafc; border-radius: 8px; border-left: 4px solid {% if job_details.completed_at %}#f59e0b{% else %}#cbd5e1{% endif %};">
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                                    <i class="fas fa-check-double" style="color: {% if job_details.completed_at %}#f59e0b{% else %}#cbd5e1{% endif %}; font-size: 1.2rem;"></i>
+                                    <span style="font-weight: 600; color: #1e293b;">Job Completed</span>
+                                </div>
+                                {% if job_details.completed_at %}
+                                <div style="font-size: 0.95rem; color: #1e293b; font-weight: 500;">{{ job_details.completed_at|date:"M d, Y" }}</div>
+                                <div style="font-size: 0.85rem; color: #64748b;">{{ job_details.completed_at|date:"H:i A" }}</div>
+                                <div style="margin-top: 8px; display: inline-block; background: #fef3c7; color: #d97706; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">✓ COMPLETED</div>
+                                {% else %}
+                                <div style="font-size: 0.9rem; color: #cbd5e1;">Awaiting completion</div>
+                                <div style="margin-top: 8px; display: inline-block; background: #f1f5f9; color: #64748b; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">⏳ IN PROGRESS</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Duration Summary -->
+                        {% if job_details.accepted_at and job_details.completed_at %}
+                        <div style="margin-top: 15px; padding: 12px; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #3b82f6;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <div style="font-size: 0.9rem; color: #64748b;">Total Duration</div>
+                                    <div style="font-size: 1.1rem; font-weight: 600; color: #1e293b; margin-top: 4px;">
+                                        {% with days=job_details.completed_at|timesince:job_details.accepted_at %}
+                                            {{ days }}
+                                        {% endwith %}
+                                    </div>
+                                </div>
+                                <i class="fas fa-hourglass-end" style="font-size: 1.8rem; color: #3b82f6; opacity: 0.2;"></i>
+                            </div>
+                        </div>
+                        {% elif job_details.accepted_at %}
+                        <div style="margin-top: 15px; padding: 12px; background: #fef3c7; border-radius: 8px; border-left: 4px solid #f59e0b;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <div style="font-size: 0.9rem; color: #92400e;">Time in Progress</div>
+                                    <div style="font-size: 1.1rem; font-weight: 600; color: #d97706; margin-top: 4px;">
+                                        {% with days=now|timesince:job_details.accepted_at %}
+                                            {{ days }}
+                                        {% endwith %}
+                                    </div>
+                                </div>
+                                <i class="fas fa-hourglass-half" style="font-size: 1.8rem; color: #f59e0b; opacity: 0.2;"></i>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Detailed Job Timeline Section - Show for Accepted or Completed jobs -->
+                    {% if job_details.status == 'accepted' or job_details.status == 'completed' %}
+                    {% if timeline_events %}
+                    <div style="margin-top: 30px; padding: 20px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                            <i class="fas fa-road" style="font-size: 1.3rem; color: var(--primary);"></i>
+                            <h4 style="margin: 0; font-size: 1.1rem; color: var(--dark);">Detailed Timeline</h4>
+                        </div>
+
+                        <!-- Timeline -->
+                        <div style="position: relative; padding-left: 30px;">
+                            <div style="position: absolute; left: 3px; top: 0; bottom: 0; width: 2px; background: linear-gradient(to bottom, var(--primary), #10b981, #f59e0b); opacity: 0.3;"></div>
+                            
+                            {% for event in timeline_events %}
+                            <div style="margin-bottom: 25px; position: relative;">
+                                <!-- Timeline Dot -->
+                                <div style="position: absolute; left: -38px; top: 5px; width: 24px; height: 24px; background: white; border: 3px solid {{ event.color }}; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 4px rgba(0,0,0,0.1);">
+                                    <i class="fas {{ event.icon }}" style="font-size: 0.8rem; color: {{ event.color }};"></i>
+                                </div>
+                                
+                                <!-- Timeline Content -->
+                                <div style="background: white; padding: 12px 15px; border-radius: 8px; border-left: 3px solid {{ event.color }}; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                                    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
+                                        <div>
+                                            <div style="font-weight: 600; color: var(--dark);">{{ event.event }}</div>
+                                            <div style="font-size: 0.85rem; color: var(--gray); margin-top: 4px;">{{ event.date|date:"M d, Y H:i" }}</div>
+                                        </div>
+                                        <div style="text-align: right;">
+                                            {% if event.amount %}
+                                            <div style="font-weight: bold; color: {{ event.color }}; font-size: 1.05rem;">₹{{ event.amount }}</div>
+                                            {% endif %}
+                                            <span style="
+                                                display: inline-block;
+                                                padding: 4px 10px;
+                                                border-radius: 12px;
+                                                font-size: 0.75rem;
+                                                font-weight: 600;
+                                                margin-top: 4px;
+                                                {% if event.status == 'completed' or event.status == 'accepted' or event.status == 'created' %}
+                                                    background: #dcfce7;
+                                                    color: #059669;
+                                                {% elif event.status == 'pending' %}
+                                                    background: #fef3c7;
+                                                    color: #d97706;
+                                                {% elif event.status == 'failed' %}
+                                                    background: #fee2e2;
+                                                    color: #dc2626;
+                                                {% else %}
+                                                    background: #dbeafe;
+                                                    color: #2563eb;
+                                                {% endif %}
+                                            ">
+                                                {{ event.status|upper }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
                     {% endif %}
 
                     <div class="job-actions">
@@ -1710,8 +2048,7 @@
                                     </div>
                                     <div class="detail-item">
                                         <span class="detail-label">Duration</span>
-                                        <span class="detail-value">{{ job.estimated_duration|default:"Not specified"
-                                            }}</span>
+                                        <span class="detail-value">{% if job.estimated_duration %}{{ job.estimated_duration }}{% else %}Not specified{% endif %}</span>
                                     </div>
                                     <div class="detail-item">
                                         <span class="detail-label">Job ID</span>

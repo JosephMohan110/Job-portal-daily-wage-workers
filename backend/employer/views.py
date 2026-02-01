@@ -3081,6 +3081,11 @@ def initiate_payment(request, job_id):
             messages.error(request, "Invalid payment amount.")
             return redirect('employer_payment_section')
         
+        # Validate amount doesn't exceed transaction limit (₹10,000)
+        if amount > 10000:
+            messages.error(request, "Payment amount cannot exceed ₹10,000. Please adjust the job budget.")
+            return redirect('employer_payment_section')
+        
         # Convert to paise
         amount_in_paise = int(amount * 100)
         

@@ -86,6 +86,13 @@ class Payout(models.Model):
     bank_name = models.CharField(max_length=100, null=True, blank=True)
     upi_id = models.CharField(max_length=100, null=True, blank=True)
     
+    # Razorpay specific fields
+    razorpay_payment_id = models.CharField(max_length=100, null=True, blank=True, db_index=True)
+    razorpay_order_id = models.CharField(max_length=100, null=True, blank=True, db_index=True)
+    razorpay_contact_id = models.CharField(max_length=100, null=True, blank=True)
+    razorpay_fund_account_id = models.CharField(max_length=100, null=True, blank=True)
+    razorpay_account_type = models.CharField(max_length=20, null=True, blank=True)  # 'bank_account' or 'upi'
+    
     class Meta:
         db_table = 'payout_table'
         ordering = ['-created_at']
