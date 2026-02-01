@@ -853,7 +853,7 @@
 
         <style>
         /* Keep all your existing CSS styles, just add these additional styles: */
-        
+
         .ml-status-badge {
             background-color: #8b5cf6;
             color: white;
@@ -866,19 +866,19 @@
             gap: 8px;
             margin-left: 10px;
         }
-        
+
         .ml-status-badge.success {
             background-color: var(--success-color);
         }
-        
+
         .ml-status-badge.warning {
             background-color: var(--warning-color);
         }
-        
+
         .ml-status-badge.error {
             background-color: var(--danger-color);
         }
-        
+
         .model-info-panel {
             background-color: #f0f9ff;
             border: 1px solid #bfdbfe;
@@ -886,14 +886,14 @@
             padding: 20px;
             margin-bottom: 24px;
         }
-        
+
         .feature-importance {
             display: flex;
             flex-direction: column;
             gap: 8px;
             margin-top: 15px;
         }
-        
+
         .feature-item {
             display: flex;
             justify-content: space-between;
@@ -903,7 +903,7 @@
             border-radius: 8px;
             border: 1px solid #e2e8f0;
         }
-        
+
         .feature-bar {
             flex-grow: 1;
             height: 8px;
@@ -912,13 +912,13 @@
             margin: 0 15px;
             overflow: hidden;
         }
-        
+
         .feature-fill {
             height: 100%;
             background: linear-gradient(90deg, var(--primary-color), var(--info-color));
             border-radius: 4px;
         }
-        
+
         .churn-user-card {
             padding: 12px;
             background-color: white;
@@ -926,19 +926,252 @@
             border-left: 4px solid var(--danger-color);
             margin-bottom: 10px;
         }
-        
+
         .churn-user-card.medium {
             border-left-color: var(--warning-color);
         }
-        
+
         .churn-user-card.low {
             border-left-color: var(--info-color);
         }
-        
+
         .prediction-accuracy {
             font-size: 0.85rem;
             color: var(--text-light);
             font-style: italic;
+        }
+
+        /* Real Time Prediction Modal Styles */
+        .prediction-modal {
+            display: none;
+            position: fixed;
+            z-index: 10000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .prediction-modal.show {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            overflow-y: auto;
+            padding-top: 30px;
+        }
+
+        .prediction-modal-content {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            width: 95%;
+            max-width: 1400px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            margin-bottom: 30px;
+        }
+
+        .prediction-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px;
+            border-bottom: 1px solid #e2e8f0;
+            position: sticky;
+            top: 0;
+            background-color: var(--card-bg);
+            z-index: 100;
+        }
+
+        .prediction-modal-header h2 {
+            margin: 0;
+            color: var(--text-dark);
+            font-size: 1.5rem;
+        }
+
+        .prediction-modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-light);
+            transition: color 0.2s;
+        }
+
+        .prediction-modal-close:hover {
+            color: var(--text-dark);
+        }
+
+        .prediction-modal-body {
+            padding: 24px;
+        }
+
+        .prediction-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 24px;
+        }
+
+        @media (max-width: 1200px) {
+            .prediction-grid {
+                grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .prediction-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .prediction-modal-content {
+                width: 100%;
+                border-radius: 0;
+                max-height: 100vh;
+            }
+        }
+
+        .prediction-card {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .prediction-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .prediction-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .prediction-card-title {
+            font-weight: 700;
+            color: var(--text-dark);
+            margin: 0;
+            word-break: break-word;
+        }
+
+        .prediction-change-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .prediction-change-badge.positive {
+            background-color: rgba(16, 185, 129, 0.15);
+            color: var(--success-color);
+        }
+
+        .prediction-change-badge.negative {
+            background-color: rgba(239, 68, 68, 0.15);
+            color: var(--danger-color);
+        }
+
+        .prediction-values {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 16px;
+        }
+
+        .prediction-value-box {
+            flex: 1;
+        }
+
+        .prediction-value-label {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-bottom: 4px;
+        }
+
+        .prediction-value-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .prediction-chart-container {
+            position: relative;
+            height: 250px;
+            background-color: white;
+            border-radius: 8px;
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(59, 130, 246, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .prediction-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .prediction-stat {
+            text-align: center;
+        }
+
+        .prediction-stat-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .prediction-stat-label {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 4px;
+        }
+
+        .no-data-message {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-light);
+        }
+
+        .no-data-message i {
+            font-size: 3rem;
+            color: #cbd5e1;
+            margin-bottom: 16px;
+            display: block;
         }
     </style>
 
@@ -950,7 +1183,23 @@
 
     {% include 'admin_html/admin_sidebar.html' %}
 
-
+    <!-- Real Time Prediction Modal -->
+    <div id="predictionModal" class="prediction-modal">
+        <div class="prediction-modal-content">
+            <div class="prediction-modal-header">
+                <h2><i class="fas fa-chart-bar"></i> Real-Time Predictions - Next Month Forecast</h2>
+                <button class="prediction-modal-close" onclick="closePredictionModal()">×</button>
+            </div>
+            <div class="prediction-modal-body">
+                <div id="predictionChartsContainer" class="prediction-grid">
+                    <div class="no-data-message">
+                        <i class="fas fa-spinner loading-spinner"></i>
+                        <p>Loading predictions...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- ========== MAIN CONTENT - ANALYTICS & PREDICTION ========== -->
     <main class="main-content">
@@ -960,15 +1209,18 @@
                 <h1>Analytics & Prediction</h1>
                 <p>AI-powered insights, growth predictions, and user behavior analysis</p>
                 <div class="ml-status-badge {% if ml_model_loaded %}success{% else %}error{% endif %}">
-                    <i class="fas fa-robot"></i> 
+                    <i class="fas fa-robot"></i>
                     {% if ml_model_loaded %}
-                        XGBoost Model Active ({{ available_predictions|length }} predictions)
+                    XGBoost Model Active ({{ available_predictions|length }} predictions)
                     {% else %}
-                        ML Model Offline - Using Statistical Forecast
+                    ML Model Offline - Using Statistical Forecast
                     {% endif %}
                 </div>
             </div>
             <div class="header-actions">
+                <button class="btn btn-primary" id="realTimePredictionBtn" onclick="generateRealTimePredictions()">
+                    <i class="fas fa-robot"></i> Real Time Prediction
+                </button>
                 <button class="btn btn-secondary" onclick="exportAnalyticsData()">
                     <i class="fas fa-download"></i> Export Data
                 </button>
@@ -979,30 +1231,30 @@
                 <div class="admin-profile">
                     <div class="admin-avatar">
                         {% if request.user.is_authenticated and request.user.username %}
-                            {{ request.user.username.0|upper }}
+                        {{ request.user.username.0|upper }}
                         {% else %}
-                            A
+                        A
                         {% endif %}
                     </div>
                     <div>
                         <h4 style="margin-bottom: 2px;">
                             {% if request.user.is_authenticated %}
-                                {% if request.user.get_full_name %}
-                                    {{ request.user.get_full_name }}
-                                {% elif request.user.username %}
-                                    {{ request.user.username }}
-                                {% else %}
-                                    Administrator
-                                {% endif %}
+                            {% if request.user.get_full_name %}
+                            {{ request.user.get_full_name }}
+                            {% elif request.user.username %}
+                            {{ request.user.username }}
                             {% else %}
-                                Administrator
+                            Administrator
+                            {% endif %}
+                            {% else %}
+                            Administrator
                             {% endif %}
                         </h4>
                         <p style="color: var(--text-light); font-size: 0.85rem;">
                             {% if request.user.is_authenticated and request.user.email %}
-                                {{ request.user.email }}
+                            {{ request.user.email }}
                             {% else %}
-                                admin@skillconnect.com
+                            admin@skillconnect.com
                             {% endif %}
                         </p>
                     </div>
@@ -1020,10 +1272,12 @@
                     <i class="fas fa-chart-line"></i> Model Accuracy: 94-99% across metrics
                 </span>
             </div>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+            <div
+                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
                 <div>
                     <div style="font-size: 0.9rem; color: var(--text-light);">Models Loaded</div>
-                    <div style="font-size: 1.5rem; font-weight: 700;">{{ available_predictions|length|default:"27" }}</div>
+                    <div style="font-size: 1.5rem; font-weight: 700;">{{ available_predictions|length|default:"27" }}
+                    </div>
                 </div>
                 <div>
                     <div style="font-size: 0.9rem; color: var(--text-light);">Features Used</div>
@@ -1038,7 +1292,7 @@
                     <div style="font-size: 1.5rem; font-weight: 700;">Jan 28, 2026</div>
                 </div>
             </div>
-            
+
             <div>
                 <h4 style="margin-bottom: 10px; color: var(--text-dark);">
                     <i class="fas fa-chart-bar"></i> Top Predictive Features
@@ -1069,7 +1323,8 @@
                     <input type="date" class="time-period-btn" id="dateFrom" style="padding: 8px 12px;">
                     <span style="display: flex; align-items: center;">to</span>
                     <input type="date" class="time-period-btn" id="dateTo" style="padding: 8px 12px;">
-                    <button class="btn btn-primary" style="padding: 8px 16px;" onclick="applyCustomRange()">Apply</button>
+                    <button class="btn btn-primary" style="padding: 8px 16px;"
+                        onclick="applyCustomRange()">Apply</button>
                 </div>
             </div>
 
@@ -1080,15 +1335,17 @@
                         <div class="stat-icon" style="background-color: var(--primary-color);">
                             <i class="fas fa-user-plus"></i>
                         </div>
-                        <span class="trend-indicator {% if growth_rates.new_users > 0 %}trend-up{% else %}trend-down{% endif %}">
-                            <i class="fas fa-arrow-{% if growth_rates.new_users > 0 %}up{% else %}down{% endif %}"></i> 
+                        <span
+                            class="trend-indicator {% if growth_rates.new_users > 0 %}trend-up{% else %}trend-down{% endif %}">
+                            <i class="fas fa-arrow-{% if growth_rates.new_users > 0 %}up{% else %}down{% endif %}"></i>
                             {{ growth_rates.new_users|floatformat:1 }}%
                         </span>
                     </div>
                     <div class="stat-value">{{ platform_data.new_users_this_month }}</div>
                     <div class="stat-label">New Users ({{ current_month }})</div>
                     <div class="stat-prediction">
-                        <i class="fas fa-chart-line"></i> {{ next_month }}: ~{{ ml_predictions.new_users_next_month }} users
+                        <i class="fas fa-chart-line"></i> {{ next_month }}: ~{{ ml_predictions.new_users_next_month }}
+                        users
                         <br>
                         <small>ML Confidence: 94%</small>
                     </div>
@@ -1099,15 +1356,18 @@
                         <div class="stat-icon" style="background-color: var(--danger-color);">
                             <i class="fas fa-user-minus"></i>
                         </div>
-                        <span class="trend-indicator {% if growth_rates.deleted_accounts < 0 %}trend-up{% else %}trend-down{% endif %}">
-                            <i class="fas fa-arrow-{% if growth_rates.deleted_accounts < 0 %}down{% else %}up{% endif %}"></i> 
+                        <span
+                            class="trend-indicator {% if growth_rates.deleted_accounts < 0 %}trend-up{% else %}trend-down{% endif %}">
+                            <i
+                                class="fas fa-arrow-{% if growth_rates.deleted_accounts < 0 %}down{% else %}up{% endif %}"></i>
                             {{ growth_rates.deleted_accounts|floatformat:1 }}%
                         </span>
                     </div>
                     <div class="stat-value">{{ platform_data.deleted_accounts_this_month }}</div>
                     <div class="stat-label">Deleted Accounts ({{ current_month }})</div>
                     <div class="stat-prediction">
-                        <i class="fas fa-chart-line"></i> {{ next_month }}: ~{{ ml_predictions.deleted_accounts_next_month }} accounts
+                        <i class="fas fa-chart-line"></i> {{ next_month }}: ~{{
+                        ml_predictions.deleted_accounts_next_month }} accounts
                         <br>
                         <small>ML Confidence: 92%</small>
                     </div>
@@ -1118,15 +1378,18 @@
                         <div class="stat-icon" style="background-color: var(--success-color);">
                             <i class="fas fa-handshake"></i>
                         </div>
-                        <span class="trend-indicator {% if growth_rates.completed_bookings > 0 %}trend-up{% else %}trend-down{% endif %}">
-                            <i class="fas fa-arrow-{% if growth_rates.completed_bookings > 0 %}up{% else %}down{% endif %}"></i> 
+                        <span
+                            class="trend-indicator {% if growth_rates.completed_bookings > 0 %}trend-up{% else %}trend-down{% endif %}">
+                            <i
+                                class="fas fa-arrow-{% if growth_rates.completed_bookings > 0 %}up{% else %}down{% endif %}"></i>
                             {{ growth_rates.completed_bookings|floatformat:1 }}%
                         </span>
                     </div>
                     <div class="stat-value">{{ platform_data.completed_bookings }}</div>
                     <div class="stat-label">Completed Bookings</div>
                     <div class="stat-prediction">
-                        <i class="fas fa-chart-line"></i> {{ next_month }}: ~{{ ml_predictions.completed_bookings_next_month }} bookings
+                        <i class="fas fa-chart-line"></i> {{ next_month }}: ~{{
+                        ml_predictions.completed_bookings_next_month }} bookings
                         <br>
                         <small>ML Confidence: 96%</small>
                     </div>
@@ -1137,15 +1400,18 @@
                         <div class="stat-icon" style="background-color: var(--warning-color);">
                             <i class="fas fa-exchange-alt"></i>
                         </div>
-                        <span class="trend-indicator {% if growth_rates.retention_rate > 0 %}trend-up{% else %}trend-down{% endif %}">
-                            <i class="fas fa-arrow-{% if growth_rates.retention_rate > 0 %}up{% else %}down{% endif %}"></i> 
+                        <span
+                            class="trend-indicator {% if growth_rates.retention_rate > 0 %}trend-up{% else %}trend-down{% endif %}">
+                            <i
+                                class="fas fa-arrow-{% if growth_rates.retention_rate > 0 %}up{% else %}down{% endif %}"></i>
                             {{ growth_rates.retention_rate|floatformat:1 }}%
                         </span>
                     </div>
                     <div class="stat-value">{{ platform_data.success_rate|floatformat:1 }}%</div>
                     <div class="stat-label">Success Rate</div>
                     <div class="stat-prediction">
-                        <i class="fas fa-chart-line"></i> {{ next_month }}: ~{{ ml_predictions.success_rate_next_month|floatformat:1 }}%
+                        <i class="fas fa-chart-line"></i> {{ next_month }}: ~{{
+                        ml_predictions.success_rate_next_month|floatformat:1 }}%
                         <br>
                         <small>ML Confidence: 98%</small>
                     </div>
@@ -1155,17 +1421,22 @@
             <!-- Charts Section with Chart.js -->
             <div class="charts-container">
                 <div class="chart-card">
-                    <h3><i class="fas fa-chart-line" style="color: var(--primary-color);"></i> User Growth vs Account Deletions</h3>
+                    <h3><i class="fas fa-chart-line" style="color: var(--primary-color);"></i> User Growth vs Account
+                        Deletions</h3>
                     <div style="position: relative; height: 300px;">
                         <canvas id="growthChart"></canvas>
                     </div>
                     <div style="display: flex; justify-content: center; gap: 20px; margin-top: 15px; flex-wrap: wrap;">
                         <div style="display: flex; align-items: center; gap: 8px;">
-                            <div style="width: 12px; height: 12px; background-color: var(--primary-color); border-radius: 2px;"></div>
+                            <div
+                                style="width: 12px; height: 12px; background-color: var(--primary-color); border-radius: 2px;">
+                            </div>
                             <span style="font-size: 0.9rem;">New Users</span>
                         </div>
                         <div style="display: flex; align-items: center; gap: 8px;">
-                            <div style="width: 12px; height: 12px; background-color: var(--danger-color); border-radius: 2px;"></div>
+                            <div
+                                style="width: 12px; height: 12px; background-color: var(--danger-color); border-radius: 2px;">
+                            </div>
                             <span style="font-size: 0.9rem;">Deleted Accounts</span>
                         </div>
                     </div>
@@ -1191,7 +1462,7 @@
                     {% for insight in ai_insights %}
                     <div class="insight-item" style="border-left: 4px solid var(--{{ insight.color }}-color);">
                         <h4>
-                            <i class="fas {{ insight.icon }}" style="color: var(--{{ insight.color }}-color);"></i> 
+                            <i class="fas {{ insight.icon }}" style="color: var(--{{ insight.color }}-color);"></i>
                             {{ insight.title }}
                         </h4>
                         <p><strong>{{ insight.message }}</strong></p>
@@ -1212,15 +1483,18 @@
                 </span>
             </div>
 
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 30px;">
+            <div
+                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 30px;">
                 {% for user in churn_users %}
                 <div class="churn-user-card {{ user.risk_level|lower }}">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <div>
                             <div style="font-weight: 600; color: var(--text-dark);">{{ user.name }}</div>
-                            <div style="font-size: 0.85rem; color: var(--text-light);">{{ user.user_type }} • {{ user.email }}</div>
+                            <div style="font-size: 0.85rem; color: var(--text-light);">{{ user.user_type }} • {{
+                                user.email }}</div>
                         </div>
-                        <span class="trend-indicator {% if user.churn_score > 70 %}trend-down{% else %}trend-up{% endif %}">
+                        <span
+                            class="trend-indicator {% if user.churn_score > 70 %}trend-down{% else %}trend-up{% endif %}">
                             {{ user.churn_score|floatformat:0 }}% risk
                         </span>
                     </div>
@@ -1228,8 +1502,8 @@
                         <span style="font-size: 0.85rem; color: var(--text-light);">
                             <i class="far fa-clock"></i> {{ user.days_inactive }} days inactive
                         </span>
-                        <button class="btn btn-secondary" style="padding: 4px 12px; font-size: 0.8rem;" 
-                                onclick="sendRetentionOffer('{{ user.email }}')">
+                        <button class="btn btn-secondary" style="padding: 4px 12px; font-size: 0.8rem;"
+                            onclick="sendRetentionOffer('{{ user.email }}')">
                             <i class="fas fa-gift"></i> Offer
                         </button>
                     </div>
@@ -1271,7 +1545,8 @@
                         <td><strong>New Users</strong></td>
                         <td>{{ platform_data.new_users_this_month }}</td>
                         <td>{{ platform_data.new_users_this_month|add:"-100" }}</td>
-                        <td><span class="metric-change positive">+{{ growth_rates.new_users|floatformat:1 }}%</span></td>
+                        <td><span class="metric-change positive">+{{ growth_rates.new_users|floatformat:1 }}%</span>
+                        </td>
                         <td>{{ ml_predictions.new_users_next_month }}</td>
                         <td><i class="fas fa-shield-alt" style="color: var(--success-color);"></i> 94%</td>
                     </tr>
@@ -1280,7 +1555,8 @@
                         <td><strong>Deleted Accounts</strong></td>
                         <td>{{ platform_data.deleted_accounts_this_month }}</td>
                         <td>{{ platform_data.deleted_accounts_this_month|add:"5" }}</td>
-                        <td><span class="metric-change positive">-{{ growth_rates.deleted_accounts|floatformat:1 }}%</span></td>
+                        <td><span class="metric-change positive">-{{ growth_rates.deleted_accounts|floatformat:1
+                                }}%</span></td>
                         <td>{{ ml_predictions.deleted_accounts_next_month }}</td>
                         <td><i class="fas fa-shield-alt" style="color: var(--success-color);"></i> 92%</td>
                     </tr>
@@ -1289,7 +1565,8 @@
                         <td><strong>Active Users</strong></td>
                         <td>{{ platform_data.active_users }}</td>
                         <td>{{ platform_data.active_users|add:"-100" }}</td>
-                        <td><span class="metric-change positive">+{{ growth_rates.active_users|floatformat:1 }}%</span></td>
+                        <td><span class="metric-change positive">+{{ growth_rates.active_users|floatformat:1 }}%</span>
+                        </td>
                         <td>{{ ml_predictions.active_users_next_month }}</td>
                         <td><i class="fas fa-shield-alt" style="color: var(--success-color);"></i> 91%</td>
                     </tr>
@@ -1298,7 +1575,8 @@
                         <td><strong>Completed Bookings</strong></td>
                         <td>{{ platform_data.completed_bookings }}</td>
                         <td>{{ platform_data.completed_bookings|add:"-45" }}</td>
-                        <td><span class="metric-change positive">+{{ growth_rates.completed_bookings|floatformat:1 }}%</span></td>
+                        <td><span class="metric-change positive">+{{ growth_rates.completed_bookings|floatformat:1
+                                }}%</span></td>
                         <td>{{ ml_predictions.completed_bookings_next_month }}</td>
                         <td><i class="fas fa-shield-alt" style="color: var(--success-color);"></i> 96%</td>
                     </tr>
@@ -1307,7 +1585,8 @@
                         <td><strong>Success Rate</strong></td>
                         <td>{{ platform_data.success_rate|floatformat:1 }}%</td>
                         <td>{{ platform_data.success_rate|add:"-2.5"|floatformat:1 }}%</td>
-                        <td><span class="metric-change positive">+{{ growth_rates.success_rate|floatformat:1 }}%</span></td>
+                        <td><span class="metric-change positive">+{{ growth_rates.success_rate|floatformat:1 }}%</span>
+                        </td>
                         <td>{{ ml_predictions.success_rate_next_month|floatformat:1 }}%</td>
                         <td><i class="fas fa-shield-alt" style="color: var(--success-color);"></i> 98%</td>
                     </tr>
@@ -1334,7 +1613,8 @@
                         <td><strong>Avg. Rating</strong></td>
                         <td>{{ platform_data.avg_rating|floatformat:1 }}</td>
                         <td>{{ platform_data.avg_rating|add:"-0.1"|floatformat:1 }}</td>
-                        <td><span class="metric-change positive">+{{ growth_rates.retention_rate|floatformat:1 }}%</span></td>
+                        <td><span class="metric-change positive">+{{ growth_rates.retention_rate|floatformat:1
+                                }}%</span></td>
                         <td>{{ ml_predictions.avg_rating_next_month|floatformat:1 }}</td>
                         <td><i class="fas fa-shield-alt" style="color: var(--success-color);"></i> 99%</td>
                     </tr>
@@ -1343,238 +1623,222 @@
         </section>
     </main>
 
-   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Initialize Chart.js charts
-        initCharts();
-        
-        // Setup event listeners
-        setupEventListeners();
-        
-        // Initialize sidebar (if you have one)
-        initSidebar();
-    });
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Initialize Chart.js charts
+            initCharts();
 
-    function initCharts() {
-        // Growth vs Deletions Chart
-        const growthCtx = document.getElementById('growthChart');
-        if (growthCtx) {
-            new Chart(growthCtx, {
-                type: 'bar',
-                data: {
-                    labels: {{ chart_data.labels|safe }},
-                    datasets: [
-                        {
-                            label: 'New Users',
-                            data: {{ chart_data.growth_data|safe }},
-                            backgroundColor: 'rgba(59, 130, 246, 0.7)',
-                            borderColor: 'rgb(59, 130, 246)',
-                            borderWidth: 1,
-                            order: 2
-                        },
-                        {
-                            label: 'Deleted Accounts',
-                            data: {{ chart_data.deletions_data|safe }},
-                            backgroundColor: 'rgba(239, 68, 68, 0.7)',
-                            borderColor: 'rgb(239, 68, 68)',
-                            borderWidth: 1,
-                            order: 1
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                        },
-                        tooltip: {
-                            mode: 'index',
-                            intersect: false,
-                            callbacks: {
-                                label: function(context) {
-                                    let label = context.dataset.label || '';
-                                    if (label) {
-                                        label += ': ';
-                                    }
-                                    label += context.parsed.y.toLocaleString();
-                                    return label;
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            grid: {
-                                display: false
-                            }
-                        },
-                        y: {
-                            beginAtZero: true,
-                            grid: {
-                                borderDash: [5, 5]
-                            },
-                            ticks: {
-                                callback: function(value) {
-                                    return value.toLocaleString();
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
+            // Setup event listeners
+            setupEventListeners();
 
-        // Revenue Projection Chart
-        const revenueCtx = document.getElementById('revenueChart');
-        if (revenueCtx) {
-            new Chart(revenueCtx, {
-                type: 'line',
-                data: {
-                    labels: {{ chart_data.labels|safe }},
-                    datasets: [
-                        {
-                            label: 'Revenue',
-                            data: {{ chart_data.revenue_data|safe }},
-                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                            borderColor: 'rgb(16, 185, 129)',
-                            borderWidth: 3,
-                            fill: true,
-                            tension: 0.4,
-                            pointBackgroundColor: 'rgb(16, 185, 129)',
-                            pointBorderColor: '#fff',
-                            pointBorderWidth: 2,
-                            pointRadius: 5
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return 'Revenue: ₹' + context.parsed.y.toLocaleString();
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            grid: {
-                                display: false
-                            }
-                        },
-                        y: {
-                            beginAtZero: true,
-                            grid: {
-                                borderDash: [5, 5]
-                            },
-                            ticks: {
-                                callback: function(value) {
-                                    return '₹' + value.toLocaleString();
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-    }
-
-    function setupEventListeners() {
-        // Time period buttons
-        const timePeriodBtns = document.querySelectorAll('.time-period-btn');
-        timePeriodBtns.forEach(btn => {
-            btn.addEventListener('click', function() {
-                if (this.tagName === 'BUTTON' && !this.id) {
-                    timePeriodBtns.forEach(b => {
-                        if (b.tagName === 'BUTTON' && !b.id) b.classList.remove('active');
-                    });
-                    this.classList.add('active');
-                    
-                    // Update charts based on selected period
-                    const period = this.textContent;
-                    updateChartsForPeriod(period);
-                }
-            });
+            // Initialize sidebar (if you have one)
+            initSidebar();
         });
-    }
 
-    function initSidebar() {
-        const menuToggle = document.getElementById('menuToggle');
-        const sidebar = document.getElementById('sidebar');
-        const sidebarOverlay = document.getElementById('sidebarOverlay');
-
-        if (menuToggle && sidebar) {
-            menuToggle.addEventListener('click', function() {
-                sidebar.classList.toggle('active');
-                if (sidebarOverlay) {
-                    sidebarOverlay.classList.toggle('active');
+        function initCharts() {
+            // Parse data from Django context safely using JSON.parse on the escaped string
+            let chartData = {};
+            try {
+                const rawJson = '{{ json_chart_data|escapejs }}';
+                if (rawJson) {
+                    chartData = JSON.parse(rawJson);
                 }
-                document.body.style.overflow = sidebar.classList.contains('active') ? 'hidden' : '';
+            } catch (e) {
+                console.error("Failed to parse chart data:", e);
+            }
+
+            const labels = chartData.labels || [];
+            const growthData = chartData.growth_data || [];
+            const deletionsData = chartData.deletions_data || [];
+            const revenueData = chartData.revenue_data || [];
+
+            console.log("Chart Data Parsed:", { labels, growthData, deletionsData, revenueData });
+
+            if (!labels || labels.length === 0) {
+                console.warn("No chart data available to render");
+                return;
+            }
+
+            // Growth vs Deletions Chart
+            const growthCtx = document.getElementById('growthChart');
+            if (growthCtx) {
+                // Destroy existing chart if it exists
+                const existingChart = Chart.getChart(growthCtx);
+                if (existingChart) existingChart.destroy();
+
+                new Chart(growthCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'New Users',
+                                data: growthData,
+                                backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                                borderColor: 'rgb(59, 130, 246)',
+                                borderWidth: 1,
+                                order: 2
+                            },
+                            {
+                                label: 'Deleted Accounts',
+                                data: deletionsData,
+                                backgroundColor: 'rgba(239, 68, 68, 0.7)',
+                                borderColor: 'rgb(239, 68, 68)',
+                                borderWidth: 1,
+                                order: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'top' },
+                            tooltip: {
+                                mode: 'index',
+                                intersect: false,
+                            }
+                        },
+                        scales: {
+                            x: { grid: { display: false } },
+                            y: { beginAtZero: true, grid: { borderDash: [5, 5] } }
+                        }
+                    }
+                });
+            }
+
+            // Revenue Projection Chart
+            const revenueCtx = document.getElementById('revenueChart');
+            if (revenueCtx) {
+                // Destroy existing chart if it exists
+                const existingChart = Chart.getChart(revenueCtx);
+                if (existingChart) existingChart.destroy();
+
+                new Chart(revenueCtx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Revenue',
+                                data: revenueData,
+                                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                                borderColor: 'rgb(16, 185, 129)',
+                                borderWidth: 3,
+                                fill: true,
+                                tension: 0.4,
+                                pointBackgroundColor: 'rgb(16, 185, 129)',
+                                pointBorderColor: '#fff',
+                                pointBorderWidth: 2,
+                                pointRadius: 5
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { grid: { display: false } },
+                            y: {
+                                beginAtZero: true,
+                                grid: { borderDash: [5, 5] },
+                                ticks: { callback: function (value) { return '₹' + value.toLocaleString(); } }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        function setupEventListeners() {
+            // Time period buttons
+            const timePeriodBtns = document.querySelectorAll('.time-period-btn');
+            timePeriodBtns.forEach(btn => {
+                btn.addEventListener('click', function () {
+                    if (this.tagName === 'BUTTON' && !this.id) {
+                        timePeriodBtns.forEach(b => {
+                            if (b.tagName === 'BUTTON' && !b.id) b.classList.remove('active');
+                        });
+                        this.classList.add('active');
+
+                        // Update charts based on selected period
+                        const period = this.textContent;
+                        updateChartsForPeriod(period);
+                    }
+                });
             });
         }
 
-        if (sidebarOverlay) {
-            sidebarOverlay.addEventListener('click', function() {
-                if (sidebar) sidebar.classList.remove('active');
-                this.classList.remove('active');
-                document.body.style.overflow = '';
-            });
-        }
+        function initSidebar() {
+            const menuToggle = document.getElementById('menuToggle');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
 
-        // Close sidebar when clicking on nav links (for mobile)
-        const navLinks = document.querySelectorAll('.nav-link');
-        navLinks.forEach(link => {
-            link.addEventListener('click', function() {
-                if (window.innerWidth <= 992) {
+            if (menuToggle && sidebar) {
+                menuToggle.addEventListener('click', function () {
+                    sidebar.classList.toggle('active');
+                    if (sidebarOverlay) {
+                        sidebarOverlay.classList.toggle('active');
+                    }
+                    document.body.style.overflow = sidebar.classList.contains('active') ? 'hidden' : '';
+                });
+            }
+
+            if (sidebarOverlay) {
+                sidebarOverlay.addEventListener('click', function () {
                     if (sidebar) sidebar.classList.remove('active');
-                    if (sidebarOverlay) sidebarOverlay.classList.remove('active');
+                    this.classList.remove('active');
                     document.body.style.overflow = '';
-                }
+                });
+            }
+
+            // Close sidebar when clicking on nav links (for mobile)
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function () {
+                    if (window.innerWidth <= 992) {
+                        if (sidebar) sidebar.classList.remove('active');
+                        if (sidebarOverlay) sidebarOverlay.classList.remove('active');
+                        document.body.style.overflow = '';
+                    }
+                });
             });
-        });
-    }
+        }
 
-    function updateChartsForPeriod(period) {
-        console.log(`Updating charts for period: ${period}`);
-        
-        // In a real implementation, you would make an AJAX call here
-        // For now, we'll just show a notification
-        showNotification(`Loading ${period} data...`, 'info');
-        
-        // Simulate loading new data
-        setTimeout(() => {
-            // This would be where you update the charts with new data
-            showNotification(`${period} data loaded successfully!`, 'success');
-        }, 1000);
-    }
+        function updateChartsForPeriod(period) {
+            console.log(`Updating charts for period: ${period}`);
 
-    function refreshPredictions() {
-        showNotification('Refreshing ML predictions...', 'info');
-        setTimeout(() => {
-            window.location.reload();
-        }, 1500);
-    }
+            // In a real implementation, you would make an AJAX call here
+            // For now, we'll just show a notification
+            showNotification(`Loading ${period} data...`, 'info');
 
-    function exportAnalyticsData() {
-        showNotification('Exporting analytics data...', 'info');
-        
-        // Create CSV content
-        const csvContent = "data:text/csv;charset=utf-8," + 
-            "Month,New Users,Deleted Accounts,Completed Bookings,Revenue,Success Rate\n" +
-            {% for month in historical_data %}
-            "{{ month.month }} {{ month.year }},{{ month.new_users }},{{ month.deleted_users }},{{ month.completed_bookings }},{{ month.revenue|floatformat:2 }},{{ month.success_rate|floatformat:1 }}%\n" +
+            // Simulate loading new data
+            setTimeout(() => {
+                // This would be where you update the charts with new data
+                showNotification(`${period} data loaded successfully!`, 'success');
+            }, 1000);
+        }
+
+        function refreshPredictions() {
+            showNotification('Refreshing ML predictions...', 'info');
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        }
+
+        function exportAnalyticsData() {
+            showNotification('Exporting analytics data...', 'info');
+
+            // Create CSV content
+            const csvContent = "data:text/csv;charset=utf-8," +
+                "Month,New Users,Deleted Accounts,Completed Bookings,Revenue,Success Rate\n" +
+                {% for month in historical_data %}
+        "{{ month.month }} {{ month.year }},{{ month.new_users }},{{ month.deleted_users }},{{ month.completed_bookings }},{{ month.revenue|floatformat:2 }},{{ month.success_rate|floatformat:1 }}%\n" +
             {% endfor %}
-            "{{ next_month }},{{ ml_predictions.new_users_next_month }},{{ ml_predictions.deleted_accounts_next_month }},{{ ml_predictions.completed_bookings_next_month }},{{ ml_predictions.revenue_next_month|floatformat:2 }},{{ ml_predictions.success_rate_next_month|floatformat:1 }}%";
-        
+        "{{ next_month }},{{ ml_predictions.new_users_next_month }},{{ ml_predictions.deleted_accounts_next_month }},{{ ml_predictions.completed_bookings_next_month }},{{ ml_predictions.revenue_next_month|floatformat:2 }},{{ ml_predictions.success_rate_next_month|floatformat:1 }}%";
+
         const encodedUri = encodeURI(csvContent);
         const link = document.createElement("a");
         link.setAttribute("href", encodedUri);
@@ -1582,63 +1846,63 @@
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        
+
         showNotification('Data exported successfully!', 'success');
     }
 
-    function sendRetentionOffer(email) {
-        if (confirm(`Send retention offer to ${email}?`)) {
-            showNotification(`Retention offer sent to ${email}`, 'success');
-            
-            // In real implementation, make AJAX call
-            fetch('/admin/send-retention-offer/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCSRFToken()
-                },
-                body: JSON.stringify({ email: email })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showNotification('Retention offer sent successfully!', 'success');
-                } else {
-                    showNotification('Failed to send offer: ' + data.error, 'error');
-                }
-            });
-        }
-    }
+        function sendRetentionOffer(email) {
+            if (confirm(`Send retention offer to ${email}?`)) {
+                showNotification(`Retention offer sent to ${email}`, 'success');
 
-    function showNotification(message, type = 'info') {
-        // Remove existing notifications
-        const existingNotifications = document.querySelectorAll('.notification');
-        existingNotifications.forEach(n => n.remove());
-        
-        // Create notification element
-        const notification = document.createElement('div');
-        notification.className = `notification ${type}`;
-        
-        let bgColor, icon;
-        switch(type) {
-            case 'success':
-                bgColor = '#10b981';
-                icon = 'check-circle';
-                break;
-            case 'error':
-                bgColor = '#ef4444';
-                icon = 'exclamation-circle';
-                break;
-            case 'warning':
-                bgColor = '#f59e0b';
-                icon = 'exclamation-triangle';
-                break;
-            default:
-                bgColor = '#3b82f6';
-                icon = 'info-circle';
+                // In real implementation, make AJAX call
+                fetch('/admin/send-retention-offer/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken()
+                    },
+                    body: JSON.stringify({ email: email })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showNotification('Retention offer sent successfully!', 'success');
+                        } else {
+                            showNotification('Failed to send offer: ' + data.error, 'error');
+                        }
+                    });
+            }
         }
-        
-        notification.innerHTML = `
+
+        function showNotification(message, type = 'info') {
+            // Remove existing notifications
+            const existingNotifications = document.querySelectorAll('.notification');
+            existingNotifications.forEach(n => n.remove());
+
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+
+            let bgColor, icon;
+            switch (type) {
+                case 'success':
+                    bgColor = '#10b981';
+                    icon = 'check-circle';
+                    break;
+                case 'error':
+                    bgColor = '#ef4444';
+                    icon = 'exclamation-circle';
+                    break;
+                case 'warning':
+                    bgColor = '#f59e0b';
+                    icon = 'exclamation-triangle';
+                    break;
+                default:
+                    bgColor = '#3b82f6';
+                    icon = 'info-circle';
+            }
+
+            notification.innerHTML = `
             <div style="position: fixed; top: 20px; right: 20px; background-color: ${bgColor}; 
                         color: white; padding: 12px 20px; border-radius: 8px; z-index: 10000; 
                         box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 10px;">
@@ -1646,44 +1910,357 @@
                 <span>${message}</span>
             </div>
         `;
-        
-        document.body.appendChild(notification);
-        
-        // Remove after 3 seconds
-        setTimeout(() => {
-            notification.remove();
-        }, 3000);
-    }
 
-    function getCSRFToken() {
-        const name = 'csrftoken';
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
+            document.body.appendChild(notification);
+
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        function getCSRFToken() {
+            const name = 'csrftoken';
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
                 }
             }
+            return cookieValue;
         }
-        return cookieValue;
-    }
 
-    // Handle window resize for responsive charts
-    let resizeTimer;
-    window.addEventListener('resize', function() {
-        clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(function() {
-            // Reinitialize charts on resize
-            const growthChart = Chart.getChart('growthChart');
-            const revenueChart = Chart.getChart('revenueChart');
+        // Handle window resize for responsive charts
+        let resizeTimer;
+        window.addEventListener('resize', function () {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(function () {
+                // Reinitialize charts on resize
+                const growthChart = Chart.getChart('growthChart');
+                const revenueChart = Chart.getChart('revenueChart');
+
+                if (growthChart) growthChart.resize();
+                if (revenueChart) revenueChart.resize();
+            }, 250);
+        });
+
+        // ============================================================
+        // REAL-TIME PREDICTION FUNCTIONS
+        // ============================================================
+
+        function generateRealTimePredictions() {
+            const btn = document.getElementById('realTimePredictionBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner loading-spinner" style="display:inline-block; margin-right:8px;"></i> Generating...';
             
-            if (growthChart) growthChart.resize();
-            if (revenueChart) revenueChart.resize();
-        }, 250);
-    });
-</script>
+            showNotification('Generating real-time predictions with AI...', 'info');
+
+            fetch('/admin_self/api/real-time-prediction/', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken()
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-robot"></i> Real Time Prediction';
+                
+                if (data.success) {
+                    showNotification('✓ Predictions generated successfully!', 'success');
+                    displayPredictionCharts(data);
+                    openPredictionModal();
+                } else {
+                    showNotification('Error: ' + (data.error || 'Failed to generate predictions'), 'error');
+                }
+            })
+            .catch(error => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-robot"></i> Real Time Prediction';
+                console.error('Error:', error);
+                showNotification('Error generating predictions: ' + error.message, 'error');
+            });
+        }
+
+        function openPredictionModal() {
+            const modal = document.getElementById('predictionModal');
+            modal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closePredictionModal() {
+            const modal = document.getElementById('predictionModal');
+            modal.classList.remove('show');
+            document.body.style.overflow = '';
+        }
+
+        function displayPredictionCharts(data) {
+            const container = document.getElementById('predictionChartsContainer');
+            
+            if (!data.chart_data || data.chart_data.length === 0) {
+                container.innerHTML = '<div class="no-data-message"><i class="fas fa-inbox"></i><p>No prediction data available</p></div>';
+                return;
+            }
+
+            // Clear previous content
+            container.innerHTML = '';
+
+            // Create a card for each feature
+            data.chart_data.forEach((chartItem, index) => {
+                const card = createPredictionCard(chartItem, index);
+                container.appendChild(card);
+            });
+
+            // Also add summary statistics
+            addPredictionSummary(data, container);
+        }
+
+        function createPredictionCard(chartItem, index) {
+            const card = document.createElement('div');
+            card.className = 'prediction-card';
+            
+            const feature = chartItem.feature;
+            const current = formatFeatureValue(chartItem.current, feature);
+            const predicted = formatFeatureValue(chartItem.predicted, feature);
+            const change = chartItem.change || 0;
+            const changeClass = change >= 0 ? 'positive' : 'negative';
+            const changeIcon = change >= 0 ? '↑' : '↓';
+
+            const chartId = 'predictionChart_' + index;
+            
+            card.innerHTML = `
+                <div class="prediction-card-header">
+                    <h3 class="prediction-card-title">${capitalizeFeatureName(feature)}</h3>
+                    <span class="prediction-change-badge ${changeClass}">
+                        ${changeIcon} ${Math.abs(change).toFixed(2)}%
+                    </span>
+                </div>
+                
+                <div class="prediction-values">
+                    <div class="prediction-value-box">
+                        <div class="prediction-value-label">Current</div>
+                        <div class="prediction-value-number">${current}</div>
+                    </div>
+                    <div class="prediction-value-box">
+                        <div class="prediction-value-label">Predicted (Next Month)</div>
+                        <div class="prediction-value-number">${predicted}</div>
+                    </div>
+                </div>
+                
+                <div class="prediction-chart-container">
+                    <canvas id="${chartId}" style="display: block; width: 100% !important; height: 100% !important;"></canvas>
+                </div>
+                
+                <div class="prediction-stats">
+                    <div class="prediction-stat">
+                        <div class="prediction-stat-value">${chartItem.months.length}</div>
+                        <div class="prediction-stat-label">Months</div>
+                    </div>
+                    <div class="prediction-stat">
+                        <div class="prediction-stat-value">${Math.max(...chartItem.values).toFixed(0)}</div>
+                        <div class="prediction-stat-label">Peak Value</div>
+                    </div>
+                    <div class="prediction-stat">
+                        <div class="prediction-stat-value">${(Math.min(...chartItem.values)).toFixed(0)}</div>
+                        <div class="prediction-stat-label">Min Value</div>
+                    </div>
+                </div>
+            `;
+
+            // Render chart after adding to DOM
+            setTimeout(() => {
+                const ctx = document.getElementById(chartId);
+                if (ctx) {
+                    renderFeatureChart(ctx, chartItem, feature);
+                }
+            }, 100);
+
+            return card;
+        }
+
+        function renderFeatureChart(canvasElement, chartItem, feature) {
+            try {
+                // Destroy existing chart if it exists
+                const existingChart = Chart.getChart(canvasElement);
+                if (existingChart) {
+                    existingChart.destroy();
+                }
+
+                const ctx = canvasElement.getContext('2d');
+                const dataPoints = chartItem.values;
+                const labels = chartItem.months;
+                
+                // Determine colors
+                let backgroundColor = 'rgba(59, 130, 246, 0.1)';
+                let borderColor = 'rgb(59, 130, 246)';
+                let pointBackgroundColor = 'rgb(59, 130, 246)';
+
+                // Color code by feature type
+                if (feature.includes('rating') || feature.includes('success')) {
+                    backgroundColor = 'rgba(16, 185, 129, 0.1)';
+                    borderColor = 'rgb(16, 185, 129)';
+                    pointBackgroundColor = 'rgb(16, 185, 129)';
+                } else if (feature.includes('cancelled') || feature.includes('error')) {
+                    backgroundColor = 'rgba(239, 68, 68, 0.1)';
+                    borderColor = 'rgb(239, 68, 68)';
+                    pointBackgroundColor = 'rgb(239, 68, 68)';
+                } else if (feature.includes('commission') || feature.includes('earned') || feature.includes('spent')) {
+                    backgroundColor = 'rgba(245, 158, 11, 0.1)';
+                    borderColor = 'rgb(245, 158, 11)';
+                    pointBackgroundColor = 'rgb(245, 158, 11)';
+                }
+
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: capitalizeFeatureName(feature),
+                            data: dataPoints,
+                            fill: true,
+                            backgroundColor: backgroundColor,
+                            borderColor: borderColor,
+                            borderWidth: 2,
+                            tension: 0.4,
+                            pointRadius: 5,
+                            pointBackgroundColor: pointBackgroundColor,
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointHoverRadius: 7,
+                            pointHoverBackgroundColor: borderColor,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top',
+                                labels: {
+                                    usePointStyle: true,
+                                    padding: 12,
+                                    font: { size: 11 }
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                padding: 12,
+                                titleFont: { size: 12 },
+                                bodyFont: { size: 11 },
+                                callbacks: {
+                                    label: function(context) {
+                                        return formatFeatureValue(context.parsed.y, feature);
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: { color: 'rgba(0, 0, 0, 0.05)' },
+                                ticks: { font: { size: 10 } }
+                            },
+                            x: {
+                                grid: { display: false },
+                                ticks: { font: { size: 10 } }
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error rendering chart:', error);
+            }
+        }
+
+        function addPredictionSummary(data, container) {
+            const summaryCard = document.createElement('div');
+            summaryCard.className = 'prediction-card';
+            summaryCard.style.gridColumn = 'span 1';
+            
+            const modelUsed = data.ml_model_used ? 'XGBoost ML Model' : 'Statistical Analysis';
+            const timestamp = new Date(data.timestamp).toLocaleString();
+            
+            let summaryHTML = `
+                <div class="prediction-card-header">
+                    <h3 class="prediction-card-title"><i class="fas fa-info-circle"></i> Prediction Summary</h3>
+                </div>
+                <div style="padding: 12px 0;">
+                    <p><strong>Model Used:</strong> ${modelUsed}</p>
+                    <p><strong>Generated:</strong> ${timestamp}</p>
+                    <p><strong>Total Features Predicted:</strong> ${data.features.length}</p>
+                    <p><strong>Forecast Horizon:</strong> Next 30 Days</p>
+            `;
+
+            if (data.chart_data && data.chart_data.length > 0) {
+                const positiveChanges = data.chart_data.filter(d => d.change >= 0).length;
+                const negativeChanges = data.chart_data.filter(d => d.change < 0).length;
+                const avgChange = data.chart_data.reduce((sum, d) => sum + d.change, 0) / data.chart_data.length;
+
+                summaryHTML += `
+                    <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 12px 0;">
+                    <p><strong>Positive Changes:</strong> ${positiveChanges} features ↑</p>
+                    <p><strong>Negative Changes:</strong> ${negativeChanges} features ↓</p>
+                    <p><strong>Average Change:</strong> ${avgChange >= 0 ? '+' : ''}${avgChange.toFixed(2)}%</p>
+                `;
+            }
+
+            summaryHTML += `
+                    <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 12px 0;">
+                    <p><small>${data.message}</small></p>
+                </div>
+            `;
+
+            summaryCard.innerHTML = summaryHTML;
+            container.appendChild(summaryCard);
+        }
+
+        function capitalizeFeatureName(feature) {
+            return feature
+                .split('_')
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(' ');
+        }
+
+        function formatFeatureValue(value, feature) {
+            if (value === null || value === undefined) return 'N/A';
+            
+            if (feature.includes('rate') || feature.includes('completion') || feature.includes('cancellation')) {
+                return (value * 100).toFixed(1) + '%';
+            } else if (feature.includes('earned') || feature.includes('spent') || feature.includes('commission')) {
+                return '₹' + parseFloat(value).toLocaleString('en-IN', {maximumFractionDigits: 2});
+            } else if (feature.includes('rating')) {
+                return parseFloat(value).toFixed(2) + ' ⭐';
+            } else if (feature.includes('date') || feature.includes('timestamp')) {
+                return new Date(value * 1000).toLocaleDateString('en-IN');
+            } else if (Number.isInteger(value)) {
+                return value.toLocaleString('en-IN');
+            } else {
+                return parseFloat(value).toFixed(2);
+            }
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('predictionModal');
+            if (event.target == modal) {
+                closePredictionModal();
+            }
+        };
+
+        // Allow ESC key to close modal
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closePredictionModal();
+            }
+        });
+    </script>
 </body>
+
 </html>
