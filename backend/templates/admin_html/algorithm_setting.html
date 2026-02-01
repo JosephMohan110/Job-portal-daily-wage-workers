@@ -1303,30 +1303,30 @@
                 <div class="admin-profile">
                     <div class="admin-avatar">
                         {% if request.user.is_authenticated and request.user.username %}
-                            {{ request.user.username.0|upper }}
+                        {{ request.user.username.0|upper }}
                         {% else %}
-                            A
+                        A
                         {% endif %}
                     </div>
                     <div>
                         <h4 style="margin-bottom: 2px;">
                             {% if request.user.is_authenticated %}
-                                {% if request.user.get_full_name %}
-                                    {{ request.user.get_full_name }}
-                                {% elif request.user.username %}
-                                    {{ request.user.username }}
-                                {% else %}
-                                    Administrator
-                                {% endif %}
+                            {% if request.user.get_full_name %}
+                            {{ request.user.get_full_name }}
+                            {% elif request.user.username %}
+                            {{ request.user.username }}
                             {% else %}
-                                Administrator
+                            Administrator
+                            {% endif %}
+                            {% else %}
+                            Administrator
                             {% endif %}
                         </h4>
                         <p style="color: var(--text-light); font-size: 0.85rem;">
                             {% if request.user.is_authenticated and request.user.email %}
-                                {{ request.user.email }}
+                            {{ request.user.email }}
                             {% else %}
-                                admin@skillconnect.com
+                            admin@skillconnect.com
                             {% endif %}
                         </p>
                     </div>
@@ -1360,6 +1360,10 @@
                 <button class="tab-btn {% if tab == 'model-management' %}active{% endif %}" data-tab="model-management"
                     onclick="switchTab('model-management')">
                     <i class="fas fa-brain"></i> ML Model Management
+                </button>
+                <button class="tab-btn {% if tab == 'self-training' %}active{% endif %}" data-tab="self-training"
+                    onclick="switchTab('self-training')">
+                    <i class="fas fa-dumbbell"></i> Self Training
                 </button>
             </div>
 
@@ -1664,7 +1668,7 @@
                             </div>
                         </div>
 
-                        
+
                         <!-- Model Configuration -->
                         <div style="margin-top: 30px;">
                             <h4 style="margin-bottom: 16px; color: var(--text-dark);">Model Configuration</h4>
@@ -1675,7 +1679,7 @@
                                         placeholder="e.g., User Churn Predictor v2.0">
                                 </div>
 
-                                <div class="form-group" style="display: none;">  <!-- Hidden but still required -->
+                                <div class="form-group" style="display: none;"> <!-- Hidden but still required -->
                                     <label class="form-label">Model Type *</label>
                                     <select name="model_type" class="form-control" required>
                                         <!-- Only show relevant options -->
@@ -1690,8 +1694,8 @@
 
                                 <div class="form-group">
                                     <label class="form-label">Version</label>
-                                    <input type="text" name="version" class="form-control" 
-                                        value="{% now 'Y.m.d' %}" placeholder="e.g., 2024.12.25">
+                                    <input type="text" name="version" class="form-control" value="{% now 'Y.m.d' %}"
+                                        placeholder="e.g., 2024.12.25">
                                 </div>
                             </div>
 
@@ -1702,43 +1706,56 @@
                             </div>
 
                             <!-- Current Model Info -->
-                            <div style="background-color: #f0f9ff; padding: 15px; border-radius: 8px; border-left: 4px solid var(--primary-color); margin-bottom: 20px;">
-                                <h5 style="margin-bottom: 10px; color: var(--primary-color); display: flex; align-items: center; gap: 8px;">
+                            <div
+                                style="background-color: #f0f9ff; padding: 15px; border-radius: 8px; border-left: 4px solid var(--primary-color); margin-bottom: 20px;">
+                                <h5
+                                    style="margin-bottom: 10px; color: var(--primary-color); display: flex; align-items: center; gap: 8px;">
                                     <i class="fas fa-info-circle"></i> Upload Information
                                 </h5>
                                 <div style="font-size: 0.9rem; color: var(--text-light);">
-                                    <p><strong>Standardized Filename:</strong> Your uploaded model will be automatically renamed to <code>complete_xgboost_package.pkl</code></p>
-                                    <p><strong>Current Model:</strong> If a model already exists, it will be moved to the <code>old_version_model</code> folder</p>
-                                    <p><strong>Auto-deployment:</strong> Uploaded models are automatically deployed and activated</p>
+                                    <p><strong>Standardized Filename:</strong> Your uploaded model will be automatically
+                                        renamed to <code>complete_xgboost_package.pkl</code></p>
+                                    <p><strong>Current Model:</strong> If a model already exists, it will be moved to
+                                        the <code>old_version_model</code> folder</p>
+                                    <p><strong>Auto-deployment:</strong> Uploaded models are automatically deployed and
+                                        activated</p>
                                 </div>
                             </div>
 
                             <!-- Model Parameters (Optional) -->
-                            <div style="margin-top: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 8px;">
-                                <h5 style="margin-bottom: 15px; color: var(--text-dark);">XGBoost Parameters (Optional)</h5>
+                            <div
+                                style="margin-top: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 8px;">
+                                <h5 style="margin-bottom: 15px; color: var(--text-dark);">XGBoost Parameters (Optional)
+                                </h5>
                                 <div class="form-row">
                                     <div class="form-group">
                                         <label class="form-label">n_estimators</label>
-                                        <input type="number" name="n_estimators" class="form-control" value="100" min="1">
-                                        <small style="color: var(--text-light); font-size: 0.85rem;">Number of trees</small>
+                                        <input type="number" name="n_estimators" class="form-control" value="100"
+                                            min="1">
+                                        <small style="color: var(--text-light); font-size: 0.85rem;">Number of
+                                            trees</small>
                                     </div>
 
                                     <div class="form-group">
                                         <label class="form-label">max_depth</label>
                                         <input type="number" name="max_depth" class="form-control" value="6" min="1">
-                                        <small style="color: var(--text-light); font-size: 0.85rem;">Maximum tree depth</small>
+                                        <small style="color: var(--text-light); font-size: 0.85rem;">Maximum tree
+                                            depth</small>
                                     </div>
 
                                     <div class="form-group">
                                         <label class="form-label">learning_rate</label>
-                                        <input type="number" step="0.01" name="learning_rate" class="form-control" value="0.3" min="0.01">
-                                        <small style="color: var(--text-light); font-size: 0.85rem;">Learning rate</small>
+                                        <input type="number" step="0.01" name="learning_rate" class="form-control"
+                                            value="0.3" min="0.01">
+                                        <small style="color: var(--text-light); font-size: 0.85rem;">Learning
+                                            rate</small>
                                     </div>
                                 </div>
                             </div>
 
                             <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
-                                <button type="button" class="btn btn-secondary" onclick="hideUploadForm()">Cancel</button>
+                                <button type="button" class="btn btn-secondary"
+                                    onclick="hideUploadForm()">Cancel</button>
                                 <button type="submit" class="btn btn-primary">
                                     <i class="fas fa-upload"></i> Upload & Deploy Model
                                 </button>
@@ -2018,21 +2035,25 @@
 
 
                 <!-- Restore Modal -->
-                <div id="restoreModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
-                    <div class="modal-content" style="background-color: var(--card-bg); margin: 10% auto; padding: 20px; border-radius: 8px; width: 500px; max-width: 90%;">
-                        <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div id="restoreModal" class="modal"
+                    style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
+                    <div class="modal-content"
+                        style="background-color: var(--card-bg); margin: 10% auto; padding: 20px; border-radius: 8px; width: 500px; max-width: 90%;">
+                        <div class="modal-header"
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                             <h3 style="color: var(--text-dark);">
                                 <i class="fas fa-history"></i> Restore from Backup
                             </h3>
-                            <span class="close-modal" onclick="closeRestoreModal()" style="font-size: 28px; cursor: pointer; color: var(--text-light);">&times;</span>
+                            <span class="close-modal" onclick="closeRestoreModal()"
+                                style="font-size: 28px; cursor: pointer; color: var(--text-light);">&times;</span>
                         </div>
-                        
+
                         <div class="modal-body">
                             <form id="restoreForm" method="post" action="">
                                 {% csrf_token %}
                                 <input type="hidden" name="action" value="restore">
                                 <input type="hidden" id="restoreModelId" name="model_id">
-                                
+
                                 <div class="form-group">
                                     <label class="form-label">Select Backup Version</label>
                                     <select name="version_num" class="form-control" required id="versionSelect">
@@ -2040,14 +2061,17 @@
                                         <!-- Options will be populated by JavaScript -->
                                     </select>
                                 </div>
-                                
+
                                 <div class="form-group">
                                     <label class="form-label">Restore Notes (Optional)</label>
-                                    <textarea name="notes" class="form-control" rows="3" placeholder="Add notes about why you're restoring this version..."></textarea>
+                                    <textarea name="notes" class="form-control" rows="3"
+                                        placeholder="Add notes about why you're restoring this version..."></textarea>
                                 </div>
-                                
-                                <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px;">
-                                    <button type="button" class="btn btn-secondary" onclick="closeRestoreModal()">Cancel</button>
+
+                                <div class="modal-footer"
+                                    style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px;">
+                                    <button type="button" class="btn btn-secondary"
+                                        onclick="closeRestoreModal()">Cancel</button>
                                     <button type="submit" class="btn btn-primary">
                                         <i class="fas fa-history"></i> Restore & Deploy
                                     </button>
@@ -2058,7 +2082,8 @@
                 </div>
 
                 <!-- Backup Management Section -->
-                <div id="backupManagement" style="display: none; margin-top: 20px; padding: 20px; background-color: #f8f9fa; border-radius: 8px;">
+                <div id="backupManagement"
+                    style="display: none; margin-top: 20px; padding: 20px; background-color: #f8f9fa; border-radius: 8px;">
                     <h4 style="margin-bottom: 15px; color: var(--text-dark);">
                         <i class="fas fa-archive"></i> Backup Versions
                     </h4>
@@ -2114,6 +2139,155 @@
                     </div>
                 </div>
                 {% endif %}
+            </div>
+
+            <!-- ========== SELF TRAINING TAB ========== -->
+            <div id="self-training" class="tab-content {% if tab == 'self-training' %}active{% endif %}">
+                <div class="model-management-header">
+                    <h2><i class="fas fa-dumbbell"></i> Self Learning & Training</h2>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <button class="btn btn-primary" onclick="startSelfTraining()">
+                            <i class="fas fa-play"></i> Start New Training Session
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Training Configuration (Hidden by default, shown when Start New Training is clicked) -->
+                <div class="upload-model-container" id="trainingConfigContainer" style="display: none;">
+                    <h3
+                        style="margin-bottom: 20px; color: var(--text-dark); display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-sliders-h"></i> Configure Self Training
+                    </h3>
+
+                    <form method="post" action="{% url 'start_self_training' %}" id="trainingForm">
+                        {% csrf_token %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            The system will automatically collect new data from the platform and retrain the XGBoost
+                            model.
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Training Data Source</label>
+                                <select name="data_source" class="form-control">
+                                    <option value="combined" selected>All Available Data (Recommended)</option>
+                                    <option value="user_data">User Data Only</option>
+                                    <option value="booking_data">Booking Data Only</option>
+                                    <option value="revenue_data">Revenue Data Only</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Model Version Strategy</label>
+                                <select name="version_strategy" class="form-control">
+                                    <option value="minor" selected>Increment Minor Version (e.g., 1.1.0 -> 1.2.0)
+                                    </option>
+                                    <option value="patch">Increment Patch Version (e.g., 1.1.0 -> 1.1.1)</option>
+                                    <option value="major">Increment Major Version (e.g., 1.0.0 -> 2.0.0)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div style="background-color: #f8fafc; padding: 16px; border-radius: 8px; margin-top: 10px;">
+                            <h4 style="font-size: 1rem; margin-bottom: 12px; color: var(--text-dark);">Training
+                                Parameters (Advanced)</h4>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">Limit Training Samples</label>
+                                    <select name="sample_limit" class="form-control">
+                                        <option value="0" selected>Use All Records</option>
+                                        <option value="1000">Last 1,000 Records</option>
+                                        <option value="5000">Last 5,000 Records</option>
+                                        <option value="10000">Last 10,000 Records</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Test Split Ratio</label>
+                                    <select name="test_split" class="form-control">
+                                        <option value="0.2" selected>20% (Standard)</option>
+                                        <option value="0.3">30% (Robust Evaluation)</option>
+                                        <option value="0.1">10% (Maximize Training)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+                            <button type="button" class="btn btn-secondary"
+                                onclick="hideTrainingConfig()">Cancel</button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-rocket"></i> Start Training
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Training History Table -->
+                <div class="data-table-container">
+                    <h3
+                        style="margin-bottom: 20px; color: var(--text-dark); display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-history"></i> Training Session History
+                    </h3>
+
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Date & Time</th>
+                                <th>Model Version</th>
+                                <th>Data Source</th>
+                                <th>Samples</th>
+                                <th>Accuracy</th>
+                                <th>Status</th>
+                                <th>Duration</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for session in training_history %}
+                            <tr>
+                                <td>
+                                    {{ session.created_at|date:"Y-m-d" }}<br>
+                                    <small>{{ session.created_at|date:"H:i A" }}</small>
+                                </td>
+                                <td>
+                                    <strong>v{{ session.ml_model.version }}</strong>
+                                </td>
+                                <td>{{ session.get_data_source_display }}</td>
+                                <td>{{ session.total_samples }}</td>
+                                <td>
+                                    {% if session.ml_model.accuracy_score %}
+                                    <span style="color: var(--success-color); font-weight: 600;">{{
+                                        session.ml_model.accuracy_score|floatformat:2 }}%</span>
+                                    {% else %}
+                                    -
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="model-status-badge 
+                                    {% if session.ml_model.status == 'deployed' %}status-deployed
+                                    {% elif session.ml_model.status == 'failed' %}status-failed
+                                    {% else %}status-pending{% endif %}">
+                                        {{ session.ml_model.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if session.duration_seconds %}
+                                    {{ session.duration_seconds|floatformat:1 }}s
+                                    {% else %}
+                                    -
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" style="text-align: center; color: var(--text-light); padding: 30px;">
+                                    No training sessions recorded yet. Start a new session to improve your model!
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </main>
@@ -2248,24 +2422,24 @@
 
             const text = csvPreview.textContent;
             const lines = text.split('\n');
-            
+
             if (lines.length > 0) {
                 const header = lines[0];
                 const dataLines = lines.slice(1, Math.min(lines.length, 11)); // First 10 data rows + header
-                
+
                 let formattedHTML = '';
-                
+
                 // Format header
                 const headers = header.split(',');
                 formattedHTML += '<div class="csv-preview-header">' + headers.join(', ') + '</div>';
-                
+
                 // Format data rows
                 dataLines.forEach((line, index) => {
                     if (line.trim()) {
                         formattedHTML += '<div class="csv-preview-row">' + line + '</div>';
                     }
                 });
-                
+
                 csvPreview.innerHTML = formattedHTML;
             }
         }
@@ -2288,13 +2462,13 @@
         function updateFileInfo() {
             const modelFileInput = document.getElementById('modelFile');
             const fileNameDisplay = document.getElementById('fileName');
-            
+
             if (modelFileInput && fileNameDisplay) {
                 modelFileInput.addEventListener('change', function () {
                     if (this.files.length > 0) {
                         const file = this.files[0];
                         const fileSize = (file.size / (1024 * 1024)).toFixed(2);
-                        
+
                         // Show both original and standardized filename
                         fileNameDisplay.innerHTML = `
                             <div style="margin-bottom: 5px;">
@@ -2330,7 +2504,7 @@
                             modelFileInput.files = files;
                             const file = files[0];
                             const fileSize = (file.size / (1024 * 1024)).toFixed(2);
-                            
+
                             fileNameDisplay.innerHTML = `
                                 <div style="margin-bottom: 5px;">
                                     <strong>Original:</strong> ${file.name} (${fileSize} MB)
@@ -2352,14 +2526,14 @@
         function showRestoreModal(modelId) {
             document.getElementById('restoreModelId').value = modelId;
             document.getElementById('restoreForm').action = `/admin_self/algorithm/model/${modelId}/update-status/`;
-            
+
             // Fetch backup versions
             fetch('/admin_self/algorithm/old-models/')
                 .then(response => response.json())
                 .then(data => {
                     const versionSelect = document.getElementById('versionSelect');
                     versionSelect.innerHTML = '<option value="">Select a backup version...</option>';
-                    
+
                     if (data.old_models && data.old_models.length > 0) {
                         data.old_models.forEach(backup => {
                             const option = document.createElement('option');
@@ -2367,7 +2541,7 @@
                             option.textContent = `Version ${backup.filename.replace('xgboost_model_', '').replace('.pkl', '')} - ${backup.size_mb} MB - ${new Date(backup.modified).toLocaleString()}`;
                             versionSelect.appendChild(option);
                         });
-                        
+
                         // Show backup management section
                         showBackupManagement(data.old_models);
                     } else {
@@ -2375,7 +2549,7 @@
                         document.getElementById('backupManagement').style.display = 'none';
                     }
                 });
-            
+
             document.getElementById('restoreModal').style.display = 'block';
         }
 
@@ -2384,16 +2558,25 @@
             document.getElementById('restoreModal').style.display = 'none';
         }
 
+        function startSelfTraining() {
+            document.getElementById('trainingConfigContainer').style.display = 'block';
+            document.getElementById('trainingConfigContainer').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function hideTrainingConfig() {
+            document.getElementById('trainingConfigContainer').style.display = 'none';
+        }
+
         // Show backup management
         function showBackupManagement(backups) {
             const backupList = document.getElementById('backupList');
             backupList.innerHTML = '';
-            
+
             if (backups.length === 0) {
                 backupList.innerHTML = '<p style="color: var(--text-light); text-align: center;">No backup versions available.</p>';
                 return;
             }
-            
+
             // Create table for backups
             let tableHTML = `
                 <table class="data-table" style="width: 100%;">
@@ -2407,11 +2590,11 @@
                     </thead>
                     <tbody>
             `;
-            
+
             backups.forEach(backup => {
                 const versionNum = backup.filename.replace('xgboost_model_', '').replace('.pkl', '');
                 const modifiedDate = new Date(backup.modified).toLocaleString();
-                
+
                 tableHTML += `
                     <tr>
                         <td>Version ${versionNum}</td>
@@ -2439,18 +2622,18 @@
                     </tr>
                 `;
             });
-            
+
             tableHTML += `
                     </tbody>
                 </table>
             `;
-            
+
             backupList.innerHTML = tableHTML;
             document.getElementById('backupManagement').style.display = 'block';
         }
 
         // Close modal when clicking outside
-        window.onclick = function(event) {
+        window.onclick = function (event) {
             const modal = document.getElementById('restoreModal');
             if (event.target == modal) {
                 closeRestoreModal();
