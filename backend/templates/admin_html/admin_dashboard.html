@@ -507,36 +507,36 @@
                 {% include 'admin_html/includes/admin_notification.html' %}
 
                 <div class="admin-profile">
-                <div class="admin-avatar">
-                    {% if request.user.is_authenticated and request.user.username %}
+                    <div class="admin-avatar">
+                        {% if request.user.is_authenticated and request.user.username %}
                         {{ request.user.username.0|upper }}
-                    {% else %}
+                        {% else %}
                         A
-                    {% endif %}
-                </div>
-                <div>
-                    <h4 style="margin-bottom: 2px;">
-                        {% if request.user.is_authenticated %}
+                        {% endif %}
+                    </div>
+                    <div>
+                        <h4 style="margin-bottom: 2px;">
+                            {% if request.user.is_authenticated %}
                             {% if request.user.get_full_name %}
-                                {{ request.user.get_full_name }}
+                            {{ request.user.get_full_name }}
                             {% elif request.user.username %}
-                                {{ request.user.username }}
+                            {{ request.user.username }}
                             {% else %}
-                                Administrator
-                            {% endif %}
-                        {% else %}
                             Administrator
-                        {% endif %}
-                    </h4>
-                    <p style="color: var(--text-light); font-size: 0.85rem;">
-                        {% if request.user.is_authenticated and request.user.email %}
+                            {% endif %}
+                            {% else %}
+                            Administrator
+                            {% endif %}
+                        </h4>
+                        <p style="color: var(--text-light); font-size: 0.85rem;">
+                            {% if request.user.is_authenticated and request.user.email %}
                             {{ request.user.email }}
-                        {% else %}
+                            {% else %}
                             admin@skillconnect.com
-                        {% endif %}
-                    </p>
+                            {% endif %}
+                        </p>
+                    </div>
                 </div>
-            </div>
             </div>
         </header>
 
@@ -598,21 +598,22 @@
                 <p>Total Platform Commission</p>
 
                 <div style="margin-top: 15px; border-top: 1px solid #e2e8f0; padding-top: 10px;">
-                   
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                    <span style="font-size: 0.8rem; color: var(--text-light);">Total Paid by Employer:</span>
-                    <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-dark);">
-                        {% load analytics_filters %}
-                        {{ total_spent|format_currency }}
-                    </span>
-                </div>
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span style="font-size: 0.8rem; color: var(--text-light);">Pending Amount to Pay:</span>
-                    <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-dark);">
-                        {% load analytics_filters %}
-                        {{ pending_amount|format_currency }}
-                    </span>
-                </div>
+
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                        <span style="font-size: 0.8rem; color: var(--text-light);">Total Paid by Employer:</span>
+                        <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-dark);">
+                            {% load analytics_filters %}
+                            {{ total_spent|format_currency }}
+                        </span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 0.8rem; color: var(--text-light);">Pending Amount to Pay:</span>
+                        <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-dark);">
+                            {% load analytics_filters %}
+                            {{ pending_amount|format_currency }}
+                        </span>
+                    </div>
 
 
                 </div>
@@ -762,136 +763,477 @@
 
             // Initialize Growth Chart
             {% if chart_data %}
-            const ctx = document.getElementById('growthChart').getContext('2d');
+            const ctx = document.getElementById('growthChart');
+            let growthChartInstance = null; // To store the Chart.js instance
+            if (ctx) {
+                const ctx2d = ctx.getContext('2d');
 
-            // Prepare data from Django context
-            const labels = {{ chart_data.labels|safe }};
-        const revenueData = {{ chart_data.revenue_data|safe }};
-        const bookingsData = {{ chart_data.bookings_data|safe }};
-        const growthData = {{ chart_data.growth_data|safe }};
-
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [
-                    {
-                        label: 'Platform Revenue (₹)',
-                        data: revenueData,
-                        borderColor: '#3b82f6', // Primary color
-                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                        borderWidth: 3,
-                        tension: 0.3,
-                        fill: true,
-                        yAxisID: 'y'
-                    },
-                    {
-                        label: 'New Users',
-                        data: growthData,
-                        borderColor: '#f59e0b', // Warning/Orange color
-                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
-                        borderWidth: 3,
-                        tension: 0.3,
-                        pointBackgroundColor: '#ffffff',
-                        pointBorderColor: '#f59e0b',
-                        fill: true,
-                        yAxisID: 'y1'
-                    },
-                    {
-                        label: 'Completed Bookings',
-                        data: bookingsData,
-                        borderColor: '#10b981', // Success color
-                        backgroundColor: 'rgba(16, 185, 129, 0.05)',
-                        borderWidth: 2,
-                        tension: 0.3,
-                        pointBackgroundColor: '#ffffff',
-                        pointBorderColor: '#10b981',
-                        fill: false,
-                        borderDash: [5, 5],
-                        yAxisID: 'y1'
+                // Prepare data from Django context safely
+                let chartData = {};
+                try {
+                    const rawJson = '{{ json_chart_data|escapejs }}';
+                    console.log("Dashboard Chart Data JSON:", rawJson); // DEBUG
+                    if (rawJson) {
+                        chartData = JSON.parse(rawJson);
                     }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: {
-                    mode: 'index',
-                    intersect: false,
-                },
-                plugins: {
-                    legend: { position: 'top' },
-                    tooltip: {
-                        backgroundColor: '#1e293b',
-                        padding: 10,
-                        cornerRadius: 8,
-                    }
-                },
-                scales: {
-                    x: { grid: { display: false } },
-                    y: {
-                        type: 'linear',
-                        display: true,
-                        position: 'left',
-                        title: { display: true, text: 'Revenue (₹)' }
-                    },
-                    y1: {
-                        type: 'linear',
-                        display: true,
-                        position: 'right',
-                        grid: { display: false },
-                        title: { display: true, text: 'Count (Users/Bookings)' }
-                    }
+                } catch (e) {
+                    console.error("Failed to parse dashboard chart data:", e);
                 }
-            }
-        });
 
-        // Feature Importance Data
-        // Safe parsing of feature importance dict
-        const featureImportanceRaw = {{ feature_importance| safe }};
-        const featureLabels = Object.keys(featureImportanceRaw);
-        const featureValues = Object.values(featureImportanceRaw);
+                const labels = chartData.labels || [];
+                const revenueData = chartData.revenue_data || [];
+                const bookingsData = chartData.bookings_data || [];
+                const growthData = chartData.growth_data || [];
 
-        // Initialize Feature Importance Chart
-        const ctxFeature = document.getElementById('featureChart').getContext('2d');
-        new Chart(ctxFeature, {
-            type: 'bar',
-            data: {
-                labels: featureLabels,
-                datasets: [{
-                    label: 'Impact Score',
-                    data: featureValues,
-                    backgroundColor: '#6366f1', // Indigo color
-                    borderRadius: 6,
-                    barThickness: 20,
-                }]
-            },
-            options: {
-                indexAxis: 'y',
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            label: function (context) {
-                                return 'Importance: ' + context.raw.toFixed(4);
+                // Find the predicted index (last item)
+                const predictedIndex = labels.length - 1;
+
+                growthChartInstance = new Chart(ctx2d, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Platform Revenue (₹)',
+                                data: revenueData,
+                                borderColor: '#3b82f6',
+                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                borderWidth: 3,
+                                tension: 0.3,
+                                fill: true,
+                                yAxisID: 'y',
+                                // Style the predicted point differently
+                                pointBackgroundColor: function (context) {
+                                    return context.dataIndex === predictedIndex ? '#3b82f6' : '#ffffff';
+                                },
+                                pointBorderColor: function (context) {
+                                    return context.dataIndex === predictedIndex ? '#3b82f6' : '#3b82f6';
+                                },
+                                pointBorderWidth: function (context) {
+                                    return context.dataIndex === predictedIndex ? 3 : 2;
+                                },
+                                pointRadius: function (context) {
+                                    return context.dataIndex === predictedIndex ? 6 : 4;
+                                }
+                            },
+                            {
+                                label: 'New Users',
+                                data: growthData,
+                                borderColor: '#f59e0b',
+                                backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                                borderWidth: 3,
+                                tension: 0.3,
+                                pointBackgroundColor: function (context) {
+                                    return context.dataIndex === predictedIndex ? '#f59e0b' : '#ffffff';
+                                },
+                                pointBorderColor: function (context) {
+                                    return context.dataIndex === predictedIndex ? '#f59e0b' : '#f59e0b';
+                                },
+                                pointBorderWidth: function (context) {
+                                    return context.dataIndex === predictedIndex ? 3 : 2;
+                                },
+                                pointRadius: function (context) {
+                                    return context.dataIndex === predictedIndex ? 6 : 4;
+                                },
+                                fill: true,
+                                yAxisID: 'y1'
+                            },
+                            {
+                                label: 'Completed Bookings',
+                                data: bookingsData,
+                                borderColor: '#10b981',
+                                backgroundColor: 'rgba(16, 185, 129, 0.05)',
+                                borderWidth: 2,
+                                tension: 0.3,
+                                pointBackgroundColor: function (context) {
+                                    return context.dataIndex === predictedIndex ? '#10b981' : '#ffffff';
+                                },
+                                pointBorderColor: function (context) {
+                                    return context.dataIndex === predictedIndex ? '#10b981' : '#10b981';
+                                },
+                                pointBorderWidth: function (context) {
+                                    return context.dataIndex === predictedIndex ? 3 : 2;
+                                },
+                                pointRadius: function (context) {
+                                    return context.dataIndex === predictedIndex ? 6 : 4;
+                                },
+                                fill: false,
+                                borderDash: [5, 5],
+                                yAxisID: 'y1'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false,
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                                labels: {
+                                    usePointStyle: true,
+                                    padding: 15
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: '#1e293b',
+                                padding: 12,
+                                cornerRadius: 8,
+                                callbacks: {
+                                    label: function (context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.dataIndex === predictedIndex) {
+                                            label += 'Predicted ';
+                                        }
+                                        if (context.parsed.y !== null) {
+                                            if (context.dataset.label.includes('Revenue')) {
+                                                label += new Intl.NumberFormat('en-IN', {
+                                                    style: 'currency',
+                                                    currency: 'INR'
+                                                }).format(context.parsed.y);
+                                            } else {
+                                                label += context.parsed.y.toLocaleString('en-IN');
+                                                if (context.dataset.label.includes('Users')) {
+                                                    label += ' users';
+                                                } else if (context.dataset.label.includes('Bookings')) {
+                                                    label += ' bookings';
+                                                }
+                                            }
+                                        }
+                                        return label;
+                                    },
+                                    title: function (context) {
+                                        const label = context[0].label;
+                                        if (context[0].dataIndex === predictedIndex) {
+                                            return '📈 ' + label + ' (Predicted)';
+                                        }
+                                        return '📊 ' + label;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: {
+                                    display: false
+                                },
+                                ticks: {
+                                    callback: function (value, index, values) {
+                                        // Highlight predicted label
+                                        if (index === predictedIndex) {
+                                            return '▶ ' + this.getLabelForValue(value);
+                                        }
+                                        return this.getLabelForValue(value);
+                                    }
+                                }
+                            },
+                            y: {
+                                type: 'linear',
+                                display: true,
+                                position: 'left',
+                                title: {
+                                    display: true,
+                                    text: 'Revenue (₹)',
+                                    font: {
+                                        weight: 'bold'
+                                    }
+                                },
+                                ticks: {
+                                    callback: function (value) {
+                                        return '₹' + value.toLocaleString('en-IN');
+                                    }
+                                },
+                                grid: {
+                                    borderDash: [2, 2]
+                                }
+                            },
+                            y1: {
+                                type: 'linear',
+                                display: true,
+                                position: 'right',
+                                grid: {
+                                    display: false
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Count (Users/Bookings)',
+                                    font: {
+                                        weight: 'bold'
+                                    }
+                                },
+                                ticks: {
+                                    callback: function (value) {
+                                        return value.toLocaleString('en-IN');
+                                    }
+                                }
                             }
                         }
                     }
-                },
-                scales: {
-                    x: {
-                        grid: { display: true, borderDash: [2, 2] },
-                        title: { display: true, text: 'Relative Importance' }
-                    },
-                    y: { grid: { display: false } }
-                }
+                });
             }
+
+            // Feature Importance Chart
+            const ctxFeature = document.getElementById('featureChart');
+            if (ctxFeature) {
+                const ctxFeature2d = ctxFeature.getContext('2d');
+
+                // Safe JSON parsing for feature importance
+                let featureImportance = {};
+                try {
+                    const rawFeatures = '{{ json_feature_importance|escapejs }}';
+                    console.log("Feature Importance JSON:", rawFeatures); // DEBUG
+                    if (rawFeatures) {
+                        featureImportance = JSON.parse(rawFeatures);
+                    }
+                } catch (e) {
+                    console.error("Failed to parse feature importance:", e);
+                }
+
+                const featureLabels = Object.keys(featureImportance);
+                const featureValues = Object.values(featureImportance);
+
+                // Sort by importance
+                const featureIndices = featureValues.map((val, idx) => idx);
+                featureIndices.sort((a, b) => featureValues[b] - featureValues[a]);
+
+                const sortedLabels = featureIndices.map(idx => featureLabels[idx]);
+                const sortedValues = featureIndices.map(idx => featureValues[idx]);
+
+                // Take top 10 features (or all if less than 10)
+                const topCount = Math.min(10, sortedLabels.length);
+                const topLabels = sortedLabels.slice(0, topCount);
+                const topValues = sortedValues.slice(0, topCount);
+
+                // Initialize Feature Importance Chart
+                new Chart(ctxFeature2d, {
+                    type: 'bar',
+                    data: {
+                        labels: topLabels,
+                        datasets: [{
+                            label: 'Impact Score',
+                            data: topValues,
+                            backgroundColor: function (context) {
+                                const index = context.dataIndex;
+                                const colors = [
+                                    '#6366f1', '#8b5cf6', '#a855f7', '#d946ef',
+                                    '#ec4899', '#f43f5e', '#ef4444', '#f97316',
+                                    '#f59e0b', '#84cc16'
+                                ];
+                                return colors[index % colors.length];
+                            },
+                            borderRadius: 8,
+                            barThickness: 28,
+                            borderWidth: 1,
+                            borderColor: 'rgba(255, 255, 255, 0.2)'
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                backgroundColor: '#1e293b',
+                                padding: 10,
+                                cornerRadius: 8,
+                                callbacks: {
+                                    label: function (context) {
+                                        return `Importance: ${context.raw.toFixed(4)}`;
+                                    },
+                                    title: function (context) {
+                                        const featureName = context[0].label;
+                                        const formattedName = featureName.replace(/_/g, ' ')
+                                            .replace(/\b\w/g, l => l.toUpperCase());
+                                        return `Feature: ${formattedName}`;
+                                    },
+                                    footer: function (context) {
+                                        const importance = context[0].raw;
+                                        if (importance > 0.2) {
+                                            return '🎯 High impact on predictions';
+                                        } else if (importance > 0.1) {
+                                            return '📊 Medium impact on predictions';
+                                        } else {
+                                            return '📈 Low impact on predictions';
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: {
+                                    display: true,
+                                    borderDash: [3, 3],
+                                    color: 'rgba(226, 232, 240, 0.5)'
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Relative Importance',
+                                    font: {
+                                        weight: 'bold',
+                                        size: 14
+                                    }
+                                },
+                                ticks: {
+                                    callback: function (value) {
+                                        return value.toFixed(3);
+                                    }
+                                },
+                                beginAtZero: true
+                            },
+                            y: {
+                                grid: {
+                                    display: false
+                                },
+                                ticks: {
+                                    callback: function (value) {
+                                        // Format feature names
+                                        const featureName = this.getLabelForValue(value);
+                                        const formattedName = featureName.replace(/_/g, ' ')
+                                            .replace(/\b\w/g, l => l.toUpperCase());
+                                        return formattedName;
+                                    },
+                                    font: {
+                                        size: 12
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Add animation to cards when charts are loaded
+            setTimeout(() => {
+                const predictionCards = document.querySelectorAll('.prediction-section .card, .stats-cards .card');
+                predictionCards.forEach((card, index) => {
+                    card.style.animationDelay = `${index * 0.1}s`;
+                    card.classList.add('animate__animated', 'animate__fadeInUp');
+                });
+            }, 500);
+
+            {% else %}
+            // If no chart data, show placeholder message
+            const chartContainer = document.querySelector('.chart-container');
+            if (chartContainer) {
+                chartContainer.innerHTML = `
+                <div style="text-align: center; padding: 40px; color: var(--text-light);">
+                    <i class="fas fa-chart-line" style="font-size: 3rem; margin-bottom: 20px; opacity: 0.5;"></i>
+                    <h3 style="margin-bottom: 10px; color: var(--text-dark);">Chart Data Loading</h3>
+                    <p>Historical data is being processed. Please check back soon.</p>
+                </div>
+            `;
+            }
+
+            const featureContainer = document.getElementById('featureChart')?.parentElement;
+            if (featureContainer) {
+                featureContainer.innerHTML = `
+                <div style="text-align: center; padding: 40px; color: var(--text-light);">
+                    <i class="fas fa-robot" style="font-size: 3rem; margin-bottom: 20px; opacity: 0.5;"></i>
+                    <h3 style="margin-bottom: 10px; color: var(--text-dark);">Feature Analysis</h3>
+                    <p>ML model insights will be available once data is loaded.</p>
+                </div>
+            `;
+            }
+            {% endif %}
+
+            // Add interactive elements for mobile
+            const activityItems = document.querySelectorAll('.activity-item');
+            activityItems.forEach(item => {
+                item.addEventListener('click', function () {
+                    this.style.transform = 'scale(0.98)';
+                    setTimeout(() => {
+                        this.style.transform = 'scale(1)';
+                    }, 150);
+                });
+            });
+
+            // Add chart responsive behavior
+            window.addEventListener('resize', function () {
+                const charts = [ctx, ctxFeature];
+                charts.forEach(chart => {
+                    if (chart && chart.chart) {
+                        chart.chart.resize();
+                    }
+                });
+            });
+
+            // Add loading animation for data refresh
+            const refreshData = function () {
+                const refreshBtn = document.querySelector('.refresh-btn');
+                if (refreshBtn) {
+                    refreshBtn.addEventListener('click', function () {
+                        const icon = this.querySelector('i');
+                        icon.classList.remove('fa-sync-alt');
+                        icon.classList.add('fa-spinner', 'fa-spin');
+
+                        setTimeout(() => {
+                            icon.classList.remove('fa-spinner', 'fa-spin');
+                            icon.classList.add('fa-sync-alt');
+                            // In real implementation, trigger data reload here
+                            console.log('Data refresh requested');
+                        }, 1500);
+                    });
+                }
+            };
+            refreshData();
         });
-        {% endif %}
-        });
+
+        // Add CSS animations
+        const style = document.createElement('style');
+        style.textContent = `
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .animate__animated {
+            animation-duration: 0.6s;
+            animation-fill-mode: both;
+        }
+        
+        .animate__fadeInUp {
+            animation-name: fadeInUp;
+        }
+        
+        .activity-item {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .activity-item:active {
+            background-color: #f1f5f9;
+        }
+        
+        .chart-container canvas {
+            transition: opacity 0.3s ease;
+        }
+        
+        @media (max-width: 768px) {
+            .chart-container {
+                padding: 10px;
+            }
+        }
+    `;
+        document.head.appendChild(style);
     </script>
+
+
 </body>
 
 </html>
