@@ -1,0 +1,188 @@
+Directory structure:
+└── josephmohan110-job-portal-daily-wage-workers/
+    ├── backend/
+    │   ├── manage.py
+    │   ├── requriment.txt
+    │   ├── run.txt
+    │   ├── admin_self/
+    │   │   ├── __init__.py
+    │   │   ├── admin.py
+    │   │   ├── apps.py
+    │   │   ├── models.py
+    │   │   ├── tests.py
+    │   │   ├── urls.py
+    │   │   ├── migrations/
+    │   │   │   ├── 0001_initial.py
+    │   │   │   ├── 0002_algorithmsetting_mlmodel_traininghistory_datafeature.py
+    │   │   │   ├── 0003_delete_algorithmsetting_remove_traininghistory_model_and_more.py
+    │   │   │   ├── 0004_alter_commission_commission_rate.py
+    │   │   │   ├── 0005_mlmodel_modeltrainingdata_modelperformance_and_more.py
+    │   │   │   └── __init__.py
+    │   │   └── templatetags/
+    │   │       ├── analytics_filters.py
+    │   │       └── math_filters.py
+    │   ├── backend/
+    │   │   ├── __init__.py
+    │   │   ├── asgi.py
+    │   │   ├── settings.py
+    │   │   ├── urls.py
+    │   │   └── wsgi.py
+    │   ├── chat_bot/
+    │   │   ├── __init__.py
+    │   │   ├── admin.py
+    │   │   ├── apps.py
+    │   │   ├── chatbot.py
+    │   │   ├── data.csv
+    │   │   ├── models.py
+    │   │   ├── tests.py
+    │   │   ├── urls.py
+    │   │   ├── views.py
+    │   │   └── migrations/
+    │   │       └── __init__.py
+    │   ├── employee/
+    │   │   ├── __init__.py
+    │   │   ├── admin.py
+    │   │   ├── apps.py
+    │   │   ├── models.py
+    │   │   ├── tests.py
+    │   │   ├── urls.py
+    │   │   └── migrations/
+    │   │       ├── 0001_initial.py
+    │   │       ├── 0002_initial.py
+    │   │       ├── 0003_employeenotification.py
+    │   │       ├── 0004_jobrequest_rejection_message_sent_and_more.py
+    │   │       └── __init__.py
+    │   ├── employer/
+    │   │   ├── __init__.py
+    │   │   ├── admin.py
+    │   │   ├── apps.py
+    │   │   ├── context_processors.py
+    │   │   ├── models.py
+    │   │   ├── tests.py
+    │   │   ├── urls.py
+    │   │   └── migrations/
+    │   │       ├── 0001_initial.py
+    │   │       ├── 0002_sitereview_is_published.py
+    │   │       ├── 0003_employernotification.py
+    │   │       ├── 0004_alter_sitereview_employer.py
+    │   │       └── __init__.py
+    │   ├── home/
+    │   │   ├── __init__.py
+    │   │   ├── admin.py
+    │   │   ├── apps.py
+    │   │   ├── models.py
+    │   │   ├── tests.py
+    │   │   ├── urls.py
+    │   │   ├── views.py
+    │   │   └── migrations/
+    │   │       ├── 0001_initial.py
+    │   │       └── __init__.py
+    │   ├── media/
+    │   │   ├── data_exports/
+    │   │   │   ├── skillconnect_data_export_20260120_130013.csv
+    │   │   │   └── skillconnect_data_export_20260120_130214.csv
+    │   │   └── employee_profiles/
+    │   │       └── NEURALINK-8.webp
+    │   ├── message_system/
+    │   │   ├── __init__.py
+    │   │   ├── admin.py
+    │   │   ├── apps.py
+    │   │   ├── models.py
+    │   │   ├── tests.py
+    │   │   ├── urls.py
+    │   │   ├── views.py
+    │   │   └── migrations/
+    │   │       ├── 0001_initial.py
+    │   │       └── __init__.py
+    │   ├── register/
+    │   │   ├── __init__.py
+    │   │   ├── admin.py
+    │   │   ├── apps.py
+    │   │   ├── models.py
+    │   │   ├── tests.py
+    │   │   ├── views.py
+    │   │   └── migrations/
+    │   │       └── __init__.py
+    │   ├── templates/
+    │   │   ├── register.html
+    │   │   ├── admin_html/
+    │   │   │   ├── admin_dashboard.html
+    │   │   │   ├── admin_login.html
+    │   │   │   ├── admin_sidebar.html
+    │   │   │   ├── create_payout.html
+    │   │   │   ├── model_details_modal.html
+    │   │   │   ├── support_page.html
+    │   │   │   └── includes/
+    │   │   │       └── admin_notification.html
+    │   │   ├── chat_bot/
+    │   │   │   └── chat_bot.html
+    │   │   ├── employee_html/
+    │   │   │   ├── employee_dropdown.html
+    │   │   │   ├── employee_earnings.html
+    │   │   │   ├── employee_header.html
+    │   │   │   ├── employee_notifications.html
+    │   │   │   └── employee_review_list.html
+    │   │   ├── employer_html/
+    │   │   │   ├── employer_dashboard.html
+    │   │   │   ├── employer_favorites.html
+    │   │   │   ├── employer_find_workers.html
+    │   │   │   ├── employer_footer.html
+    │   │   │   ├── employer_header.html
+    │   │   │   ├── employer_hired_employees.html
+    │   │   │   ├── employer_hiring_history.html
+    │   │   │   ├── employer_payment_section.html
+    │   │   │   ├── employer_payment_setting.html
+    │   │   │   ├── hire_employee.html
+    │   │   │   ├── initiate_refund.html
+    │   │   │   ├── job_details.html
+    │   │   │   ├── payment_checkout.html
+    │   │   │   ├── transaction_details.html
+    │   │   │   ├── view_employee_profile.html
+    │   │   │   ├── view_employee_reviews.html
+    │   │   │   ├── view_payment_for_job.html
+    │   │   │   └── view_receipt.html
+    │   │   ├── home_page_html/
+    │   │   │   ├── about_us.html
+    │   │   │   ├── contact_us.html
+    │   │   │   ├── footer.html
+    │   │   │   ├── header.html
+    │   │   │   ├── index.html
+    │   │   │   └── privacy_terms.html
+    │   │   ├── message_system/
+    │   │   │   ├── base_messaging.html
+    │   │   │   ├── chat_room.html
+    │   │   │   ├── message_dashboard.html
+    │   │   │   └── start_chat.html
+    │   │   └── voice_assistant/
+    │   │       └── voice_widget.html
+    │   ├── voice_assistant/
+    │   │   ├── __init__.py
+    │   │   ├── admin.py
+    │   │   ├── apps.py
+    │   │   ├── command_handler.py
+    │   │   ├── models.py
+    │   │   ├── tests.py
+    │   │   ├── urls.py
+    │   │   ├── views.py
+    │   │   ├── voice_core.py
+    │   │   └── migrations/
+    │   │       └── __init__.py
+    │   └── xg_boost/
+    │       ├── __init__.py
+    │       ├── admin.py
+    │       ├── apps.py
+    │       ├── checking_xg_boost.ipynb
+    │       ├── cleaned_dataset.csv
+    │       ├── dataset_gernater.py
+    │       ├── models.py
+    │       ├── preprocessing_data.ipynb
+    │       ├── raw_site_dataset.csv
+    │       ├── tests.py
+    │       ├── urls.py
+    │       ├── views.py
+    │       ├── xg_boost_model_training.ipynb
+    │       └── migrations/
+    │           └── __init__.py
+    └── .github/
+        └── workflows/
+            └── static.yml

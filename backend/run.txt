@@ -40,44 +40,6 @@ admin: admin@gmail.com
 password: add@1234
 
 
-your_project/
-├── static/
-│   └── cssfolder/
-│       └── employer_css/
-│           ├── page1.css
-│           ├── page2.css
-│           └── ...
-├── templates/
-│   └── employer_html/
-│       ├── page1.html
-│       ├── page2.html
-│       └── ...
-└── ...
-
-
-
-
-
-
-
-
-
-
-backend/
-├── voice_assistant/
-│   ├── __init__.py
-│   ├── apps.py
-│   ├── voice_core.py      # Main engine
-│   ├── command_handler.py  # Command processing
-│   ├── views.py           # Django views
-│   ├── urls.py            # URLs
-│   └── management/
-│       └── commands/
-│           └── runvoice.py
-├── templates/
-│   └── voice_assistant/
-│       └── control.html
-
 
 
 

@@ -65,9 +65,13 @@ urlpatterns = [
     path('algorithm/model/<int:model_id>/details/', views.get_model_details, name='get_model_details'),
     path('algorithm/export-data/', views.export_data_csv, name='export_data_csv'),
     path('algorithm/collect-data/', views.collect_data_now, name='collect_data_now'),
+    path('algorithm/start-training/', views.start_self_training, name='start_self_training'),
 
 
     path('algorithm/old-models/', views.get_old_models_list, name='get_old_models_list'),
+    
+    # Real-time prediction API
+    path('api/real-time-prediction/', views.real_time_prediction_api, name='real_time_prediction_api'),
 
 
 
