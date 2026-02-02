@@ -2388,14 +2388,14 @@
             const RAZORPAY_KEY_ID = '{{ razorpay_key_id }}';
             const MIN_PAYOUT_AMOUNT = 1;  // Minimum 1 rupee - any amount can be withdrawn
             const MAX_PAYOUT_AMOUNT = 999999;
-            const AVAILABLE_BALANCE = parseFloat('{{ available_for_payout }}');
+            window.AVAILABLE_BALANCE = parseFloat('{{ available_for_payout }}');
 
             // Log Razorpay configuration (for debugging)
             console.log('🔧 Razorpay Configuration Loaded:');
             console.log('  ├─ Key ID Present:', !!RAZORPAY_KEY_ID);
             console.log('  ├─ Min Amount: ₹' + MIN_PAYOUT_AMOUNT);
             console.log('  ├─ Max Amount: ₹' + MAX_PAYOUT_AMOUNT);
-            console.log('  └─ Available Balance: ₹' + formatNumber(AVAILABLE_BALANCE));
+            console.log('  └─ Available Balance: ₹' + formatNumber(window.AVAILABLE_BALANCE));
 
             // DOM Elements
             const payoutForm = document.getElementById('payoutForm');
@@ -2479,8 +2479,8 @@
                 } else if (amount > MAX_PAYOUT_AMOUNT) {
                     amountWarning.textContent = `❌ Maximum payout amount is ₹${MAX_PAYOUT_AMOUNT}`;
                     amountWarning.style.color = '#dc2626';
-                } else if (amount > AVAILABLE_BALANCE) {
-                    amountWarning.textContent = `⚠️ Amount exceeds available balance (₹${formatNumber(AVAILABLE_BALANCE)})`;
+                } else if (amount > window.AVAILABLE_BALANCE) {
+                    amountWarning.textContent = `⚠️ Amount exceeds available balance (₹${formatNumber(window.AVAILABLE_BALANCE)})`;
                     amountWarning.style.color = '#f97316';
                 } else {
                     amountWarning.textContent = `✓ Amount valid`;
@@ -2546,7 +2546,7 @@
                     return false;
                 }
 
-                if (amount > AVAILABLE_BALANCE) {
+                if (amount > window.AVAILABLE_BALANCE) {
                     showAlert('Insufficient balance for this payout', 'error');
                     return false;
                 }
@@ -2813,7 +2813,7 @@
 
             async function processBankTransfer(amount) {
                 try {
-                    const response = await fetch('{% url "create_payout" %}', {
+                    const response = await fetch('{% url "create_payout_ajax" %}', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -2853,7 +2853,7 @@
 
             async function processUPITransfer(amount) {
                 try {
-                    const response = await fetch('{% url "create_payout" %}', {
+                    const response = await fetch('{% url "create_payout_ajax" %}', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -2916,7 +2916,9 @@
                         document.getElementById('availableToWithdrawValue').textContent = data.available_for_payout_formatted;
                         document.getElementById('availableBalanceDisplay').textContent = data.available_for_payout_formatted;
 
-                        console.log('✅ Dashboard stats updated successfully');
+                        // Update the global AVAILABLE_BALANCE variable for form validation
+                        window.AVAILABLE_BALANCE = data.available_for_payout;
+                        console.log('✅ Dashboard stats updated successfully. New Balance: ₹' + formatNumber(window.AVAILABLE_BALANCE));
                         return true;
                     } else {
                         console.error('❌ Stats fetch failed:', data.message);

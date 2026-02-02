@@ -13,6 +13,9 @@ urlpatterns = [
 
     
     path('earnings', views.employee_earnings, name='employee_earnings'),
+    path('payment/withdrawal/initiate', views.initiate_withdrawal, name='initiate_withdrawal'),
+    path('payment/withdrawal/history', views.get_withdrawal_history, name='get_withdrawal_history'),
+    path('payment/withdrawal/verify', views.verify_withdrawal_webhook, name='verify_withdrawal'),
      
      
      # Job History URLs

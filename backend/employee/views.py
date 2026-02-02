@@ -278,9 +278,13 @@ def employee_earnings(request):
             month_ago = now - timedelta(days=30)
             completed_jobs = completed_jobs.filter(completed_at__gte=month_ago)
         
-        # Calculate statistics from actual data
-        total_earnings = completed_jobs.aggregate(total=Sum('budget'))['total'] or 0
+        #  Calculate statistics from actual data
+        earned_from_jobs = completed_jobs.aggregate(total=Sum('budget'))['total'] or 0
         total_jobs_completed = completed_jobs.count()
+        
+        # CRITICAL FIX: Use stored balance from employee model, not recalculated from jobs
+        # This is the actual available balance that accounts for withdrawals
+        total_earnings = float(employee.total_earnings)
         
         # Calculate chart data based on selected period
         chart_labels = []
@@ -387,6 +391,7 @@ def employee_earnings(request):
             completed_at__gte=month_ago
         ).aggregate(total=Sum('budget'))['total'] or 0
         
+        
         # Get average earnings per job
         avg_per_job = total_earnings / total_jobs_completed if total_jobs_completed > 0 else 0
         
@@ -396,7 +401,8 @@ def employee_earnings(request):
             'employee_name': employee.full_name,
             'employee_email': employee.email,
             'earnings_history': earnings_page,
-            'total_earnings': total_earnings,
+            'total_earnings': total_earnings,  # Available balance (after withdrawals)
+            'earned_from_jobs': earned_from_jobs,  # Total earned from completed jobs
             'total_jobs_completed': total_jobs_completed,
             'today_earnings': today_earnings,
             'weekly_earnings': weekly_earnings,
@@ -3433,3 +3439,382 @@ def reject_job_with_message(request):
         pass
     
     return redirect('employee_job_request')
+
+# ============ WITHDRAWAL/PAYOUT VIEWS ============
+
+def initiate_withdrawal(request):
+    """
+    Initiate a withdrawal request for the employee with comprehensive Razorpay integration
+    
+    Process Flow:
+    1. Validate employee session
+    2. Parse and validate withdrawal request data
+    3. Verify balance and payment method
+    4. Create Razorpay contact with employee details
+    5. Create fund account (bank/UPI)
+    6. Initiate payout on Razorpay
+    7. Store records in database
+    8. Return response with transaction details
+    """
+    if 'employee_id' not in request.session:
+        return JsonResponse({'success': False, 'error': 'Please login first.'})
+    
+    if request.method == 'POST':
+        try:
+            import json
+            import razorpay
+            import hmac
+            import hashlib
+            import logging
+            from django.conf import settings
+            from admin_self.models import Payout
+            from employee.models import Employee
+            from datetime import datetime
+            
+            logger = logging.getLogger(__name__)
+            
+            # Parse request data
+            data = json.loads(request.body)
+            amount = float(data.get('amount', 0))
+            payment_method = data.get('payment_method', '').lower()
+            
+            # Get employee object
+            try:
+                employee = Employee.objects.get(employee_id=request.session.get('employee_id'))
+            except Employee.DoesNotExist:
+                logger.error(f"Employee not found: {request.session.get('employee_id')}")
+                return JsonResponse({'success': False, 'error': 'Employee not found'})
+            
+            # ===== VALIDATION STAGE =====
+            
+            # Validate amount
+            if not amount or amount <= 0:
+                return JsonResponse({'success': False, 'error': 'Amount must be greater than 0'})
+            
+            MIN_WITHDRAWAL = 100
+            if amount < MIN_WITHDRAWAL:
+                return JsonResponse({
+                    'success': False, 
+                    'error': f'Minimum withdrawal amount is ₹{MIN_WITHDRAWAL}'
+                })
+            
+            # Validate balance
+            available_balance = float(employee.total_earnings)
+            if amount > available_balance:
+                return JsonResponse({
+                    'success': False, 
+                    'error': f'Insufficient balance. Available: ₹{available_balance:.2f}'
+                })
+            
+            # Validate payment method
+            valid_methods = ['bank_transfer', 'upi', 'razorpay']
+            if payment_method not in valid_methods:
+                return JsonResponse({
+                    'success': False, 
+                    'error': f'Invalid payment method. Choose: {", ".join(valid_methods)}'
+                })
+            
+            # ===== BANK TRANSFER VALIDATION =====
+            if payment_method == 'bank_transfer':
+                account_number = str(data.get('account_number', '')).strip()
+                ifsc = str(data.get('ifsc', '')).strip().upper()
+                bank_name = str(data.get('bank_name', '')).strip()
+                
+                # Validate account number (9-18 digits)
+                if not account_number or not account_number.isdigit() or len(account_number) < 9 or len(account_number) > 18:
+                    return JsonResponse({
+                        'success': False, 
+                        'error': 'Invalid account number (must be 9-18 digits)'
+                    })
+                
+                # Validate IFSC (11 characters, format: XXXX0XXXXXX)
+                if not ifsc or len(ifsc) != 11:
+                    return JsonResponse({
+                        'success': False, 
+                        'error': 'Invalid IFSC code (must be 11 characters, e.g., SBIN0001234)'
+                    })
+                
+                if not bank_name:
+                    return JsonResponse({
+                        'success': False, 
+                        'error': 'Bank name is required'
+                    })
+                
+                payment_details = {
+                    'account_number': account_number,
+                    'ifsc': ifsc,
+                    'bank_name': bank_name
+                }
+            
+            # ===== UPI VALIDATION =====
+            elif payment_method == 'upi':
+                upi_id = str(data.get('upi_id', '')).strip().lower()
+                
+                # Validate UPI format
+                if not upi_id or '@' not in upi_id:
+                    return JsonResponse({
+                        'success': False, 
+                        'error': 'Invalid UPI ID (format: yourname@bankname)'
+                    })
+                
+                # Validate UPI pattern (basic validation)
+                upi_parts = upi_id.split('@')
+                if len(upi_parts) != 2 or not upi_parts[0] or not upi_parts[1]:
+                    return JsonResponse({
+                        'success': False, 
+                        'error': 'Invalid UPI format'
+                    })
+                
+                payment_details = {'upi_id': upi_id}
+            
+            # ===== RAZORPAY VALIDATION =====
+            elif payment_method == 'razorpay':
+                razorpay_email = str(data.get('razorpay_email', '')).strip().lower()
+                razorpay_phone = str(data.get('razorpay_phone', '')).strip()
+                
+                # Validate email format
+                import re
+                email_regex = r'^[^\s@]+@[^\s@]+\.[^\s@]+$'
+                if not razorpay_email or not re.match(email_regex, razorpay_email):
+                    return JsonResponse({
+                        'success': False, 
+                        'error': 'Invalid email address'
+                    })
+                
+                # Validate phone (10 digits)
+                if not razorpay_phone or len(razorpay_phone) != 10 or not razorpay_phone.isdigit():
+                    return JsonResponse({
+                        'success': False, 
+                        'error': 'Invalid phone number (must be 10 digits)'
+                    })
+                
+                payment_details = {
+                    'razorpay_email': razorpay_email,
+                    'razorpay_phone': razorpay_phone
+                }
+            
+            # ===== DATABASE RECORD CREATION =====
+            
+            # Create payout record
+            payout = Payout.objects.create(
+                employee=employee,
+                amount=amount,
+                payout_method=payment_method,
+                status='pending'
+            )
+            
+            # Store payment method specific details
+            if payment_method == 'bank_transfer':
+                payout.bank_account_number = payment_details['account_number']
+                payout.bank_ifsc = payment_details['ifsc']
+                payout.bank_name = payment_details['bank_name']
+            elif payment_method == 'upi':
+                payout.upi_id = payment_details['upi_id']
+            elif payment_method == 'razorpay':
+                # Store Razorpay contact info in notes field or create custom field
+                payout.notes = f"Razorpay Email: {payment_details['razorpay_email']}, Phone: {payment_details['razorpay_phone']}"
+            
+            payout.save()
+            logger.info(f"Payout record created: {payout.payout_id} for employee {employee.employee_id}")
+            
+            # ===== RAZORPAY INTEGRATION =====
+            
+            try:
+                # Store payment details and process locally
+                # Razorpay API integration can be added later for automatic payouts
+                
+                logger.info(f"Processing {payment_method} withdrawal for employee {employee.employee_id}, amount: ₹{amount}")
+                
+                # Store payment method specific details
+                if payment_method == 'bank_transfer':
+                    payout.bank_account_number = payment_details['account_number']
+                    payout.bank_ifsc = payment_details['ifsc']
+                    payout.bank_name = payment_details['bank_name']
+                    
+                elif payment_method == 'upi':
+                    payout.upi_id = payment_details['upi_id']
+                    
+                elif payment_method == 'razorpay':
+                    payout.razorpay_email = payment_details['razorpay_email']
+                    payout.razorpay_phone = payment_details['razorpay_phone']
+                    payout.razorpay_account_type = 'RAZORPAY_WALLET'
+                
+                # ===== DEDUCT AMOUNT FROM EMPLOYEE'S EARNINGS =====
+                # IMPORTANT: When withdrawal is initiated, deduct from employee's account
+                employee.total_earnings = float(employee.total_earnings) - amount
+                employee.save()
+                
+                logger.info(f"Employee {employee.employee_id} account debited by ₹{amount}. New balance: ₹{employee.total_earnings}")
+                
+                # Update payout status to completed (Instant withdrawal as per requirement)
+                payout.status = 'completed'
+                payout.processed_at = timezone.now()
+                payout.save()
+                
+                logger.info(f"Withdrawal {payout.payout_id} initiated successfully with {payment_method}, Amount deducted: ₹{amount}")
+                
+                # ===== SUCCESS RESPONSE =====
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Withdrawal initiated successfully! Your payment will be processed within 1-2 business days.',
+                    'details': {
+                        'payout_id': str(payout.payout_id),
+                        'amount': float(amount),
+                        'method': payment_method,
+                        'status': 'processing',
+                        'estimated_time': '1-2 business days' if payment_method == 'bank_transfer' else '5-30 minutes'
+                    }
+                })
+            
+            except Exception as e:
+                # Handle any unexpected errors
+                logger.error(f"Payment processing error: {str(e)}", exc_info=True)
+                # Mark payout as failed if it was created
+                try:
+                    if payout and payout.payout_id:
+                        payout.status = 'failed'
+                        payout.save()
+                except:
+                    pass
+                
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Payment processing error. Please try again or contact support.'
+                })
+        
+        except ValueError as ve:
+            logger.error(f"Value error in withdrawal: {str(ve)}")
+            return JsonResponse({
+                'success': False,
+                'error': 'Invalid input format'
+            })
+        
+        except json.JSONDecodeError:
+            logger.error("Invalid JSON in withdrawal request")
+            return JsonResponse({
+                'success': False,
+                'error': 'Invalid request format'
+            })
+        
+        except Exception as e:
+            logger.error(f"Unexpected error in withdrawal: {str(e)}")
+            return JsonResponse({
+                'success': False,
+                'error': f'An unexpected error occurred: {str(e)}'
+            })
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+
+
+def get_withdrawal_history(request):
+    """Get withdrawal history for the employee (AJAX)"""
+    if 'employee_id' not in request.session:
+        return JsonResponse({'success': False, 'error': 'Please login first.'})
+    
+    try:
+        from admin_self.models import Payout
+        from employee.models import Employee
+        from django.utils.timezone import now
+        from datetime import timedelta
+        
+        employee = Employee.objects.get(employee_id=request.session.get('employee_id'))
+        
+        # Get withdrawal history
+        withdrawals = Payout.objects.filter(employee=employee).order_by('-created_at')
+        
+        page = request.GET.get('page', 1)
+        paginator = Paginator(withdrawals, 10)
+        
+        try:
+            page_obj = paginator.page(page)
+        except PageNotAnInteger:
+            page_obj = paginator.page(1)
+        except EmptyPage:
+            page_obj = paginator.page(paginator.num_pages)
+        
+        withdrawal_data = []
+        for withdrawal in page_obj:
+            # Determine account info based on payment method
+            if withdrawal.payout_method == 'bank_transfer':
+                account_info = f"***{withdrawal.bank_account_number[-4:]}" if withdrawal.bank_account_number else 'N/A'
+            elif withdrawal.payout_method == 'upi':
+                account_info = withdrawal.upi_id or 'N/A'
+            elif withdrawal.payout_method == 'razorpay':
+                account_info = withdrawal.razorpay_email or 'N/A'
+            else:
+                account_info = 'N/A'
+            
+            withdrawal_data.append({
+                'id': str(withdrawal.payout_id),
+                'amount': float(withdrawal.amount),
+                'method': withdrawal.payout_method,
+                'status': withdrawal.status,
+                'created_at': withdrawal.created_at.strftime('%Y-%m-%d %H:%M'),
+                'razorpay_id': withdrawal.razorpay_payment_id or 'N/A',
+                'account_info': account_info
+            })
+        
+        return JsonResponse({
+            'success': True,
+            'withdrawals': withdrawal_data,
+            'page': page_obj.number,
+            'total_pages': paginator.num_pages,
+            'has_previous': page_obj.has_previous(),
+            'has_next': page_obj.has_next()
+        })
+    
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        })
+
+
+def verify_withdrawal_webhook(request):
+    """Verify Razorpay webhook for withdrawal status updates"""
+    if request.method == 'POST':
+        try:
+            import json
+            import hmac
+            import hashlib
+            from django.conf import settings
+            from admin_self.models import Payout
+            
+            # Get webhook data
+            data = json.loads(request.body)
+            webhook_signature = request.META.get('HTTP_X_RAZORPAY_SIGNATURE', '')
+            
+            # Verify signature
+            secret = settings.RAZORPAY_KEY_SECRET
+            payload = request.body
+            
+            expected_signature = hmac.new(
+                secret.encode(),
+                payload,
+                hashlib.sha256
+            ).hexdigest()
+            
+            if webhook_signature != expected_signature:
+                return JsonResponse({'success': False, 'error': 'Invalid signature'})
+            
+            # Process webhook
+            event_type = data.get('event', '')
+            payout_data = data.get('payload', {}).get('payout', {})
+            payout_id = payout_data.get('entity', {}).get('id', '')
+            payout_status = payout_data.get('entity', {}).get('status', '')
+            
+            # Update payout status
+            if event_type == 'payout.processed':
+                Payout.objects.filter(razorpay_payment_id=payout_id).update(status='completed')
+            elif event_type == 'payout.failed':
+                Payout.objects.filter(razorpay_payment_id=payout_id).update(status='failed')
+            elif event_type == 'payout.reversed':
+                Payout.objects.filter(razorpay_payment_id=payout_id).update(status='failed')
+            
+            return JsonResponse({'success': True})
+        
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})

@@ -26,6 +26,7 @@ SECRET_KEY = 'django-insecure-#h@#ce)tel(31lm0vzejwvnwvl40oqhr2onuk(#%!olll7d1zm
 
 RAZORPAY_KEY_ID = 'rzp_test_S2y7e0HY3lpNIo'  # Get from Razorpay Dashboard
 RAZORPAY_KEY_SECRET = '7P1bV1fk3s1E89zAbUGosqTQ'  # Get from Razorpay Dashboard
+RAZORPAY_ACCOUNT_NUMBER = '2121220061746156'  # Your Razorpay Account Number - Update with your own
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -120,7 +121,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         # 'NAME': 'jobportal_database',work_nest_data_base
-        'NAME': 'work_nest_data_base',
+        'NAME': 'woker_nest_data_base_db',
         'USER': 'root',
         'PASSWORD':'',
         'HOST':'localhost',

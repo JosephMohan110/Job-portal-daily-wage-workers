@@ -683,6 +683,388 @@
             box-shadow: 0 8px 20px rgba(58, 134, 255, 0.3);
         }
 
+        .btn-withdrawal {
+            background: linear-gradient(135deg, var(--danger) 0%, #ff6b7a 100%);
+            color: var(--white);
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            white-space: nowrap;
+            align-self: center;
+        }
+
+        .btn-withdrawal:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(239, 71, 111, 0.3);
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--white);
+            border-radius: 16px;
+            width: 95%;
+            max-width: 500px;
+            max-height: 90vh;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow-y: auto;
+            animation: slideUp 0.3s ease-out;
+            margin: 20px;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: var(--white);
+            padding: 1.5rem 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .modal-header h2 {
+            font-size: 1.3rem;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--white);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: transform 0.3s;
+            padding: 5px;
+            flex-shrink: 0;
+        }
+
+        .modal-close:hover {
+            transform: scale(1.2);
+        }
+
+        .modal-body {
+            padding: 1.5rem 1.25rem;
+            overflow-y: auto;
+            max-height: calc(90vh - 200px);
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 0.9rem;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 11px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(58, 134, 255, 0.1);
+        }
+
+        .form-group.hide {
+            display: none;
+        }
+
+        .info-box {
+            background: var(--primary-light);
+            border-left: 4px solid var(--primary);
+            padding: 0.95rem;
+            border-radius: 8px;
+            margin-bottom: 1.25rem;
+            color: var(--primary-dark);
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        .info-box i {
+            margin-right: 8px;
+            color: var(--primary);
+        }
+
+        .modal-footer {
+            padding: 1rem 1.25rem;
+            background: var(--light);
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            flex-wrap: wrap-reverse;
+        }
+
+        .btn-modal {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+            flex: 1;
+            min-width: 100px;
+        }
+
+        .btn-modal-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: var(--white);
+        }
+
+        .btn-modal-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(58, 134, 255, 0.3);
+        }
+
+        .btn-modal-secondary {
+            background: var(--light);
+            color: var(--dark);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-modal-secondary:hover {
+            background: var(--border-color);
+        }
+
+        .btn-modal:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid var(--white);
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+
+        /* Withdrawal History Styles */
+        .withdrawal-history-container {
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px var(--shadow);
+            margin-top: 3rem;
+        }
+
+        .withdrawal-history-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: var(--white);
+            padding: 1.5rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .withdrawal-history-header h3 {
+            margin: 0;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .withdrawal-history-list {
+            padding: 0;
+        }
+
+        .withdrawal-item {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.3s;
+        }
+
+        .withdrawal-item:hover {
+            background: var(--light);
+        }
+
+        .withdrawal-item:last-child {
+            border-bottom: none;
+        }
+
+        .withdrawal-info {
+            flex: 1;
+        }
+
+        .withdrawal-amount {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 0.3rem;
+        }
+
+        .withdrawal-details {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-top: 0.5rem;
+        }
+
+        .withdrawal-detail-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .withdrawal-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .status-pending {
+            background: rgba(255, 209, 102, 0.15);
+            color: #ff9e00;
+        }
+
+        .status-processing {
+            background: rgba(58, 134, 255, 0.15);
+            color: var(--primary);
+        }
+
+        .status-completed {
+            background: rgba(6, 214, 160, 0.15);
+            color: var(--success);
+        }
+
+        .status-failed {
+            background: rgba(239, 71, 111, 0.15);
+            color: var(--danger);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .status-dot.pending { background: #ff9e00; }
+        .status-dot.processing { background: var(--primary); }
+        .status-dot.completed { background: var(--success); }
+        .status-dot.failed { background: var(--danger); }
+
+        .withdrawal-empty {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: var(--text-light);
+        }
+
+        .withdrawal-empty i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+
+        .error-message {
+            background: rgba(239, 71, 111, 0.1);
+            color: var(--danger);
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-left: 4px solid var(--danger);
+        }
+
+        .error-message i {
+            font-size: 1.1rem;
+        }
+
+        .success-message {
+            background: rgba(6, 214, 160, 0.1);
+            color: var(--success);
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-left: 4px solid var(--success);
+        }
+
+        .success-message i {
+            font-size: 1.1rem;
+        }
+
+
         /* Pagination */
         .pagination {
             display: flex;
@@ -770,6 +1152,150 @@
             .sidebar {
                 transform: translateX(-100%);
             }
+        }
+
+        /* Enhanced Mobile Responsive Design */
+        @media (max-width: 768px) {
+            .withdrawal-history-container {
+                margin-top: 2rem;
+            }
+
+            .withdrawal-history-header {
+                padding: 1.25rem 1rem;
+                flex-wrap: wrap;
+            }
+
+            .withdrawal-history-header h3 {
+                font-size: 1.1rem;
+            }
+
+            .withdrawal-item {
+                padding: 1.25rem 1rem;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .withdrawal-info {
+                width: 100%;
+                margin-bottom: 0.75rem;
+            }
+
+            .withdrawal-details {
+                gap: 0.75rem;
+                font-size: 0.8rem;
+            }
+
+            .withdrawal-status {
+                width: 100%;
+                justify-content: flex-start;
+            }
+
+            .status-badge {
+                padding: 5px 10px;
+                font-size: 0.75rem;
+            }
+
+            .pagination {
+                gap: 6px;
+                margin-top: 2rem;
+                padding-top: 1.5rem;
+            }
+
+            .pagination-btn,
+            .pagination-link {
+                width: 36px;
+                height: 36px;
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .withdrawal-history-container {
+                border-radius: 8px;
+                margin-top: 1.5rem;
+            }
+
+            .withdrawal-history-header {
+                padding: 1rem 0.9rem;
+            }
+
+            .withdrawal-history-header h3 {
+                font-size: 1rem;
+            }
+
+            .withdrawal-item {
+                padding: 1rem 0.9rem;
+            }
+
+            .withdrawal-amount {
+                font-size: 1.1rem;
+            }
+
+            .withdrawal-details {
+                gap: 0.5rem;
+                font-size: 0.75rem;
+            }
+
+            .withdrawal-detail-item {
+                display: block;
+                width: 100%;
+                margin-bottom: 0.4rem;
+            }
+
+            .pagination {
+                gap: 4px;
+                margin-top: 1.5rem;
+                padding-top: 1rem;
+            }
+
+            .pagination-btn,
+            .pagination-link {
+                width: 32px;
+                height: 32px;
+                font-size: 0.8rem;
+            }
+
+            .withdrawal-empty {
+                padding: 2rem 1rem;
+            }
+
+            .withdrawal-empty i {
+                font-size: 2.5rem;
+                margin-bottom: 0.75rem;
+            }
+
+            .error-message,
+            .success-message {
+                padding: 10px 12px;
+                font-size: 0.8rem;
+            }
+
+            .status-badge {
+                padding: 4px 8px;
+                font-size: 0.7rem;
+            }
+        }
+
+        @media (max-width: 375px) {
+            .withdrawal-history-header h3 {
+                font-size: 0.95rem;
+            }
+
+            .withdrawal-amount {
+                font-size: 1rem;
+            }
+
+            .withdrawal-details {
+                font-size: 0.7rem;
+            }
+
+            .pagination-btn,
+            .pagination-link {
+                width: 28px;
+                height: 28px;
+                font-size: 0.7rem;
+            }
+        }
             
             .sidebar.active {
                 transform: translateX(0);
@@ -1081,6 +1607,18 @@
                             <p>Total Jobs Completed</p>
                         </div>
                     </div>
+                    
+                    <div class="stat-card" style="border-left-color: var(--danger); justify-content: space-between;">
+                        <div>
+                            <div class="stat-info">
+                                <h3>₹{{ total_earnings|floatformat:0 }}</h3>
+                                <p>Available for Withdrawal</p>
+                            </div>
+                        </div>
+                        <button class="btn btn-withdrawal" onclick="openWithdrawalModal()">
+                            <i class="fas fa-money-bill-wave"></i> Withdraw
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Earnings Chart -->
@@ -1249,14 +1787,134 @@
                     {% endif %}
                 </div>
                 {% endif %}
+
+                <!-- Withdrawal History Section -->
+                <div class="withdrawal-history-container">
+                    <div class="withdrawal-history-header">
+                        <h3><i class="fas fa-history"></i> Withdrawal History</h3>
+                        <button class="btn btn-primary" onclick="loadWithdrawalHistory(1)" title="Refresh">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                    </div>
+                    <div class="withdrawal-history-list" id="withdrawalHistoryList">
+                        <div class="withdrawal-empty">
+                            <i class="fas fa-inbox"></i>
+                            <p>No withdrawal history yet</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Withdrawal Modal -->
+    <div class="modal" id="withdrawalModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-money-bill-wave"></i> Request Withdrawal</h2>
+                <button class="modal-close" onclick="closeWithdrawalModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="withdrawalError" class="error-message" style="display: none;">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span id="errorText"></span>
+                </div>
+
+                <div class="info-box">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Available Balance:</strong> <span id="availableBalance">₹0</span> | Minimum withdrawal: ₹100<br>
+                    <div style="margin-top: 10px; font-size: 0.9rem;">
+                        <span id="pendingInfo" style="display: none;">
+                            <i class="fas fa-hourglass-half" style="color: #ff9e00;"></i> Pending Withdrawals: ₹<span id="pendingAmount">0</span>
+                        </span>
+                        <span id="completedInfo" style="display: none;">
+                            <i class="fas fa-check-circle" style="color: #06d6a0;"></i> Completed Withdrawals: ₹<span id="completedAmount">0</span>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="withdrawalAmount">Amount to Withdraw *</label>
+                    <input type="number" id="withdrawalAmount" placeholder="Enter amount in ₹" min="100" step="100">
+                </div>
+
+                <div class="form-group">
+                    <label for="paymentMethod">Payment Method *</label>
+                    <select id="paymentMethod" onchange="updatePaymentFields()">
+                        <option value="">Select payment method</option>
+                        <option value="bank_transfer">Bank Transfer (NEFT)</option>
+                        <option value="upi">UPI Transfer</option>
+                        <option value="razorpay">Razorpay Wallet</option>
+                    </select>
+                </div>
+
+                <!-- Bank Transfer Fields -->
+                <div id="bankFields" class="form-group hide">
+                    <div class="form-group">
+                        <label for="accountNumber">Account Number *</label>
+                        <input type="text" id="accountNumber" placeholder="Enter your bank account number">
+                    </div>
+                    <div class="form-group">
+                        <label for="ifscCode">IFSC Code *</label>
+                        <input type="text" id="ifscCode" placeholder="e.g., SBIN0001234" maxlength="11">
+                    </div>
+                    <div class="form-group">
+                        <label for="bankName">Bank Name *</label>
+                        <input type="text" id="bankName" placeholder="e.g., State Bank of India">
+                    </div>
+                </div>
+
+                <!-- UPI Fields -->
+                <div id="upiFields" class="form-group hide">
+                    <div class="form-group">
+                        <label for="upiId">UPI ID *</label>
+                        <input type="text" id="upiId" placeholder="e.g., yourname@upi">
+                    </div>
+                </div>
+
+                <!-- Razorpay Fields -->
+                <div id="razorpayFields" class="form-group hide">
+                    <div class="info-box" style="background: rgba(255, 209, 102, 0.1); border-left-color: #ff9e00; margin-bottom: 1.5rem;">
+                        <i class="fas fa-bolt"></i>
+                        <strong>Razorpay Wallet:</strong> Fastest way to receive money directly to your Razorpay account
+                    </div>
+                    <div class="form-group">
+                        <label for="razorpayEmail">Razorpay Email *</label>
+                        <input type="email" id="razorpayEmail" placeholder="Your registered email with Razorpay">
+                    </div>
+                    <div class="form-group">
+                        <label for="razorpayPhone">Razorpay Phone (10 digits) *</label>
+                        <input type="tel" id="razorpayPhone" placeholder="Your registered phone with Razorpay" maxlength="10" pattern="[0-9]{10}">
+                    </div>
+                    <div class="info-box" style="background: rgba(58, 134, 255, 0.1); border-left-color: var(--primary);">
+                        <i class="fas fa-info-circle"></i>
+                        Instant transfer via Razorpay Wallet. Available 24/7, transferred within 5-30 minutes.
+                    </div>
+                </div>
+
+                <div class="info-box" style="background: rgba(6, 214, 160, 0.1); border-left-color: var(--success); color: var(--success);">
+                    <i class="fas fa-clock"></i>
+                    Amount will be transferred within 1-2 business days. No processing fees charged.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-modal btn-modal-secondary" onclick="closeWithdrawalModal()">Cancel</button>
+                <button class="btn-modal btn-modal-primary" id="submitWithdrawalBtn" onclick="submitWithdrawal()">
+                    <span id="submitBtnText">Request Withdrawal</span>
+                    <span id="submitBtnSpinner" class="loading-spinner" style="display: none;"></span>
+                </button>
             </div>
         </div>
     </div>
 
     <script>
-        // Initialize chart with actual data from Django
+        // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
             initializeChart();
+            loadWithdrawalHistory(1);
+            updateAvailableBalance();
             
             // Auto-submit form when filters change
             document.getElementById('paymentMethodFilter').addEventListener('change', function() {
@@ -1275,9 +1933,316 @@
                     document.getElementById('searchForm').submit();
                 }, 500);
             });
+
+            // Close modal when clicking outside
+            document.getElementById('withdrawalModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeWithdrawalModal();
+                }
+            });
         });
 
-        // Initialize chart with actual data from Django
+        // ========== WITHDRAWAL FUNCTIONS ==========
+
+        function updateAvailableBalance() {
+            const totalEarnings = parseFloat('{{ total_earnings|default:0 }}');
+            const pendingWithdrawals = parseFloat('{{ pending_withdrawals|default:0 }}');
+            const completedWithdrawals = parseFloat('{{ completed_withdrawals|default:0 }}');
+            
+            const balanceElement = document.getElementById('availableBalance');
+            balanceElement.textContent = '₹' + totalEarnings.toLocaleString('en-IN', { maximumFractionDigits: 0 });
+            balanceElement.dataset.pending = pendingWithdrawals;
+            balanceElement.dataset.completed = completedWithdrawals;
+        }
+
+        function openWithdrawalModal() {
+            document.getElementById('withdrawalModal').classList.add('active');
+            document.getElementById('withdrawalAmount').focus();
+            clearWithdrawalForm();
+            
+            // Display pending/completed withdrawal info
+            const pendingAmount = parseFloat(document.getElementById('availableBalance').dataset.pending || 0);
+            const completedAmount = parseFloat(document.getElementById('availableBalance').dataset.completed || 0);
+            
+            const pendingInfo = document.getElementById('pendingInfo');
+            const completedInfo = document.getElementById('completedInfo');
+            
+            if (pendingAmount > 0) {
+                document.getElementById('pendingAmount').textContent = pendingAmount.toFixed(2);
+                pendingInfo.style.display = 'inline-block';
+            } else {
+                pendingInfo.style.display = 'none';
+            }
+            
+            if (completedAmount > 0) {
+                document.getElementById('completedAmount').textContent = completedAmount.toFixed(2);
+                completedInfo.style.display = 'inline-block';
+            } else {
+                completedInfo.style.display = 'none';
+            }
+        }
+
+        function closeWithdrawalModal() {
+            document.getElementById('withdrawalModal').classList.remove('active');
+            clearWithdrawalForm();
+        }
+
+        function clearWithdrawalForm() {
+            document.getElementById('withdrawalAmount').value = '';
+            document.getElementById('paymentMethod').value = '';
+            document.getElementById('accountNumber').value = '';
+            document.getElementById('ifscCode').value = '';
+            document.getElementById('bankName').value = '';
+            document.getElementById('upiId').value = '';
+            document.getElementById('razorpayEmail').value = '';
+            document.getElementById('razorpayPhone').value = '';
+            document.getElementById('withdrawalError').style.display = 'none';
+            document.getElementById('bankFields').classList.add('hide');
+            document.getElementById('upiFields').classList.add('hide');
+            document.getElementById('razorpayFields').classList.add('hide');
+        }
+
+        function updatePaymentFields() {
+            const method = document.getElementById('paymentMethod').value;
+            const bankFields = document.getElementById('bankFields');
+            const upiFields = document.getElementById('upiFields');
+            const razorpayFields = document.getElementById('razorpayFields');
+            
+            bankFields.classList.add('hide');
+            upiFields.classList.add('hide');
+            razorpayFields.classList.add('hide');
+            
+            if (method === 'bank_transfer') {
+                bankFields.classList.remove('hide');
+                document.getElementById('accountNumber').focus();
+            } else if (method === 'upi') {
+                upiFields.classList.remove('hide');
+                document.getElementById('upiId').focus();
+            } else if (method === 'razorpay') {
+                razorpayFields.classList.remove('hide');
+                document.getElementById('razorpayEmail').focus();
+            }
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('withdrawalError');
+            document.getElementById('errorText').textContent = message;
+            errorDiv.style.display = 'flex';
+            errorDiv.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function hideError() {
+            document.getElementById('withdrawalError').style.display = 'none';
+        }
+
+        function submitWithdrawal() {
+            hideError();
+            
+            const amount = parseFloat(document.getElementById('withdrawalAmount').value);
+            const paymentMethod = document.getElementById('paymentMethod').value;
+            const totalEarnings = parseFloat('{{ total_earnings|default:0 }}');
+            
+            // Validation
+            if (!amount || amount <= 0) {
+                showError('Please enter a valid amount');
+                return;
+            }
+            
+            if (amount < 100) {
+                showError('Minimum withdrawal amount is ₹100');
+                return;
+            }
+            
+            if (amount > totalEarnings) {
+                showError('Insufficient balance');
+                return;
+            }
+            
+            if (!paymentMethod) {
+                showError('Please select a payment method');
+                return;
+            }
+            
+            const requestData = {
+                amount: amount,
+                payment_method: paymentMethod
+            };
+            
+            // Add payment method specific details
+            if (paymentMethod === 'bank_transfer') {
+                const accountNumber = document.getElementById('accountNumber').value.trim();
+                const ifsc = document.getElementById('ifscCode').value.trim();
+                const bankName = document.getElementById('bankName').value.trim();
+                
+                if (!accountNumber || !ifsc || !bankName) {
+                    showError('Please fill in all bank details');
+                    return;
+                }
+                
+                requestData.account_number = accountNumber;
+                requestData.ifsc = ifsc;
+                requestData.bank_name = bankName;
+            } else if (paymentMethod === 'upi') {
+                const upiId = document.getElementById('upiId').value.trim();
+                
+                if (!upiId || !upiId.includes('@')) {
+                    showError('Please enter a valid UPI ID (e.g., yourname@upi)');
+                    return;
+                }
+                
+                requestData.upi_id = upiId;
+            } else if (paymentMethod === 'razorpay') {
+                const razorpayEmail = document.getElementById('razorpayEmail').value.trim();
+                const razorpayPhone = document.getElementById('razorpayPhone').value.trim();
+                
+                // Email validation
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!razorpayEmail || !emailRegex.test(razorpayEmail)) {
+                    showError('Please enter a valid email address');
+                    return;
+                }
+                
+                // Phone validation
+                if (!razorpayPhone || razorpayPhone.length !== 10 || !/^\d{10}$/.test(razorpayPhone)) {
+                    showError('Please enter a valid 10-digit phone number');
+                    return;
+                }
+                
+                requestData.razorpay_email = razorpayEmail;
+                requestData.razorpay_phone = razorpayPhone;
+            }
+            
+            // Show loading state
+            const submitBtn = document.getElementById('submitWithdrawalBtn');
+            submitBtn.disabled = true;
+            document.getElementById('submitBtnText').style.display = 'none';
+            document.getElementById('submitBtnSpinner').style.display = 'inline-block';
+            
+            // Send request
+            fetch('{% url "initiate_withdrawal" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify(requestData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                submitBtn.disabled = false;
+                document.getElementById('submitBtnText').style.display = 'inline';
+                document.getElementById('submitBtnSpinner').style.display = 'none';
+                
+                if (data.success) {
+                    showSuccessMessage('Withdrawal request submitted successfully! Amount: ₹' + amount.toLocaleString('en-IN'));
+                    setTimeout(() => {
+                        closeWithdrawalModal();
+                        loadWithdrawalHistory(1);
+                    }, 2000);
+                } else {
+                    showError(data.error || 'Failed to process withdrawal');
+                }
+            })
+            .catch(error => {
+                submitBtn.disabled = false;
+                document.getElementById('submitBtnText').style.display = 'inline';
+                document.getElementById('submitBtnSpinner').style.display = 'none';
+                showError('An error occurred. Please try again.');
+                console.error('Error:', error);
+            });
+        }
+
+        function showSuccessMessage(message) {
+            // Show a temporary success message
+            const modal = document.querySelector('.modal-body');
+            const successDiv = document.createElement('div');
+            successDiv.className = 'success-message';
+            successDiv.innerHTML = '<i class="fas fa-check-circle"></i>' + message;
+            modal.insertBefore(successDiv, modal.firstChild);
+            setTimeout(() => successDiv.remove(), 3000);
+        }
+
+        function loadWithdrawalHistory(page = 1) {
+            fetch(`{% url "get_withdrawal_history" %}?page=${page}`)
+            .then(response => response.json())
+            .then(data => {
+                const historyList = document.getElementById('withdrawalHistoryList');
+                
+                if (!data.success) {
+                    historyList.innerHTML = '<div class="withdrawal-empty"><i class="fas fa-inbox"></i><p>Error loading withdrawal history</p></div>';
+                    return;
+                }
+                
+                if (data.withdrawals.length === 0) {
+                    historyList.innerHTML = '<div class="withdrawal-empty"><i class="fas fa-inbox"></i><p>No withdrawal history yet</p></div>';
+                    return;
+                }
+                
+                let html = '';
+                data.withdrawals.forEach(withdrawal => {
+                    const statusClass = `status-${withdrawal.status}`;
+                    const statusDot = `<span class="status-dot ${withdrawal.status}"></span>`;
+                    
+                    html += `
+                        <div class="withdrawal-item">
+                            <div class="withdrawal-info">
+                                <div class="withdrawal-amount">₹${parseFloat(withdrawal.amount).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</div>
+                                <div class="withdrawal-details">
+                                    <span class="withdrawal-detail-item"><i class="fas fa-calendar"></i> ${withdrawal.created_at}</span>
+                                    <span class="withdrawal-detail-item"><i class="fas fa-exchange-alt"></i> ${withdrawal.method.toUpperCase()}</span>
+                                    <span class="withdrawal-detail-item"><i class="fas fa-university"></i> ${withdrawal.account_info}</span>
+                                    <span class="withdrawal-detail-item"><i class="fas fa-receipt"></i> ${withdrawal.razorpay_id}</span>
+                                </div>
+                            </div>
+                            <div class="withdrawal-status">
+                                <span class="status-badge ${statusClass}">
+                                    ${statusDot}
+                                    ${withdrawal.status.charAt(0).toUpperCase() + withdrawal.status.slice(1)}
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                historyList.innerHTML = html;
+                
+                // Add pagination if needed
+                if (data.total_pages > 1) {
+                    let paginationHtml = '<div style="text-align: center; padding: 1rem; border-top: 1px solid var(--border-color);">';
+                    if (data.has_previous) {
+                        paginationHtml += `<button class="btn btn-primary" onclick="loadWithdrawalHistory(${page - 1})" style="margin-right: 10px;"><i class="fas fa-chevron-left"></i> Previous</button>`;
+                    }
+                    paginationHtml += `<span style="margin: 0 10px;">Page ${page} of ${data.total_pages}</span>`;
+                    if (data.has_next) {
+                        paginationHtml += `<button class="btn btn-primary" onclick="loadWithdrawalHistory(${page + 1})" style="margin-left: 10px;">Next <i class="fas fa-chevron-right"></i></button>`;
+                    }
+                    paginationHtml += '</div>';
+                    historyList.innerHTML += paginationHtml;
+                }
+            })
+            .catch(error => {
+                console.error('Error loading withdrawal history:', error);
+                document.getElementById('withdrawalHistoryList').innerHTML = '<div class="withdrawal-empty"><i class="fas fa-inbox"></i><p>Error loading withdrawal history</p></div>';
+            });
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // ========== CHART FUNCTIONS ==========
+
         function initializeChart() {
             const ctx = document.getElementById('earningsChart').getContext('2d');
             
@@ -1426,7 +2391,8 @@
             });
         }
 
-        // Modal and sidebar functions
+        // ========== SIDEBAR FUNCTIONS ==========
+
         function openSidebar() {
             document.getElementById('sidebar').classList.add('active');
             document.getElementById('overlay').classList.add('active');
@@ -1443,10 +2409,13 @@
         }
         
         // Close sidebar when clicking on overlay
-        document.getElementById('overlay').addEventListener('click', function() {
-            closeSidebar();
-            this.classList.remove('active');
-        });
+        const overlay = document.getElementById('overlay');
+        if (overlay) {
+            overlay.addEventListener('click', function() {
+                closeSidebar();
+                this.classList.remove('active');
+            });
+        }
         
         // Close dropdown when clicking outside
         document.addEventListener('click', function(event) {

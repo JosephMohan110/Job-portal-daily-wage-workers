@@ -91,7 +91,12 @@ class Payout(models.Model):
     razorpay_order_id = models.CharField(max_length=100, null=True, blank=True, db_index=True)
     razorpay_contact_id = models.CharField(max_length=100, null=True, blank=True)
     razorpay_fund_account_id = models.CharField(max_length=100, null=True, blank=True)
-    razorpay_account_type = models.CharField(max_length=20, null=True, blank=True)  # 'bank_account' or 'upi'
+    razorpay_account_type = models.CharField(max_length=20, null=True, blank=True)  # 'bank_account', 'upi', 'razorpay_wallet'
+    razorpay_email = models.EmailField(null=True, blank=True)
+    razorpay_phone = models.CharField(max_length=10, null=True, blank=True)
+    
+    # Additional details
+    notes = models.TextField(null=True, blank=True)
     
     class Meta:
         db_table = 'payout_table'
@@ -162,7 +167,9 @@ class PlatformRevenue(models.Model):
         self.total_payouts = payouts.aggregate(total=Sum('amount'))['total'] or Decimal('0')
         
         # Calculate platform balance
-        self.platform_balance = self.total_commission - self.total_payouts
+        # FIXED: Balance is Total Money In (Transactions) - Total Money Out (Payouts)
+        # Previous logic (Commission - Payouts) was incorrect resulting in negative balance
+        self.platform_balance = self.total_transaction_amount - self.total_payouts
         self.save()
 
 
