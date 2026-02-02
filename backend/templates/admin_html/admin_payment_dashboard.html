@@ -1018,6 +1018,76 @@
             color: var(--warning-color);
         }
 
+        /* Tabs Container */
+        .tabs-container {
+            background-color: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+        }
+
+        .tabs-header {
+            display: flex;
+            border-bottom: 2px solid #e2e8f0;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 18px 24px;
+            border: none;
+            background: none;
+            color: var(--text-light);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+            position: relative;
+            margin-bottom: -2px;
+        }
+
+        .tab-btn:hover {
+            color: var(--primary-color);
+            background-color: rgba(59, 130, 246, 0.05);
+        }
+
+        .tab-btn.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+            background-color: white;
+        }
+
+        .tab-btn i {
+            font-size: 1.1rem;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 24px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         /* Commission Auto Update Section */
         .commission-update {
             background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
@@ -1838,58 +1908,133 @@
                 </div>
             </div>
 
-            <div class="table-container">
-                <table class="transactions-table">
-                    <thead>
-                        <tr>
-                            <th>Transaction</th>
-                            <th>Type</th>
-                            <th>Booking ID</th>
-                            <th>Amount</th>
-                            <th>Commission ({{ commission_rate_percent }})</th>
-                            <th>Payment Method</th>
-                            <th>Date</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for transaction in recent_transactions %}
-                        <tr>
-                            <td>
-                                <div class="transaction-info">
-                                    <div class="transaction-avatar">{{ transaction.type|slice:":1"|upper }}</div>
-                                    <div class="transaction-details">
-                                        <h4>{{ transaction.description }}</h4>
-                                        {% if transaction.employer %}
-                                        <p>Employer: {{ transaction.employer }}</p>
-                                        {% elif transaction.employee %}
-                                        <p>Worker: {{ transaction.employee }}</p>
+            <!-- Tabs Navigation -->
+            <div class="tabs-container">
+                <div class="tabs-header">
+                    <button class="tab-btn active" data-tab="employee-employer-tab">
+                        <i class="fas fa-handshake"></i> Employee & Employer Transactions
+                    </button>
+                    <button class="tab-btn" data-tab="admin-withdrawal-tab">
+                        <i class="fas fa-money-bill-wave"></i> Admin Withdrawal Details
+                    </button>
+                </div>
+
+                <!-- Tab 1: Employee & Employer Transactions -->
+                <div id="employee-employer-tab" class="tab-content active">
+                    <div class="table-container">
+                        <table class="transactions-table">
+                            <thead>
+                                <tr>
+                                    <th>Transaction</th>
+                                    <th>Type</th>
+                                    <th>Booking ID</th>
+                                    <th>Amount</th>
+                                    <th>Commission ({{ commission_rate_percent }})</th>
+                                    <th>Payment Method</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for transaction in recent_transactions %}
+                                <tr>
+                                    <td>
+                                        <div class="transaction-info">
+                                            <div class="transaction-avatar">{{ transaction.type|slice:":1"|upper }}</div>
+                                            <div class="transaction-details">
+                                                <h4>{{ transaction.description }}</h4>
+                                                {% if transaction.employer %}
+                                                <p>Employer: {{ transaction.employer }}</p>
+                                                {% elif transaction.employee %}
+                                                <p>Worker: {{ transaction.employee }}</p>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ transaction.transaction_type }}</td>
+                                    <td>{{ transaction.booking_id }}</td>
+                                    <td class="amount {% if transaction.amount > 0 %}positive{% else %}negative{% endif %}">
+                                        {% if transaction.amount > 0 %}+{% endif %}{{ transaction.amount_formatted }}
+                                    </td>
+                                    <td class="amount {% if transaction.commission > 0 %}positive{% endif %}">
+                                        {{ transaction.commission_formatted }}
+                                    </td>
+                                    <td><span class="payment-method">{{ transaction.payment_method_display }}</span></td>
+                                    <td>{{ transaction.date|date:"d M Y" }}<br><span style="font-size: 0.85rem; color: var(--text-light);">{{ transaction.date|time:"H:i" }}</span></td>
+                                    <td><span class="status {{ transaction.status_class }}">{{ transaction.status_display }}</span></td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="8" style="text-align: center; padding: 40px; color: var(--text-light);">
+                                        <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
+                                        No transactions found
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Admin Withdrawal Details -->
+                <div id="admin-withdrawal-tab" class="tab-content">
+                    <div class="table-container">
+                        <table class="transactions-table">
+                            <thead>
+                                <tr>
+                                    <th>Withdrawal ID</th>
+                                    <th>Amount</th>
+                                    <th>Method</th>
+                                    <th>Account Details</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for withdrawal in admin_withdrawals %}
+                                <tr>
+                                    <td>
+                                        <div class="transaction-info">
+                                            <div class="transaction-avatar" style="background: linear-gradient(135deg, #8b5cf6, #a78bfa);">
+                                                <i class="fas fa-building" style="font-size: 1.2rem;"></i>
+                                            </div>
+                                            <div class="transaction-details">
+                                                <h4>{{ withdrawal.withdrawal_id }}</h4>
+                                                <p>Admin Withdrawal</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="amount positive">
+                                        {{ withdrawal.amount_formatted }}
+                                    </td>
+                                    <td><span class="payment-method">{{ withdrawal.method_display }}</span></td>
+                                    <td style="font-size: 0.9rem;">
+                                        {% if withdrawal.method == 'bank_transfer' %}
+                                            Bank: {{ withdrawal.bank_name|default:"N/A" }}<br>
+                                            <span style="color: var(--text-light);">Account: **** {{ withdrawal.account_last_four|default:"XXXX" }}</span>
+                                        {% elif withdrawal.method == 'upi' %}
+                                            UPI: {{ withdrawal.upi_id|default:"N/A" }}
+                                        {% elif withdrawal.method == 'razorpay' %}
+                                            Razorpay Account
+                                        {% else %}
+                                            {{ withdrawal.account_details|default:"N/A" }}
                                         {% endif %}
-                                    </div>
-                                </div>
-                            </td>
-                            <td>{{ transaction.transaction_type }}</td>
-                            <td>{{ transaction.booking_id }}</td>
-                            <td class="amount {% if transaction.amount > 0 %}positive{% else %}negative{% endif %}">
-                                {% if transaction.amount > 0 %}+{% endif %}{{ transaction.amount_formatted }}
-                            </td>
-                            <td class="amount {% if transaction.commission > 0 %}positive{% endif %}">
-                                {{ transaction.commission_formatted }}
-                            </td>
-                            <td><span class="payment-method">{{ transaction.payment_method_display }}</span></td>
-                            <td>{{ transaction.date|date:"d M Y" }}<br><span style="font-size: 0.85rem; color: var(--text-light);">{{ transaction.date|time:"H:i" }}</span></td>
-                            <td><span class="status {{ transaction.status_class }}">{{ transaction.status_display }}</span></td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="8" style="text-align: center; padding: 40px; color: var(--text-light);">
-                                <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
-                                No transactions found
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                                    </td>
+                                    <td>{{ withdrawal.date|date:"d M Y" }}<br><span style="font-size: 0.85rem; color: var(--text-light);">{{ withdrawal.date|time:"H:i" }}</span></td>
+                                    <td><span class="status {{ withdrawal.status_class }}">{{ withdrawal.status_display }}</span></td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" style="text-align: center; padding: 40px; color: var(--text-light);">
+                                        <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
+                                        No withdrawal records found
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -2100,6 +2245,27 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            // Tab functionality
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    // Remove active class from all buttons and contents
+                    tabBtns.forEach(b => b.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    
+                    // Add active class to clicked button and corresponding content
+                    this.classList.add('active');
+                    const activeTab = document.getElementById(tabId);
+                    if (activeTab) {
+                        activeTab.classList.add('active');
+                    }
+                });
+            });
+
             // Mobile sidebar toggle
             const menuToggle = document.getElementById('menuToggle');
             const sidebar = document.getElementById('sidebar');
