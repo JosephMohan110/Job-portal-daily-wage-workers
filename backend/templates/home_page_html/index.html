@@ -232,23 +232,43 @@
             <div class="testimonial-card">
                 <p class="testimonial-text">"{{ review.review_text }}"</p>
                 <div class="testimonial-author">
-                    {% if review.employer.profile_image %}
-                    <div class="author-avatar"
-                        style="border: 3px solid #fff; box-shadow: 0 0 0 2px var(--primary); width: 54px; height: 54px; padding: 0;">
-                        <img src="{{ review.employer.profile_image.url }}" alt="{{ review.employer.first_name }}"
-                            style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
-                    </div>
-                    {% else %}
-                    <div class="author-avatar"
-                        style="background-color: var(--primary); color: white; display: flex; align-items: center; justify-content: center; width: 54px; height: 54px; border-radius: 50%; font-weight: bold; border: 3px solid #fff; box-shadow: 0 0 0 2px var(--primary);">
-                        <span style="font-size: 1.1rem;">{{ review.employer.first_name|slice:":1" }}{{
-                            review.employer.last_name|slice:":1" }}</span>
-                    </div>
+                    {% if review.employer %}
+                        {% if review.employer.profile_image %}
+                        <div class="author-avatar"
+                            style="border: 3px solid #fff; box-shadow: 0 0 0 2px var(--primary); width: 54px; height: 54px; padding: 0;">
+                            <img src="{{ review.employer.profile_image.url }}" alt="{{ review.employer.first_name }}"
+                                style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                        </div>
+                        {% else %}
+                        <div class="author-avatar"
+                            style="background-color: var(--primary); color: white; display: flex; align-items: center; justify-content: center; width: 54px; height: 54px; border-radius: 50%; font-weight: bold; border: 3px solid #fff; box-shadow: 0 0 0 2px var(--primary);">
+                            <span style="font-size: 1.1rem;">{{ review.employer.first_name|slice:":1" }}{{
+                                review.employer.last_name|slice:":1" }}</span>
+                        </div>
+                        {% endif %}
+                        <div style="margin-left: 12px;">
+                            <h4 style="margin-bottom: 2px; font-size: 1.05rem;">{{ review.employer.full_name }}</h4>
+                            <p style="font-size: 0.85rem; color: #666; margin: 0;">{{ review.employer.company_name|default:"Employer" }}</p>
+                        </div>
+                    {% elif review.employee %}
+                        {% if review.employee.profile_image %}
+                        <div class="author-avatar"
+                            style="border: 3px solid #fff; box-shadow: 0 0 0 2px var(--primary); width: 54px; height: 54px; padding: 0;">
+                            <img src="{{ review.employee.profile_image.url }}" alt="{{ review.employee.first_name }}"
+                                style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                        </div>
+                        {% else %}
+                        <div class="author-avatar"
+                            style="background-color: var(--primary); color: white; display: flex; align-items: center; justify-content: center; width: 54px; height: 54px; border-radius: 50%; font-weight: bold; border: 3px solid #fff; box-shadow: 0 0 0 2px var(--primary);">
+                            <span style="font-size: 1.1rem;">{{ review.employee.first_name|slice:":1" }}{{
+                                review.employee.last_name|slice:":1" }}</span>
+                        </div>
+                        {% endif %}
+                        <div style="margin-left: 12px;">
+                            <h4 style="margin-bottom: 2px; font-size: 1.05rem;">{{ review.employee.full_name }}</h4>
+                            <p style="font-size: 0.85rem; color: #666; margin: 0;">{{ review.employee.skills|default:"Daily Wage Worker" }}</p>
+                        </div>
                     {% endif %}
-                    <div style="margin-left: 12px;">
-                        <h4 style="margin-bottom: 2px; font-size: 1.05rem;">{{ review.employer.full_name }}</h4>
-                        <p style="font-size: 0.85rem; color: #666; margin: 0;">{{ review.employer.company_name }}</p>
-                    </div>
                 </div>
             </div>
             {% endfor %}

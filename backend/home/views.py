@@ -26,7 +26,37 @@ def contact_us(request):
 #*******************************************************
 
 def about_us(request):
-    return render(request, 'home_page_html/about_us.html')
+    # Calculate real-time statistics
+    from django.db.models import Count, Avg, Q
+    from employee.models import Employee, JobRequest
+    from employer.models import Employer, SiteReview
+
+    # Skilled Workers: Count of active employees
+    skilled_workers = Employee.objects.filter(status='Active').count()
+
+    # Jobs Completed: Count of completed job requests
+    jobs_completed = JobRequest.objects.filter(status='completed').count()
+
+    # Cities Served: Count of distinct cities from employees and employers
+    employee_cities = Employee.objects.filter(status='Active').exclude(city__isnull=True).exclude(city='').values('city').distinct().count()
+    employer_cities = Employer.objects.filter(status='Active').exclude(city__isnull=True).exclude(city='').values('city').distinct().count()
+    cities_served = max(employee_cities, employer_cities)  # Use the higher count
+
+    # Average Rating: Average rating from site reviews
+    avg_rating = SiteReview.objects.filter(is_published=True).aggregate(avg_rating=Avg('rating'))['avg_rating']
+    if avg_rating:
+        avg_rating = round(avg_rating, 1)
+    else:
+        avg_rating = 4.8  # Default fallback
+
+    context = {
+        'skilled_workers': skilled_workers,
+        'jobs_completed': jobs_completed,
+        'cities_served': cities_served,
+        'avg_rating': avg_rating,
+    }
+
+    return render(request, 'home_page_html/about_us.html', context)
 
 #*******************************************************
 

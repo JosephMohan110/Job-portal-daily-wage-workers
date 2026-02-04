@@ -74,6 +74,7 @@
         .about-text p {
             margin-bottom: 1.5rem;
             font-size: 1.1rem;
+            text-align: justify;
         }
 
         .about-image {
@@ -452,19 +453,19 @@
             </div>
             <div class="stats-grid">
                 <div class="stat-item">
-                    <h3>50K+</h3>
+                    <h3>{{ skilled_workers|add:"0"|floatformat:"0" }}{% if skilled_workers >= 1000 %}K+{% else %}+{% endif %}</h3>
                     <p>Skilled Workers</p>
                 </div>
                 <div class="stat-item">
-                    <h3>100K+</h3>
+                    <h3>{{ jobs_completed|add:"0"|floatformat:"0" }}{% if jobs_completed >= 1000 %}K+{% else %}+{% endif %}</h3>
                     <p>Jobs Completed</p>
                 </div>
                 <div class="stat-item">
-                    <h3>200+</h3>
+                    <h3>{{ cities_served|add:"0"|floatformat:"0" }}{% if cities_served >= 100 %}+{% else %}+{% endif %}</h3>
                     <p>Cities Served</p>
                 </div>
                 <div class="stat-item">
-                    <h3>4.8/5</h3>
+                    <h3>{{ avg_rating }}/5</h3>
                     <p>Average Rating</p>
                 </div>
             </div>
