@@ -2,6 +2,7 @@ from django.shortcuts import render
 
 # STANDARD LIBRARY IMPORTS
 import json
+import pickle
 from django.core.serializers.json import DjangoJSONEncoder
 import numpy as np
 
@@ -368,8 +369,8 @@ def admin_dashboard(request):
         # If ML model failed to load, use fallback
         if not ml_model_loaded or not ml_predictions:
             print("ML model not loaded or predictions failed, using fallback")
-            ml_predictions = get_fallback_predictions(platform_data)
-            feature_importance = get_fallback_feature_importance()
+            # ml_predictions = get_fallback_predictions(platform_data)
+            # feature_importance = get_fallback_feature_importance()
             ml_model_loaded = False
             available_predictions = []
             using_real_ml = False
@@ -383,8 +384,8 @@ def admin_dashboard(request):
         import traceback
         traceback.print_exc()
         # Fallback to statistical predictions
-        ml_predictions = get_fallback_predictions(platform_data)
-        feature_importance = get_fallback_feature_importance()
+        # ml_predictions = get_fallback_predictions(platform_data)
+        # feature_importance = get_fallback_feature_importance()
         ml_model_loaded = False
         available_predictions = []
         using_real_ml = False
@@ -1013,38 +1014,38 @@ def generate_ai_insights(platform_data, predictions, churn_users):
 #************************************************************
 
 
-def get_fallback_predictions(platform_data):
-    """Fallback predictions if ML model fails"""
-    return {
-        'new_users_next_month': int(platform_data.get('new_users_this_month', 0) * 1.12),
-        'deleted_accounts_next_month': int(platform_data.get('deleted_accounts_this_month', 0) * 0.92),
-        'completed_bookings_next_month': int(platform_data.get('completed_bookings', 0) * 1.18),
-        'active_users_next_month': int(platform_data.get('active_users', 0) * 1.07),
-        'revenue_next_month': float(platform_data.get('total_revenue', 0) * 1.18),
-        'commission_next_month': float(platform_data.get('platform_commission', 0) * 1.18),
-        'success_rate_next_month': min(100, platform_data.get('success_rate', 0) * 1.05),
-        'avg_rating_next_month': min(5, platform_data.get('avg_rating', 0) * 1.01),
-        'total_bookings_next_month': int(platform_data.get('total_bookings', 0) * 1.12),
-        'raw_predictions': {},
-    }
+# def get_fallback_predictions(platform_data):
+#     """Fallback predictions if ML model fails"""
+#     return {
+#         'new_users_next_month': int(platform_data.get('new_users_this_month', 0) * 1.12),
+#         'deleted_accounts_next_month': int(platform_data.get('deleted_accounts_this_month', 0) * 0.92),
+#         'completed_bookings_next_month': int(platform_data.get('completed_bookings', 0) * 1.18),
+#         'active_users_next_month': int(platform_data.get('active_users', 0) * 1.07),
+#         'revenue_next_month': float(platform_data.get('total_revenue', 0) * 1.18),
+#         'commission_next_month': float(platform_data.get('platform_commission', 0) * 1.18),
+#         'success_rate_next_month': min(100, platform_data.get('success_rate', 0) * 1.05),
+#         'avg_rating_next_month': min(5, platform_data.get('avg_rating', 0) * 1.01),
+#         'total_bookings_next_month': int(platform_data.get('total_bookings', 0) * 1.12),
+#         'raw_predictions': {},
+#     }
 
 #***********************************************
 
 
-def get_fallback_feature_importance():
-    """Fallback feature importance for display"""
-    return {
-        'contracts_signed': 0.125,
-        'engagement_score': 0.102,
-        'total_users': 0.095,
-        'user_type': 0.082,
-        'platform_commission': 0.075,
-        'earning_per_job': 0.060,
-        'active_users': 0.052,
-        'days_since_registration': 0.047,
-        'completion_rate': 0.045,
-        'favorite_employee_count': 0.043,
-    }
+# def get_fallback_feature_importance():
+#     """Fallback feature importance for display"""
+#     return {
+#         'contracts_signed': 0.125,
+#         'engagement_score': 0.102,
+#         'total_users': 0.095,
+#         'user_type': 0.082,
+#         'platform_commission': 0.075,
+#         'earning_per_job': 0.060,
+#         'active_users': 0.052,
+#         'days_since_registration': 0.047,
+#         'completion_rate': 0.045,
+#         'favorite_employee_count': 0.043,
+#     }
 
 #******************************************************
 
@@ -1080,7 +1081,7 @@ def get_ml_predictions():
             print("Loading ML model...")
             if not predictor.load_model():
                 print("Failed to load ML model, using fallback")
-                return get_fallback_predictions(platform_data)
+                # return get_fallback_predictions(platform_data)
         
         print(f"ML Model loaded: {predictor.loaded}")
         
@@ -1089,7 +1090,7 @@ def get_ml_predictions():
         
         if not raw_predictions:
             print("No predictions returned from ML model")
-            return get_fallback_predictions(platform_data)
+            # return get_fallback_predictions(platform_data)
             
         # Calculate heuristics for missing model targets
         current_new_users = platform_data.get('new_users_this_month', 0)
@@ -1130,7 +1131,7 @@ def get_ml_predictions():
         import traceback
         traceback.print_exc()
         # Return fallback if ML fails
-        fallback = get_fallback_predictions(get_platform_analytics_data())
+        # fallback = get_fallback_predictions(get_platform_analytics_data())
         fallback['using_real_ml'] = False
         return fallback
 
@@ -5990,28 +5991,28 @@ def get_platform_analytics_data():
         'latest_date': today
     }
 
-def get_fallback_predictions(platform_data):
-    """Generate fallback statistical predictions when ML is unavailable"""
-    # Simple linear growth model (5% growth)
-    growth_rate = 1.05
-    return {
-        'platform_commission': platform_data['platform_commission'] * growth_rate,
-        'total_bookings': int(platform_data['total_bookings'] * growth_rate),
-        'completed_bookings': int(platform_data['completed_bookings'] * growth_rate),
-        'avg_rating': min(5.0, platform_data['avg_rating'] * 1.01),
-        'revenue_growth_percent': 5.0,
-        'booking_growth_percent': 5.0,
+# def get_fallback_predictions(platform_data):
+#     """Generate fallback statistical predictions when ML is unavailable"""
+#     # Simple linear growth model (5% growth)
+#     growth_rate = 1.05
+#     return {
+#         'platform_commission': platform_data['platform_commission'] * growth_rate,
+#         'total_bookings': int(platform_data['total_bookings'] * growth_rate),
+#         'completed_bookings': int(platform_data['completed_bookings'] * growth_rate),
+#         'avg_rating': min(5.0, platform_data['avg_rating'] * 1.01),
+#         'revenue_growth_percent': 5.0,
+#         'booking_growth_percent': 5.0,
         
-        # Extended metrics for charts/display
-        'new_users_next_month': int(platform_data.get('total_bookings', 100) * 0.2), # Heuristic
-        'deleted_accounts_next_month': 5,
-        'active_users_next_month': int(platform_data.get('total_bookings', 100) * 1.1),
-        'success_rate_next_month': 95.0,
-        'revenue_next_month': platform_data['platform_commission'] * growth_rate,
-        'commission_next_month': platform_data['platform_commission'] * growth_rate,
-        'avg_rating_next_month': min(5.0, platform_data['avg_rating'] * 1.01),
-        'completed_bookings_next_month': int(platform_data['completed_bookings'] * growth_rate)
-    }
+#         # Extended metrics for charts/display
+#         'new_users_next_month': int(platform_data.get('total_bookings', 100) * 0.2), # Heuristic
+#         'deleted_accounts_next_month': 5,
+#         'active_users_next_month': int(platform_data.get('total_bookings', 100) * 1.1),
+#         'success_rate_next_month': 95.0,
+#         'revenue_next_month': platform_data['platform_commission'] * growth_rate,
+#         'commission_next_month': platform_data['platform_commission'] * growth_rate,
+#         'avg_rating_next_month': min(5.0, platform_data['avg_rating'] * 1.01),
+#         'completed_bookings_next_month': int(platform_data['completed_bookings'] * growth_rate)
+#     }
 
 def get_feature_importance():
     """Get mock feature importance for display"""
@@ -6535,7 +6536,7 @@ def get_platform_analytics_data_extended():
 
 @admin_required
 def train_from_uploaded_data(request):
-    """Handle training from uploaded dataset (CSV or Excel)"""
+    """Handle training from uploaded dataset (CSV or Excel) with XGBoost"""
     if request.method != 'POST':
         messages.error(request, 'Invalid request method.')
         return redirect('algorithm_setting')
@@ -6555,65 +6556,77 @@ def train_from_uploaded_data(request):
         return redirect('algorithm_setting')
     
     try:
-        # Save uploaded file temporarily
-        temp_dir = os.path.join(settings.MEDIA_ROOT, 'temp_training')
-        os.makedirs(temp_dir, exist_ok=True)
+        start_time = datetime.now()
+        logger.info(f"[Training] Starting training with file: {training_file.name}")
         
-        temp_file_path = os.path.join(temp_dir, f'training_{uuid.uuid4().hex}{file_ext}')
+        # Import the new training service
+        from xg_boost.training_service import XGBoostTrainingService
         
-        with open(temp_file_path, 'wb+') as destination:
-            for chunk in training_file.chunks():
-                destination.write(chunk)
+        # Initialize training service
+        service = XGBoostTrainingService()
         
-        print(f"[View] Saved uploaded file to: {temp_file_path}")
+        # Run training pipeline
+        result = service.train(training_file.file, training_file.name)
         
-        # Import MLTrainer
-        from xg_boost.ml_trainer import MLTrainer
+        if not result['success']:
+            messages.error(request, 'Training failed. Please check the dataset format and try again.')
+            return redirect('algorithm_setting')
         
-        # Initialize trainer
-        trainer = MLTrainer()
+        # Get the trained package
+        package = result['package']
+        analysis = result['analysis']
+        summary = result['summary']
         
-        # Train from uploaded file
+        logger.info(f"[Training] Training completed: {summary['success']} models trained, {summary['failed']} failed")
+        
+        # Save the package to disk
         output_model_path = os.path.join(
             settings.BASE_DIR, 
             'xg_boost', 
             'complete_xgboost_package.pkl'
         )
         
-        print(f"[View] Starting training from uploaded file...")
-        success = trainer.train_from_file(temp_file_path, output_model_path)
+        with open(output_model_path, 'wb') as f:
+            pickle.dump(package, f)
         
-        # Clean up temporary file
+        logger.info(f"[Training] Model package saved to: {output_model_path}")
+        
+        # Reload the predictor to use the new model
         try:
-            if os.path.exists(temp_file_path):
-                os.remove(temp_file_path)
+            from xg_boost.predictor import predictor
+            predictor.load_model()
+            logger.info("[Training] Model reloaded successfully!")
         except Exception as e:
-            print(f"[View] Warning: Could not delete temp file: {e}")
+            logger.warning(f"[Training] Warning: Could not reload predictor: {e}")
         
-        if success and os.path.exists(output_model_path):
-            # Reload the predictor to use the new model
-            try:
-                from xg_boost.predictor import predictor
-                predictor.load_model()
-                print("[View] Model reloaded successfully!")
-            except Exception as e:
-                print(f"[View] Warning: Could not reload predictor: {e}")
-            
-            # Return the model file as download
-            with open(output_model_path, 'rb') as model_file:
-                response = HttpResponse(model_file.read(), content_type='application/octet-stream')
-                response['Content-Disposition'] = 'attachment; filename="complete_xgboost_package.pkl"'
-                
-                messages.success(request, 'Model trained successfully! Download started.')
-                return response
-        else:
-            messages.error(request, 'Training failed. Please check the dataset format and try again.')
-            return redirect('algorithm_setting')
+        # Create response with training results
+        response = HttpResponse(
+            content_type='application/octet-stream',
+        )
+        response['Content-Disposition'] = 'attachment; filename="complete_xgboost_package.pkl"'
+        
+        with open(output_model_path, 'rb') as f:
+            response.write(f.read())
+        
+        # Calculate training duration
+        duration = (datetime.now() - start_time).total_seconds()
+        
+        # Show success message with details
+        success_msg = (
+            f"✅ Training completed successfully! "
+            f"Models: {summary['success']}/{summary['total']} trained. "
+            f"Duration: {duration:.1f}s. "
+            f"Dataset: {analysis['total_rows']} rows × {analysis['total_columns']} columns."
+        )
+        messages.success(request, success_msg)
+        
+        return response
     
     except Exception as e:
-        messages.error(request, f'Error during training: {str(e)}')
+        logger.error(f"[Training] Error during training: {str(e)}")
         import traceback
         traceback.print_exc()
+        messages.error(request, f'Error during training: {str(e)}')
         return redirect('algorithm_setting')
 
 # ======================== RAZORPAY PAYOUT INTEGRATION ========================
