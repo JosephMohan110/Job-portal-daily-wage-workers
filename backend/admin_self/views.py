@@ -745,6 +745,7 @@ def get_platform_analytics_data():
             'cancelled_bookings': int(cancelled_bookings),
             'bookings_today': int(bookings_today),
             'success_rate': float(success_rate),
+            'completion_rate': float(success_rate),  # Completion rate percentage
             'total_revenue': float(total_payment_amount),
             'total_earnings': float(worker_earnings),
             'platform_commission': float(platform_commission),
@@ -3824,12 +3825,19 @@ def admin_payment_dashboard(request):
             total=Sum('amount')
         )['total'] or Decimal('0')
         
-        # Calculate platform balance (total commission - all active payouts)
-        platform_balance = total_commission_amount - total_payouts_amount
-        available_for_payout = platform_balance
+        # Calculate platform balance (admin commission only - payouts are deducted from employee earnings, not admin funds)
+        # Platform balance = total commission earned from all transactions
+        platform_balance = total_commission_amount
         
-        # Get total withdrawals done by admin (all payouts, including pending)
-        total_withdrawals = Payout.objects.exclude(status__in=['failed', 'cancelled']).aggregate(total=Sum('amount'))['total'] or Decimal('0')
+        # Get total withdrawals done by ADMIN ONLY (where employee is NULL)
+        # Employee payouts should NOT be counted as admin withdrawals
+        total_withdrawals = Payout.objects.filter(
+            employee__isnull=True,  # Only admin withdrawals, not employee payouts
+            status__in=['pending', 'processing', 'completed']
+        ).aggregate(total=Sum('amount'))['total'] or Decimal('0')
+        
+        # Available for payout = total commission MINUS admin's already withdrawn amounts
+        available_for_payout = total_commission_amount - total_withdrawals
         
         # Get recent payments needing commission calculation
         payments_needing_commission = []
@@ -3895,6 +3903,36 @@ def admin_payment_dashboard(request):
                 'status': payout.status,
                 'status_display': payout.get_status_display(),
             })
+
+        # Build admin-only withdrawals list for the template (employee is NULL)
+        admin_payouts = Payout.objects.filter(employee__isnull=True).order_by('-created_at')[:20]
+        admin_withdrawals_data = []
+        for w in admin_payouts:
+            # Derive account_last_four if bank account present
+            account_last_four = None
+            if w.bank_account_number:
+                acct = str(w.bank_account_number)
+                account_last_four = acct[-4:]
+
+            # Map payout method to template-expected fields
+            method_display = w.get_payout_method_display() if hasattr(w, 'get_payout_method_display') else (w.payout_method or '')
+
+            admin_withdrawals_data.append({
+                'withdrawal': w,
+                'withdrawal_id': w.payout_id,
+                'amount': w.amount,
+                'amount_formatted': f"₹{w.amount:.2f}",
+                'method': w.payout_method,
+                'method_display': method_display,
+                'bank_name': getattr(w, 'bank_name', None),
+                'account_last_four': account_last_four,
+                'upi_id': getattr(w, 'upi_id', None),
+                'account_details': getattr(w, 'notes', None) or '',
+                'date': w.created_at,
+                'status': w.status,
+                'status_display': w.get_status_display() if hasattr(w, 'get_status_display') else w.status,
+                'status_class': f"status-{w.status}" if w.status else 'status-pending'
+            })
         
         # Calculate summary data
         commission_summary = {
@@ -3906,13 +3944,35 @@ def admin_payment_dashboard(request):
             'paid_commissions': Commission.objects.filter(status='paid').count(),
         }
         
+        # Calculate pending, processing, and completed payouts (ADMIN ONLY - employee__isnull=True)
+        pending_payouts_amount = Payout.objects.filter(
+            employee__isnull=True,
+            status='pending'
+        ).aggregate(total=Sum('amount'))['total'] or Decimal('0')
+        
+        processing_payouts_amount = Payout.objects.filter(
+            employee__isnull=True,
+            status='processing'
+        ).aggregate(total=Sum('amount'))['total'] or Decimal('0')
+        
+        completed_payouts_amount = Payout.objects.filter(
+            employee__isnull=True,
+            status='completed'
+        ).aggregate(total=Sum('amount'))['total'] or Decimal('0')
+        
         payout_summary = {
             'total_payouts': total_payouts,
             'total_payout_amount': total_payouts_amount,
             'total_payout_formatted': f"₹{total_payouts_amount:.2f}",
-            'pending_payouts': Payout.objects.filter(status='pending').count(),
-            'processing_payouts': Payout.objects.filter(status='processing').count(),
-            'completed_payouts': Payout.objects.filter(status='completed').count(),
+            'pending_payouts': Payout.objects.filter(employee__isnull=True, status='pending').count(),
+            'pending_payouts_amount': pending_payouts_amount,
+            'pending_payouts_amount_formatted': f"₹{pending_payouts_amount:.2f}",
+            'processing_payouts': Payout.objects.filter(employee__isnull=True, status='processing').count(),
+            'processing_payouts_amount': processing_payouts_amount,
+            'processing_payouts_amount_formatted': f"₹{processing_payouts_amount:.2f}",
+            'completed_payouts': Payout.objects.filter(employee__isnull=True, status='completed').count(),
+            'completed_payouts_amount': completed_payouts_amount,
+            'completed_payouts_amount_formatted': f"₹{completed_payouts_amount:.2f}",
         }
         
         # Get monthly revenue data for chart (last 6 months)
@@ -4112,6 +4172,7 @@ def admin_payment_dashboard(request):
             
             # For template
             'current_page': 'payment_dashboard',
+            'admin_withdrawals': admin_withdrawals_data,
         }
         
         return render(request, 'admin_html/admin_payment_dashboard.html', context)
@@ -4191,11 +4252,15 @@ def create_payout(request):
             )['total'] or Decimal('0')
             
             total_commission_amount = total_payment_amount * Decimal('0.0010')
-            total_payouts_amount = Payout.objects.exclude(status__in=['failed', 'cancelled']).aggregate(
-                total=Sum('amount')
-            )['total'] or Decimal('0')
             
-            platform_balance = total_commission_amount - total_payouts_amount
+            # Get ADMIN WITHDRAWALS ONLY (employee__isnull=True)
+            admin_total_withdrawn = Payout.objects.filter(
+                employee__isnull=True,
+                status__in=['pending', 'processing', 'completed']
+            ).aggregate(total=Sum('amount'))['total'] or Decimal('0')
+            
+            # Platform balance for admin = total commission - already withdrawn
+            platform_balance = total_commission_amount - admin_total_withdrawn
             
             if amount > platform_balance:
                 messages.error(request, f"Insufficient platform balance. Available: ₹{platform_balance:.2f}")
@@ -4793,11 +4858,24 @@ def algorithm_setting(request):
     # Get deployed models
     deployed_models = MLModel.objects.filter(status='deployed', is_active=True)
     
-    # Get recent exports
-    recent_exports = DataCollectionLog.objects.filter(
+    # Get recent exports - get the most recent of each distinct data type
+    # This prevents showing multiple exports of the same type with same timestamp
+    # Get all successful exports with files, ordered by date
+    all_exports = DataCollectionLog.objects.filter(
         status='success',
         export_file__isnull=False
-    ).order_by('-created_at')[:5]
+    ).order_by('-created_at')
+    
+    # Get distinct data types with their most recent export
+    recent_exports = []
+    seen_data_types = set()
+    
+    for export in all_exports:
+        if export.data_type not in seen_data_types:
+            recent_exports.append(export)
+            seen_data_types.add(export.data_type)
+            if len(recent_exports) >= 5:  # Limit to 5 distinct types
+                break
     
     # Calculate CSV preview data
     csv_preview_data = []
@@ -6650,6 +6728,7 @@ def verify_razorpay_payout(request):
     import json
     import hmac
     import hashlib
+    import traceback
     from django.http import JsonResponse
     
     try:
@@ -6727,46 +6806,51 @@ def verify_razorpay_payout(request):
                 # Log but don't fail - Razorpay modal already verified the payment
                 print(f"[Razorpay] Signature mismatch (expected, may be from client-side verification)")
         else:
-            # If no signature provided, just log it
+            # If no signature provided, log and create payout (Razorpay modal verified)
             print(f"[Razorpay] No signature provided (payment verified by Razorpay modal)")
-        
-        # Create payout record
-        try:
-            payout = Payout.objects.create(
-                amount=amount,
-                payout_method=payout_method,
-                status='processing',
-                description=description,
-                bank_account_number='',  # These are not stored for Razorpay
-                bank_ifsc='',
-                bank_name='',
-                upi_id=''
-            )
-            
-            # Store Razorpay payment details
-            payout.razorpay_payment_id = razorpay_payment_id
-            payout.razorpay_order_id = razorpay_order_id
-            payout.razorpay_contact_id = contact_id
-            payout.razorpay_fund_account_id = fund_account_id
-            payout.razorpay_account_type = account_type
-            payout.processed_at = timezone.now()
-            payout.save()
-            
-            # Log the payout
+
+            try:
+                payout = Payout.objects.create(
+                    amount=amount,
+                    payout_method=payout_method,
+                    status='processing',
+                    description=description,
+                    bank_account_number='',  # These are not stored for Razorpay
+                    bank_ifsc='',
+                    bank_name='',
+                    upi_id=''
+                )
+
+                # Store Razorpay payment details
+                payout.razorpay_payment_id = razorpay_payment_id
+                payout.razorpay_order_id = razorpay_order_id
+                payout.razorpay_contact_id = contact_id
+                payout.razorpay_fund_account_id = fund_account_id
+                payout.razorpay_account_type = account_type
+                payout.processed_at = timezone.now()
+
+                # Immediately mark admin (system) withdrawals as completed
+                # since verification from Razorpay modal indicates success.
+                payout.status = 'completed'
+                payout.completed_at = timezone.now()
+                payout.save()
+
+            except Exception as e:
+                print(f"[Razorpay] Error creating payout: {e}")
+                traceback.print_exc()
+                return JsonResponse({
+                    'success': False,
+                    'message': f'Error creating payout: {str(e)}'
+                }, status=500)
+
+            # Log the payout and return success
             print(f"[Razorpay] Payout created: {payout.payout_id} | Amount: ₹{amount} | Payment ID: {razorpay_payment_id}")
-            
             return JsonResponse({
                 'success': True,
                 'message': f'Payout of ₹{amount:.2f} created successfully!',
                 'payout_id': str(payout.payout_id),
                 'payment_id': razorpay_payment_id
             })
-            
-        except Exception as e:
-            return JsonResponse({
-                'success': False,
-                'message': f'Error creating payout: {str(e)}'
-            }, status=500)
     
     except json.JSONDecodeError as e:
         print(f"[Razorpay] JSON decode error: {str(e)}")
@@ -6823,13 +6907,12 @@ def create_payout_ajax(request):
         total_payouts_amount = Payout.objects.exclude(status__in=['failed', 'cancelled']).aggregate(
             total=Sum('amount')
         )['total'] or Decimal('0')
-        
-        
-        # Create payout record
+
+        # Create payout record (admin withdrawals should be completed immediately)
         payout = Payout.objects.create(
             amount=amount,
             payout_method=payout_method,
-            status='pending',
+            status='completed',
             description=description
         )
         
@@ -6875,12 +6958,16 @@ def get_dashboard_stats(request):
         
         total_commission_amount = total_payment_amount * Decimal('0.0010')
         
-        # Count ALL payouts that have been initiated (not failed or cancelled)
-        # This includes pending, processing, and completed payouts
-        total_payouts_amount = Payout.objects.exclude(status__in=['failed', 'cancelled']).aggregate(
-            total=Sum('amount')
-        )['total'] or Decimal('0')
+        # Count ADMIN WITHDRAWALS ONLY (where employee is NULL)
+        # This includes pending, processing, and completed admin payouts
+        # Employee payouts are NOT included in admin's withdrawal count
+        total_payouts_amount = Payout.objects.filter(
+            employee__isnull=True,  # Only admin withdrawals
+            status__in=['pending', 'processing', 'completed']
+        ).aggregate(total=Sum('amount'))['total'] or Decimal('0')
         
+        # Admin's available balance = total commission - already withdrawn
+        # This is the remaining amount the admin can still withdraw
         available_for_payout = total_commission_amount - total_payouts_amount
         
         # Get payout stats
