@@ -2,16 +2,6 @@ cd ..      to bcack  folder
 
 cd backend
 
-4111 1111 1111 1111 - Success
-
-4012 8888 8888 1881 - International card test
-
-5100 0000 0000 0008 - Failure scenario
-
-5555 5555 5555 4444 - Mastercard test (any 16 digits starting with 5)
-5500 6700 0000 1002	
-4100 2800 0000 1007	
-
 env\Scripts\activate
 
 python manage.py flush
