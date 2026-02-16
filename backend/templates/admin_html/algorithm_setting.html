@@ -1538,8 +1538,7 @@
                         </div>
                         <div style="font-size: 0.9rem; color: var(--text-light);">
                             <div>Completed: {{ completed_bookings }}</div>
-                            <div>Completion Rate: {% if total_bookings > 0 %}{{ completed_bookings|floatformat:0 }}%{%
-                                else %}0%{% endif %}</div>
+                            <div>Completion Rate: {% if total_bookings > 0 %}{{ completion_rate|floatformat:1 }}%{% else %}0%{% endif %}</div>
                         </div>
                     </div>
 
@@ -1726,10 +1725,8 @@
                                     {% for export in recent_exports %}
                                     <li class="recent-export-item">
                                         <div>
-                                            <div style="font-weight: 500; font-size: 0.9rem;">{{ export.data_type }}
-                                            </div>
-                                            <div style="font-size: 0.8rem; color: var(--text-light);">{{
-                                                export.created_at|timesince }} ago</div>
+                                            <div style="font-weight: 500; font-size: 0.9rem;">{{ export.data_type }}</div>
+                                            <div style="font-size: 0.8rem; color: var(--text-light);">{{ export.created_at|timesince }} ago</div>
                                         </div>
                                         {% if export.export_file %}
                                         <a href="{{ export.export_file.url }}" class="btn-icon" title="Download">
