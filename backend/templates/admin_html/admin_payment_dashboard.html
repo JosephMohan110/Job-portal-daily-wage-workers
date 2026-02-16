@@ -1822,7 +1822,7 @@
                 </div>
                 <div class="calculation-item">
                     <span>Pending Payouts:</span>
-                    <strong style="color: var(--accent-color); font-weight: 700;">₹{{ payout_summary.pending_payouts|default:0 }}</strong>
+                    <strong style="color: var(--accent-color); font-weight: 700;">{{ payout_summary.pending_payouts_amount_formatted|default:"₹0.00" }}</strong>
                 </div>
                 <div class="calculation-item">
                     <span>Next Payout Date:</span>
