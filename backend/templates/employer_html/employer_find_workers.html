@@ -798,6 +798,24 @@
         <div class="search-section">
             <h2>Find Skilled Workers</h2>
             <p>Search by skill and location (leave location blank for nearest to you)</p>
+            
+            <!-- Cached Results Alert -->
+            {% if results_cached and not search_performed %}
+            <div style="background: #e3f2fd; border-left: 4px solid #2196f3; padding: 12px 15px; margin-bottom: 15px; border-radius: 4px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: #1976d2;">
+                        <i class="fas fa-database"></i> 
+                        Showing cached search results from your previous search
+                        {% if search_query %}"{{ search_query }}"{% endif %}
+                        {% if location_query %}in {{ location_query }}{% endif %}
+                    </span>
+                    <a href="?clear_search=1" class="btn" style="background: #2196f3; color: white; padding: 6px 12px; font-size: 0.9rem;">
+                        <i class="fas fa-times"></i> Clear Cache
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+            
             <form method="post" class="search-box">
                 {% csrf_token %}
                 <input type="text" name="search_query" class="search-input"
@@ -1048,6 +1066,65 @@
         </div>
         {% endif %}
     </main>
+
+    <script>
+        // Enhanced Persistent Search Results
+        document.addEventListener('DOMContentLoaded', function() {
+            // Save search parameters to localStorage when form is submitted
+            const searchForm = document.querySelector('.search-box');
+            if (searchForm) {
+                searchForm.addEventListener('submit', function(e) {
+                    const searchQuery = document.querySelector('input[name="search_query"]').value;
+                    const locationQuery = document.querySelector('input[name="location"]').value;
+                    
+                    // Save to localStorage for browser persistence
+                    localStorage.setItem('lastWorkerSearch', JSON.stringify({
+                        query: searchQuery,
+                        location: locationQuery,
+                        timestamp: new Date().toISOString()
+                    }));
+                    
+                    console.log('💾 Search saved to localStorage:', { searchQuery, locationQuery });
+                });
+            }
+            
+            // Restore search parameters from localStorage if available
+            const lastSearch = localStorage.getItem('lastWorkerSearch');
+            if (lastSearch) {
+                try {
+                    const searchData = JSON.parse(lastSearch);
+                    console.log('📂 Last search loaded:', searchData);
+                    console.log('⏰ Searched at:', new Date(searchData.timestamp).toLocaleString());
+                } catch (e) {
+                    console.error('Error parsing last search:', e);
+                }
+            }
+            
+            // Auto-scroll to workers section if results are present
+            const workersSection = document.querySelector('.workers-section');
+            if (workersSection && window.location.hash !== '#workers') {
+                // Only auto-scroll on new searches (POST), not when loading cached results
+                const isNewSearch = '{{ request.method }}' === 'POST';
+                if (isNewSearch) {
+                    setTimeout(() => {
+                        workersSection.scrollIntoView({ behavior: 'smooth' });
+                    }, 300);
+                }
+            }
+            
+            // Track when user navigates away
+            window.addEventListener('beforeunload', function() {
+                // Search results are already saved in session and localStorage
+                console.log('ℹ️ Search results persisted in session');
+            });
+        });
+        
+        // Prevent accidental page reload warning
+        let hasSearched = {% if search_performed %}true{% else %}false{% endif %};
+        if (hasSearched) {
+            console.log('✅ Current page has search results - navigate freely');
+        }
+    </script>
 
 </body>
 

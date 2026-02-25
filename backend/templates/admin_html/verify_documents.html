@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Documents - Admin Panel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --sidebar-bg: #1e293b;
+            --sidebar-dark: #0f172a;
+            --sidebar-light: #334155;
+            --sidebar-text: #e2e8f0;
+            --sidebar-hover: #334155;
+            --sidebar-active: #3b82f6;
+            --sidebar-border: #475569;
+
+            --primary: #4a6fff;
+            --primary-dark: #3a5fef;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --info: #17a2b8;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --white: #ffffff;
+            --border-color: #dee2e6;
+            --text-light: #6c757d;
+            
+            --sidebar-width: 260px;
+            --header-height: 70px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fb;
+            color: var(--dark);
+            margin: 0;
+            padding: 0;
+        }
+
+        main {
+            margin-left: var(--sidebar-width);
+            padding-top: 20px;
+            transition: margin-left 0.3s ease;
+        }
+
+        .container-fluid {
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Header Styles */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .page-header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .page-header h1 i {
+            color: var(--primary);
+            font-size: 2.5rem;
+        }
+
+        /* Statistics Cards */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            border-left: 4px solid var(--primary);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.12);
+        }
+
+        .stat-card.pending {
+            border-left-color: var(--warning);
+        }
+
+        .stat-card.verified {
+            border-left-color: var(--success);
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .stat-icon {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            color: var(--white);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 10px;
+            font-size: 1.2rem;
+        }
+
+        .stat-card.pending .stat-icon {
+            background: var(--warning);
+        }
+
+        .stat-card.verified .stat-icon {
+            background: var(--success);
+        }
+
+        /* Filter Section */
+        .filters {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .filters h3 {
+            margin-bottom: 15px;
+            color: var(--dark);
+            font-weight: 600;
+        }
+
+        .filter-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            align-items: flex-end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-group label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--dark);
+            font-size: 0.9rem;
+        }
+
+        .filter-group input,
+        .filter-group select {
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .filter-group input:focus,
+        .filter-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(74, 111, 255, 0.1);
+        }
+
+        .btn-filter {
+            padding: 10px 20px;
+            background: var(--primary);
+            color: var(--white);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-filter:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        /* Document Grid */
+        .documents-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .document-card {
+            background: var(--white);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .document-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .document-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: var(--white);
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+        }
+
+        .document-type {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .document-status {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-pending {
+            background: rgba(255, 193, 7, 0.3);
+            color: #856404;
+        }
+
+        .status-verified {
+            background: rgba(40, 167, 69, 0.3);
+            color: #155724;
+        }
+
+        .document-preview {
+            width: 100%;
+            height: 200px;
+            background: var(--light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .document-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .document-preview .pdf-icon {
+            font-size: 3rem;
+            color: #dc3545;
+            opacity: 0.5;
+        }
+
+        .document-body {
+            padding: 20px;
+        }
+
+        .document-owner {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+
+        .owner-type {
+            display: inline-block;
+            padding: 4px 10px;
+            background: var(--light);
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-left: 8px;
+        }
+
+        .document-info {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin: 10px 0;
+            line-height: 1.6;
+        }
+
+        .document-info strong {
+            color: var(--dark);
+        }
+
+        .document-upload-date {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .document-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .btn-action {
+            flex: 1;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn-verify {
+            background: var(--success);
+            color: var(--white);
+        }
+
+        .btn-verify:hover {
+            background: #20c997;
+            transform: translateY(-2px);
+        }
+
+        .btn-reject {
+            background: var(--danger);
+            color: var(--white);
+        }
+
+        .btn-reject:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+        }
+
+        .btn-view {
+            background: var(--info);
+            color: var(--white);
+            flex: 0 1 auto;
+        }
+
+        .btn-view:hover {
+            background: #138496;
+            transform: translateY(-2px);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            color: var(--text-light);
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            color: var(--dark);
+            margin-bottom: 10px;
+        }
+
+        .empty-state p {
+            color: var(--text-light);
+            margin-bottom: 0;
+        }
+
+        /* Pagination */
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .pagination-container a,
+        .pagination-container span {
+            padding: 10px 14px;
+            border-radius: 6px;
+            background: var(--white);
+            color: var(--primary);
+            text-decoration: none;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .pagination-container a:hover {
+            background: var(--primary);
+            color: var(--white);
+            border-color: var(--primary);
+        }
+
+        .pagination-container .current {
+            background: var(--primary);
+            color: var(--white);
+            border-color: var(--primary);
+        }
+
+        /* Alerts */
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideIn 0.3s ease;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid var(--success);
+        }
+
+        .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid var(--danger);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--white);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .documents-grid {
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .page-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .stats-container {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 15px;
+            }
+
+            .documents-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-row {
+                grid-template-columns: 1fr;
+            }
+
+            .document-actions {
+                flex-direction: column;
+            }
+
+            .btn-action {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .container-fluid {
+                padding: 15px;
+            }
+
+            .page-header h1 {
+                font-size: 1.2rem;
+                gap: 10px;
+            }
+
+            .page-header h1 i {
+                font-size: 1.8rem;
+            }
+
+            .stat-value {
+                font-size: 1.5rem;
+            }
+
+            .stat-card {
+                padding: 15px;
+            }
+
+            .filters {
+                padding: 15px;
+            }
+
+            .document-body {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Include Sidebar -->
+    {% include 'admin_html/admin_sidebar.html' %}
+
+    <main>
+        <div class="container-fluid">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1>
+            <i class="fas fa-file-check"></i>
+            Document Verification
+        </h1>
+    </div>
+
+    <!-- Statistics -->
+    <div class="stats-container">
+        <div class="stat-card pending">
+            <div class="stat-label">Pending Employee Verification</div>
+            <div class="stat-value">{{ stats.pending_employee }}</div>
+            <div class="stat-icon"><i class="fas fa-hourglass-half"></i></div>
+        </div>
+        <div class="stat-card verified">
+            <div class="stat-label">Verified Employees</div>
+            <div class="stat-value">{{ stats.verified_employee }}</div>
+            <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+        </div>
+        <div class="stat-card pending">
+            <div class="stat-label">Pending Employer Verification</div>
+            <div class="stat-value">{{ stats.pending_employer }}</div>
+            <div class="stat-icon"><i class="fas fa-hourglass-half"></i></div>
+        </div>
+        <div class="stat-card verified">
+            <div class="stat-label">Verified Employers</div>
+            <div class="stat-value">{{ stats.verified_employer }}</div>
+            <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters">
+        <h3><i class="fas fa-filter"></i> Filter Documents</h3>
+        <form method="GET" class="filter-row">
+            <div class="filter-group">
+                <label for="doc_type">Document Type</label>
+                <select id="doc_type" name="type">
+                    <option value="all" {% if doc_type == 'all' %}selected{% endif %}>All Documents</option>
+                    <option value="employee" {% if doc_type == 'employee' %}selected{% endif %}>Employee (Aadhar)</option>
+                    <option value="employer" {% if doc_type == 'employer' %}selected{% endif %}>Employer (Business)</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="status">Status</label>
+                <select id="status" name="status">
+                    <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+                    <option value="verified" {% if status_filter == 'verified' %}selected{% endif %}>Verified</option>
+                    <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="search">Search (Name/Email/Phone)</label>
+                <input type="text" id="search" name="search" placeholder="Search..." value="{{ search_query }}">
+            </div>
+
+            <button type="submit" class="btn-filter">
+                <i class="fas fa-search"></i> Search
+            </button>
+        </form>
+    </div>
+
+    <!-- Documents Grid -->
+    {% if documents %}
+        <div class="documents-grid">
+            {% for doc in documents %}
+                <div class="document-card" data-doc-id="{{ doc.id }}" data-doc-type="{{ doc.type }}">
+                    <div class="document-header">
+                        <div class="document-type">
+                            <i class="fas {% if doc.type == 'employee' %}fa-id-card{% else %}fa-building{% endif %}"></i>
+                            {{ doc.category }}
+                        </div>
+                        <div class="document-status {% if doc.is_verified %}status-verified{% else %}status-pending{% endif %}">
+                            {% if doc.is_verified %}
+                                <i class="fas fa-check-circle"></i> Verified
+                            {% else %}
+                                <i class="fas fa-clock"></i> Pending
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="document-preview">
+                        {% if doc.document_url %}
+                            {% if '.pdf' in doc.document_url %}
+                                <i class="fas fa-file-pdf pdf-icon"></i>
+                            {% else %}
+                                <img src="{{ doc.document_url }}" alt="Document Preview">
+                            {% endif %}
+                        {% endif %}
+                    </div>
+
+                    <div class="document-body">
+                        <div class="document-owner">
+                            {{ doc.owner_name }}
+                            <span class="owner-type">
+                                {% if doc.type == 'employee' %}Employee{% else %}Employer{% endif %}
+                            </span>
+                        </div>
+
+                        <div class="document-info">
+                            {% if doc.type == 'employee' %}
+                                <div><strong>Email:</strong> {{ doc.owner_email }}</div>
+                                <div><strong>Phone:</strong> {{ doc.owner_phone }}</div>
+                            {% else %}
+                                <div><strong>Company:</strong> {{ doc.company_name }}</div>
+                                <div><strong>Email:</strong> {{ doc.owner_email }}</div>
+                            {% endif %}
+                        </div>
+
+                        {% if doc.upload_date %}
+                            <div class="document-upload-date">
+                                <strong>Uploaded:</strong> {{ doc.upload_date|date:"M d, Y H:i" }}
+                            </div>
+                        {% endif %}
+
+                        {% if not doc.is_verified %}
+                            <div class="document-actions">
+                                <button class="btn-action btn-verify" onclick="verifyDocument('{{ doc.id }}')">
+                                    <i class="fas fa-check"></i> Verify
+                                </button>
+                                <button class="btn-action btn-reject" onclick="rejectDocument('{{ doc.id }}')">
+                                    <i class="fas fa-times"></i> Reject
+                                </button>
+                                {% if doc.document_url %}
+                                    <a href="{{ doc.document_url }}" target="_blank" class="btn-action btn-view">
+                                        <i class="fas fa-eye"></i> View
+                                    </a>
+                                {% endif %}
+                            </div>
+                        {% else %}
+                            <div class="document-actions">
+                                <button class="btn-action btn-reject" onclick="rejectDocument('{{ doc.id }}')">
+                                    <i class="fas fa-undo"></i> Unverify
+                                </button>
+                                {% if doc.document_url %}
+                                    <a href="{{ doc.document_url }}" target="_blank" class="btn-action btn-view">
+                                        <i class="fas fa-eye"></i> View
+                                    </a>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+            <div class="pagination-container">
+                {% if page_obj.has_previous %}
+                    <a href="?type={{ doc_type }}&status={{ status_filter }}&search={{ search_query }}&page=1">First</a>
+                    <a href="?type={{ doc_type }}&status={{ status_filter }}&search={{ search_query }}&page={{ page_obj.previous_page_number }}">Previous</a>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <span class="current">{{ num }}</span>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <a href="?type={{ doc_type }}&status={{ status_filter }}&search={{ search_query }}&page={{ num }}">{{ num }}</a>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                    <a href="?type={{ doc_type }}&status={{ status_filter }}&search={{ search_query }}&page={{ page_obj.next_page_number }}">Next</a>
+                    <a href="?type={{ doc_type }}&status={{ status_filter }}&search={{ search_query }}&page={{ page_obj.paginator.num_pages }}">Last</a>
+                {% endif %}
+            </div>
+        {% endif %}
+
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-inbox"></i>
+            <h3>No Documents Found</h3>
+            <p>There are no documents matching your criteria. Try adjusting your filters.</p>
+        </div>
+    {% endif %}
+
+</div>
+
+<!-- Success/Error Alert Container -->
+<div id="alertContainer" style="position: fixed; top: 20px; right: 20px; z-index: 1000; max-width: 400px;"></div>
+
+<script>
+    function verifyDocument(docId) {
+        if (!confirm('Are you sure you want to verify this document?')) {
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('document_id', docId);
+        formData.append('action', 'verify');
+        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+        fetch('{% url "update_document_status" %}', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAlert(data.message, 'success');
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+            } else {
+                showAlert(data.message || 'Error verifying document', 'danger');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showAlert('Error verifying document', 'danger');
+        });
+    }
+
+    function rejectDocument(docId) {
+        if (!confirm('Are you sure you want to reject this document?')) {
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('document_id', docId);
+        formData.append('action', 'reject');
+        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+        fetch('{% url "update_document_status" %}', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAlert(data.message, 'success');
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+            } else {
+                showAlert(data.message || 'Error rejecting document', 'danger');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showAlert('Error rejecting document', 'danger');
+        });
+    }
+
+    function showAlert(message, type) {
+        const alertContainer = document.getElementById('alertContainer');
+        const alert = document.createElement('div');
+        alert.className = `alert alert-${type}`;
+        alert.innerHTML = `
+            <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+            <div>${message}</div>
+        `;
+        alertContainer.appendChild(alert);
+
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            alert.style.animation = 'slideIn 0.3s ease reverse';
+            setTimeout(() => {
+                alert.remove();
+            }, 300);
+        }, 5000);
+    }
+</script>
+        </div>
+    </main>
+
+</body>
+</html>

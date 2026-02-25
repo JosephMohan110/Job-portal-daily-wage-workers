@@ -239,16 +239,21 @@ def employee_earnings(request):
         messages.error(request, "Please login first.")
         return redirect('index')
     
+    employee_id = request.session['employee_id']
+    
     try:
-        employee_id = request.session['employee_id']
         employee = Employee.objects.get(employee_id=employee_id)
-        
-        # Get filter parameters
-        payment_method_filter = request.GET.get('payment_method', 'all')
-        month_filter = request.GET.get('month', 'all')
-        date_filter = request.GET.get('date_filter', 'all')
-        search_query = request.GET.get('search', '').strip()
-        chart_period = request.GET.get('chart_period', 'monthly')  # Default to monthly
+    except Employee.DoesNotExist:
+        messages.error(request, "Employee not found.")
+        return redirect('index')
+    
+    try:
+        # Get filter parameters with safe defaults
+        payment_method_filter = request.GET.get('payment_method', 'all') if request.GET.get('payment_method') else 'all'
+        month_filter = request.GET.get('month', 'all') if request.GET.get('month') else 'all'
+        date_filter = request.GET.get('date_filter', 'all') if request.GET.get('date_filter') else 'all'
+        search_query = request.GET.get('search', '').strip() if request.GET.get('search') else ''
+        chart_period = request.GET.get('chart_period', 'monthly') if request.GET.get('chart_period') else 'monthly'
         
         # Get completed jobs for this employee
         completed_jobs = JobRequest.objects.filter(
@@ -284,7 +289,7 @@ def employee_earnings(request):
         
         # CRITICAL FIX: Use stored balance from employee model, not recalculated from jobs
         # This is the actual available balance that accounts for withdrawals
-        total_earnings = float(employee.total_earnings)
+        total_earnings = float(employee.total_earnings) if employee.total_earnings else 0
         
         # Calculate chart data based on selected period
         chart_labels = []
@@ -364,10 +369,14 @@ def employee_earnings(request):
         # Sort by date
         earnings_history.sort(key=lambda x: x['payment_date'], reverse=True)
         
-        # Pagination
+        # Pagination with error handling
         paginator = Paginator(earnings_history, 10)
         page_number = request.GET.get('page', 1)
-        earnings_page = paginator.get_page(page_number)
+        
+        try:
+            earnings_page = paginator.page(int(page_number))
+        except (ValueError, Exception):
+            earnings_page = paginator.page(1)
         
         # Calculate recent stats
         today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -398,8 +407,8 @@ def employee_earnings(request):
         # Prepare context
         context = {
             'employee': employee,
-            'employee_name': employee.full_name,
-            'employee_email': employee.email,
+            'employee_name': employee.full_name or 'Employee',
+            'employee_email': employee.email or '',
             'earnings_history': earnings_page,
             'total_earnings': total_earnings,  # Available balance (after withdrawals)
             'earned_from_jobs': earned_from_jobs,  # Total earned from completed jobs
@@ -415,16 +424,47 @@ def employee_earnings(request):
             'payment_method_filter': payment_method_filter,
             'month_filter': month_filter,
             'date_filter': date_filter,
+            'paginator': paginator,
+            'page_obj': earnings_page,
         }
         
         return render(request, 'employee_html/employee_earnings.html', context)
         
-    except Employee.DoesNotExist:
-        messages.error(request, "Employee not found.")
-        return redirect('employee_dashboard')
     except Exception as e:
-        messages.error(request, f"Error loading earnings: {str(e)}")
-        return redirect('employee_dashboard')
+        import traceback
+        error_msg = f"Error loading earnings: {str(e)}"
+        print(f"EARNINGS ERROR: {error_msg}")
+        print(traceback.format_exc())
+        messages.error(request, error_msg)
+        
+        # Create empty paginator for fallback context
+        empty_pagination = Paginator([], 10)
+        empty_page = empty_pagination.page(1)
+        
+        # Return to earnings page even with error to show context
+        return render(request, 'employee_html/employee_earnings.html', {
+            'employee': employee,
+            'employee_name': employee.full_name or 'Employee',
+            'employee_email': employee.email or '',
+            'earnings_history': empty_page,
+            'total_earnings': 0,
+            'earned_from_jobs': 0,
+            'total_jobs_completed': 0,
+            'today_earnings': 0,
+            'weekly_earnings': 0,
+            'monthly_earnings_total': 0,
+            'avg_per_job': 0,
+            'chart_data': [],
+            'chart_labels': [],
+            'chart_period': 'monthly',
+            'search_query': '',
+            'payment_method_filter': 'all',
+            'month_filter': 'all',
+            'date_filter': 'all',
+            'paginator': empty_pagination,
+            'page_obj': empty_page,
+            'error_message': error_msg,
+        })
 
 def get_payment_method(job):
     """Determine payment method for a job"""
@@ -459,36 +499,45 @@ def employee_job_history(request):
         messages.error(request, "Please login first.")
         return redirect('index')
     
+    employee_id = request.session['employee_id']
+    
     try:
-        employee_id = request.session['employee_id']
         employee = Employee.objects.get(employee_id=employee_id)
-        
+    except Employee.DoesNotExist:
+        messages.error(request, "Employee not found.")
+        return redirect('index')
+    
+    try:
         # Check if we're viewing payment details
         view_payment = request.GET.get('view_payment')
         job_id = request.GET.get('job_id')
         
         if view_payment == 'true' and job_id:
-            return job_history_payment(request, job_id)
+            try:
+                return job_history_payment(request, job_id)
+            except Exception as e:
+                messages.error(request, f"Error loading payment details: {str(e)}")
         
         # Check if we're viewing review details
         view_review = request.GET.get('view_review')
         if view_review == 'true' and job_id:
-            return job_history_review(request, job_id)
+            try:
+                return job_history_review(request, job_id)
+            except Exception as e:
+                messages.error(request, f"Error loading review details: {str(e)}")
         
-        # Get filter parameters
-        status_filter = request.GET.get('status', 'all')
-        sort_filter = request.GET.get('sort', 'newest')
-        time_filter = request.GET.get('time', 'all')
-        search_query = request.GET.get('search', '').strip()
-        current_view = request.GET.get('view', 'all')
+        # Get filter parameters with safe defaults
+        status_filter = request.GET.get('status', 'all') if request.GET.get('status') else 'all'
+        sort_filter = request.GET.get('sort', 'newest') if request.GET.get('sort') else 'newest'
+        time_filter = request.GET.get('time', 'all') if request.GET.get('time') else 'all'
+        search_query = request.GET.get('search', '').strip() if request.GET.get('search') else ''
+        current_view = request.GET.get('view', 'all') if request.GET.get('view') else 'all'
         
         # Start with all job requests for this employee (excluding pending)
-        job_history = JobRequest.objects.filter(
-            employee=employee
-        ).exclude(status='pending').select_related('employer')
+        job_history = JobRequest.objects.filter(employee=employee).exclude(status='pending').select_related('employer').prefetch_related('reviews')
         
         # Apply status filter
-        if status_filter != 'all':
+        if status_filter and status_filter != 'all':
             job_history = job_history.filter(status=status_filter)
         
         # Apply time filter
@@ -524,44 +573,42 @@ def employee_job_history(request):
         elif sort_filter == 'oldest':
             job_history = job_history.order_by('updated_at')
         elif sort_filter == 'rating-high':
-            # This would require joining with reviews table
-            # For now, sort by job completion date
             job_history = job_history.order_by('-completed_at')
         elif sort_filter == 'rating-low':
             job_history = job_history.order_by('completed_at')
         elif sort_filter == 'earning-high':
             job_history = job_history.order_by('-budget')
+        else:
+            job_history = job_history.order_by('-updated_at')
         
-        # Calculate statistics
-        total_jobs = JobRequest.objects.filter(
-            employee=employee,
-            status='completed'
-        ).count()
-        
+        # Calculate statistics safely
+        completed_jobs_qs = JobRequest.objects.filter(employee=employee, status='completed')
+        total_jobs = completed_jobs_qs.count()
         completed_jobs = total_jobs
         
-        # Calculate total earnings from completed jobs
-        total_earnings = JobRequest.objects.filter(
-            employee=employee,
-            status='completed'
-        ).aggregate(total=Sum('budget'))['total'] or 0
+        total_earnings = completed_jobs_qs.aggregate(total=Sum('budget'))['total'] or 0
         
-        # Pagination
+        # Pagination with error handling
         paginator = Paginator(job_history, 10)  # 10 jobs per page
         page_number = request.GET.get('page', 1)
-        job_history_page = paginator.get_page(page_number)
+        
+        try:
+            job_history_page = paginator.page(int(page_number))
+        except (ValueError, Exception):
+            # If page is invalid, return first page
+            job_history_page = paginator.page(1)
         
         # Prepare stats for template
         stats = {
-            'total_jobs': total_jobs,
-            'completed_jobs': completed_jobs,
-            'total_earnings': total_earnings,
+            'total_jobs': total_jobs if total_jobs else 0,
+            'completed_jobs': completed_jobs if completed_jobs else 0,
+            'total_earnings': total_earnings if total_earnings else 0,
         }
         
         context = {
             'employee': employee,
-            'employee_name': employee.full_name,
-            'employee_email': employee.email,
+            'employee_name': employee.full_name or 'Employee',
+            'employee_email': employee.email or '',
             'job_history': job_history_page,
             'stats': stats,
             'current_filters': {
@@ -570,16 +617,37 @@ def employee_job_history(request):
                 'time': time_filter,
             },
             'current_view': current_view,
+            'paginator': paginator,
+            'page_obj': job_history_page,
         }
         
         return render(request, 'employee_html/employee_job_history.html', context)
         
-    except Employee.DoesNotExist:
-        messages.error(request, "Employee not found.")
-        return redirect('employee_dashboard')
     except Exception as e:
-        messages.error(request, f"Error loading job history: {str(e)}")
-        return redirect('employee_dashboard')
+        import traceback
+        error_msg = f"Error loading job history: {str(e)}"
+        print(f"JOB HISTORY ERROR: {error_msg}")
+        print(traceback.format_exc())
+        messages.error(request, error_msg)
+        
+        # Create an empty queryset and paginate it for fallback context
+        empty_queryset = JobRequest.objects.none()
+        empty_paginator = Paginator(empty_queryset, 10)
+        empty_page = empty_paginator.page(1)
+        
+        # Return to job history page even with error to show context
+        return render(request, 'employee_html/employee_job_history.html', {
+            'employee': employee,
+            'employee_name': employee.full_name or 'Employee',
+            'employee_email': employee.email or '',
+            'job_history': empty_page,
+            'stats': {'total_jobs': 0, 'completed_jobs': 0, 'total_earnings': 0},
+            'current_filters': {'status': 'all', 'sort': 'newest', 'time': 'all'},
+            'current_view': 'all',
+            'error_message': error_msg,
+            'paginator': empty_paginator,
+            'page_obj': empty_page,
+        })
 
 
 #**********************************************************
@@ -668,21 +736,23 @@ def job_history_review(request, job_id):
         # Get job details
         job = get_object_or_404(JobRequest, job_id=job_id, employee=employee)
         
-        # Get reviews for this job
+        # Get reviews for THIS SPECIFIC JOB only (not all reviews from this employer)
         reviews = Review.objects.filter(
             employee=employee,
-            employer=job.employer
+            job=job
         ).order_by('-created_at')
         
-        # Get employer reviews
+        # Get employer reviews for this specific job
         employer_reviews = Review.objects.filter(
-            employer=job.employer
+            employer=job.employer,
+            job=job
         ).order_by('-created_at')
         
         review_details = {
             'job': job,
             'reviews': reviews,
             'employer_reviews': employer_reviews,
+            'has_review': reviews.exists(),
         }
         
         context = {
@@ -700,6 +770,50 @@ def job_history_review(request, job_id):
         messages.error(request, f"Error loading review details: {str(e)}")
         return redirect('employee_job_history')
     
+
+# API Endpoint for fetching job review data (JSON response)
+def api_get_job_review(request, job_id):
+    """API endpoint to fetch review data for a specific job"""
+    if 'employee_id' not in request.session:
+        return JsonResponse({'error': 'Not authenticated'}, status=401)
+    
+    try:
+        employee_id = request.session['employee_id']
+        employee = Employee.objects.get(employee_id=employee_id)
+        
+        # Get job details
+        job = get_object_or_404(JobRequest, job_id=job_id, employee=employee)
+        
+        # Get reviews for THIS SPECIFIC JOB only
+        reviews = Review.objects.filter(
+            employee=employee,
+            job=job
+        ).order_by('-created_at')
+        
+        if reviews.exists():
+            review = reviews.first()
+            review_data = {
+                'has_review': True,
+                'reviews': [{
+                    'employer_name': review.employer.full_name if review.employer else 'Anonymous',
+                    'rating': float(review.rating) if review.rating else 0,
+                    'review_text': review.text or '',
+                    'created_at': review.created_at.isoformat(),
+                }]
+            }
+        else:
+            review_data = {
+                'has_review': False,
+                'reviews': []
+            }
+        
+        return JsonResponse(review_data)
+        
+    except Employee.DoesNotExist:
+        return JsonResponse({'error': 'Employee not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
 
 #**************************************************************
 
@@ -925,7 +1039,7 @@ def employee_job_request(request):
         if view_details == 'true' and job_id:
             try:
                 # Get job details
-                job = JobRequest.objects.get(job_id=job_id, employee=employee)
+                job = JobRequest.objects.select_related('employer').get(job_id=job_id, employee=employee)
                 actions = JobAction.objects.filter(job=job).order_by('-created_at')
                 
                 # Get payment details related to this job
@@ -1001,12 +1115,19 @@ def employee_job_request(request):
                 completed_payments_sum = sum(p.amount for p in payments if p.status == 'completed') if payments else 0
                 pending_payments_sum = sum(p.amount for p in payments if p.status == 'pending') if payments else 0
                 
+                # Calculate payment completion percentage
+                payment_completion_percentage = 0
+                if total_payments_sum > 0:
+                    payment_completion_percentage = round((completed_payments_sum / total_payments_sum) * 100)
+                
                 payment_summary = {
                     'total_amount': total_payments_sum,
                     'completed_amount': completed_payments_sum,
                     'pending_amount': pending_payments_sum,
                     'total_payments': payments.count() if payments else 0,
                     'completed_payments': payments.filter(status='completed').count() if payments else 0,
+                    'payment_completion_percentage': payment_completion_percentage,
+                    'is_payment_complete': payment_completion_percentage == 100,
                 }
                 
                 context = {
@@ -1034,7 +1155,7 @@ def employee_job_request(request):
         search_query = request.GET.get('search', '').strip()
         
         # Start with all job requests for this employee
-        job_requests = JobRequest.objects.filter(employee=employee)
+        job_requests = JobRequest.objects.filter(employee=employee).select_related('employer')
         
         # Apply status filter
         if status_filter != 'all':
@@ -1069,7 +1190,7 @@ def employee_job_request(request):
         active_jobs = job_requests.filter(status='accepted').order_by('-updated_at')
         
         # 3. Previous Jobs (Completed, Cancelled)
-        previous_jobs = job_requests.filter(status__in=['completed', 'cancelled']).order_by('-updated_at')
+        previous_jobs = job_requests.filter(status__in=['completed', 'cancelled']).order_by('-updated_at').prefetch_related('reviews')
         
         # 4. Rejected Jobs
         rejected_jobs = job_requests.filter(status='rejected').order_by('-updated_at')
@@ -1084,6 +1205,9 @@ def employee_job_request(request):
         rejected_requests = JobRequest.objects.filter(employee=employee, status='rejected').count()
         completed_requests = JobRequest.objects.filter(employee=employee, status='completed').count()
         
+        # Get all jobs for the "All Requests" tab
+        all_jobs = JobRequest.objects.filter(employee=employee).select_related('employer').order_by('-created_at')
+        
         context = {
             'employee': employee,
             'employee_name': employee.full_name,
@@ -1091,6 +1215,10 @@ def employee_job_request(request):
             'active_jobs': active_jobs,
             'previous_jobs': previous_jobs,
             'rejected_jobs': rejected_jobs,
+            'declined_jobs': rejected_jobs,  # Alias for template
+            'all_jobs': all_jobs,
+            'pending_jobs': new_jobs,  # pending status = new jobs
+            'completed_jobs': previous_jobs,  # completed status = previous jobs
             
             'new_jobs_count': new_jobs.count(),
             'active_jobs_count': active_jobs.count(),
@@ -1098,6 +1226,11 @@ def employee_job_request(request):
             'rejected_jobs_count': rejected_jobs.count(),
             
             'completed_jobs_count': completed_jobs_count,
+            # Variables for stat cards (direct template access)
+            'total_requests': total_requests,
+            'pending_count': pending_requests,
+            'declined_count': rejected_requests,
+            
             'stats': {
                 'total': total_requests,
                 'accepted': accepted_requests,
@@ -1316,6 +1449,7 @@ def update_job_status(request):
             job_id = request.POST.get('job_id')
             new_status = request.POST.get('status')
             notes = request.POST.get('notes', '')
+            rejection_reason = request.POST.get('rejection_reason', '')
             
             if not job_id or not new_status:
                 messages.error(request, "Job ID and status are required.")
@@ -1351,6 +1485,8 @@ def update_job_status(request):
             action_notes = f"Status changed from {old_status} to {new_status}."
             if notes:
                 action_notes += f" Notes: {notes}"
+            if rejection_reason:
+                action_notes += f" Rejection Reason: {rejection_reason}"
             
             JobAction.objects.create(
                 job=job,
@@ -1375,13 +1511,54 @@ def update_job_status(request):
 
             # Create Employer Notification
             from employer.models import EmployerNotification
+            notification_message = f"{employee.full_name} updated the status of Job '{job.title}' to {new_status}."
+            if rejection_reason and new_status == 'rejected':
+                notification_message += f" Reason: {rejection_reason}"
+            
             EmployerNotification.objects.create(
                 employer=job.employer,
-                title=f"Job Status Updated",
-                message=f"{employee.full_name} updated the status of Job '{job.title}' to {new_status}.",
+                title=f"Job Status Updated - {new_status.title()}",
+                message=notification_message,
                 notification_type='job',
                 is_read=False
             )
+            
+            # Send message to employer if job is rejected with a reason
+            if new_status == 'rejected' and rejection_reason:
+                from message_system.models import ChatRoom, Message
+                
+                try:
+                    # Get or create chat room between employee and employer
+                    chat_room, created = ChatRoom.objects.get_or_create(
+                        employer=job.employer,
+                        employee=employee,
+                        job=job,
+                        defaults={
+                            'room_type': 'job',
+                            'subject': f"Job Request Declined: {job.title}"
+                        }
+                    )
+                    
+                    # Send rejection reason as a message
+                    rejection_message = f"I have declined the job request '{job.title}' for the following reason:\n\n{rejection_reason}"
+                    Message.objects.create(
+                        room=chat_room,
+                        sender_type='employee',
+                        sender_employee=employee,
+                        message_type='text',
+                        content=rejection_message,
+                        status='sent'
+                    )
+                    
+                    # Update chat room message count
+                    chat_room.message_count += 1
+                    chat_room.unread_employer += 1
+                    chat_room.save()
+                    
+                except Exception as e:
+                    print(f"ERROR: Failed to send rejection message: {str(e)}")
+                    # Don't fail the entire request if message sending fails
+                    pass
             
             messages.success(request, f"Job status updated to {new_status}.")
             
@@ -2444,8 +2621,48 @@ def update_employee_cover_image(request):
         messages.error(request, "Please login first.")
         return redirect('index')
     
-    messages.info(request, "Cover image feature coming soon!")
-    return redirect('employee_profile')
+    try:
+        employee = Employee.objects.get(employee_id=request.session['employee_id'])
+        
+        if request.method == 'POST':
+            cover_image = request.FILES.get('cover_image')
+            
+            if not cover_image:
+                messages.error(request, "Please select a cover image.")
+                return redirect('employee_profile')
+            
+            # Validate file size (5MB max)
+            if cover_image.size > 5 * 1024 * 1024:
+                messages.error(request, "Cover image must be less than 5MB.")
+                return redirect('employee_profile')
+            
+            # Validate file type
+            allowed_types = ['image/jpeg', 'image/png', 'image/webp']
+            if cover_image.content_type not in allowed_types:
+                messages.error(request, "Only JPEG, PNG, and WebP images are allowed.")
+                return redirect('employee_profile')
+            
+            # Delete old cover image if it exists
+            if employee.cover_image:
+                if employee.cover_image.name:
+                    employee.cover_image.delete(save=False)
+            
+            # Save new cover image
+            employee.cover_image = cover_image
+            employee.save()
+            
+            messages.success(request, "Cover image updated successfully!")
+            return redirect('employee_profile')
+        
+        messages.info(request, "Cover image feature coming soon!")
+        return redirect('employee_profile')
+    
+    except Employee.DoesNotExist:
+        messages.error(request, "Employee profile not found.")
+        return redirect('index')
+    except Exception as e:
+        messages.error(request, f"Error updating cover image: {str(e)}")
+        return redirect('employee_profile')
 
 
 #**************************************************************************

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -117,7 +118,8 @@
             font-weight: 500;
         }
 
-        .sidebar-menu a:hover, .sidebar-menu a.active {
+        .sidebar-menu a:hover,
+        .sidebar-menu a.active {
             background: rgba(255, 255, 255, 0.05);
             color: var(--white);
             border-left: 4px solid var(--sidebar-active);
@@ -319,6 +321,7 @@
                 transform: translateX(100%) scale(0.9);
                 opacity: 0;
             }
+
             to {
                 transform: translateX(0) scale(1);
                 opacity: 1;
@@ -330,6 +333,7 @@
                 transform: translateX(0) scale(1);
                 opacity: 1;
             }
+
             to {
                 transform: translateX(100%) scale(0.9);
                 opacity: 0;
@@ -578,11 +582,11 @@
             border-radius: 50%;
         }
 
-        input:checked + .toggle-slider {
+        input:checked+.toggle-slider {
             background-color: var(--primary);
         }
 
-        input:checked + .toggle-slider:before {
+        input:checked+.toggle-slider:before {
             transform: translateX(26px);
         }
 
@@ -686,9 +690,20 @@
         }
 
         @keyframes pulse {
-            0% { transform: scale(0.95); opacity: 0.7; }
-            70% { transform: scale(1); opacity: 1; }
-            100% { transform: scale(0.95); opacity: 0.7; }
+            0% {
+                transform: scale(0.95);
+                opacity: 0.7;
+            }
+
+            70% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(0.95);
+                opacity: 0.7;
+            }
         }
 
         .photo-status {
@@ -772,6 +787,7 @@
                 transform: translateY(-50px);
                 opacity: 0;
             }
+
             to {
                 transform: translateY(0);
                 opacity: 1;
@@ -820,6 +836,22 @@
             gap: 10px;
         }
 
+        /* Menu Toggle for Mobile */
+        .menu-toggle {
+            display: none;
+            background: var(--primary);
+            border: none;
+            color: var(--white);
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.2rem;
+            margin-right: 15px;
+        }
+
         /* Responsive Design */
         @media (max-width: 1200px) {
             .settings-container {
@@ -831,32 +863,32 @@
             .sidebar {
                 transform: translateX(-100%);
             }
-            
+
             .sidebar.active {
                 transform: translateX(0);
             }
-            
+
             .main-content {
                 margin-left: 0;
             }
-            
+
             .sidebar-close {
                 display: block;
             }
-            
+
             .menu-toggle {
                 display: flex;
             }
-            
+
             .settings-container {
                 grid-template-columns: 1fr;
             }
-            
+
             .settings-sidebar {
                 position: static;
                 margin-bottom: 1.5rem;
             }
-            
+
             .django-messages {
                 top: 70px;
                 right: 10px;
@@ -870,23 +902,23 @@
             .form-row {
                 grid-template-columns: 1fr;
             }
-            
+
             .top-bar {
                 padding: 1rem;
             }
-            
+
             .settings-container {
                 padding: 1rem;
             }
-            
+
             .settings-content {
                 padding: 1.5rem;
             }
-            
+
             .menu-toggle {
                 margin-right: 10px;
             }
-            
+
             .page-title h1 {
                 font-size: 1.6rem;
             }
@@ -896,43 +928,220 @@
             .user-info {
                 display: none;
             }
-            
+
             .top-bar {
                 padding: 0.8rem;
             }
-            
+
             .page-title h1 {
                 font-size: 1.4rem;
             }
-            
+
             .modal-content {
                 margin: 20px;
             }
-            
+
             .profile-photo-container {
                 flex-direction: column;
                 align-items: flex-start;
             }
         }
+
+        /* Document Styles */
+        .section-description {
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+        }
+
+        .document-upload-section {
+            background: var(--white);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .document-upload-section h4 {
+            color: var(--dark);
+            margin-top: 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .file-upload-area {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--white);
+        }
+
+        .file-upload-area:hover {
+            border-color: var(--primary);
+            background-color: rgba(58, 134, 255, 0.05);
+        }
+
+        .file-upload-area i {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .file-upload-area p {
+            margin: 0.5rem 0;
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+
+        .file-upload-area small {
+            color: var(--text-light);
+            display: block;
+        }
+
+        .document-display {
+            margin-bottom: 1.5rem;
+        }
+
+        .document-item {
+            background: var(--white);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+        }
+
+        .document-item:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-color: var(--primary);
+        }
+
+        .document-item i {
+            font-size: 1.8rem;
+        }
+
+        .document-info-box {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: rgba(58, 134, 255, 0.05);
+            border-left: 4px solid var(--primary);
+            border-radius: 8px;
+        }
+
+        .document-info-box h5 {
+            margin-top: 0;
+            color: var(--dark);
+            font-weight: 600;
+        }
+
+        .document-info-box ul {
+            margin: 0.5rem 0 0;
+            padding-left: 1.5rem;
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        .document-info-box li {
+            margin-bottom: 0.5rem;
+        }
+
+        .file-error {
+            color: var(--danger);
+            display: none;
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        .file-error.show {
+            display: block;
+        }
+
+        /* Alert Styles for Documents */
+        .alert-success,
+        .alert-danger {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 500;
+            animation: slideIn 0.3s ease;
+        }
+
+        .alert-success {
+            background: rgba(6, 214, 160, 0.15);
+            color: #06a079;
+            border: 1px solid rgba(6, 214, 160, 0.3);
+        }
+
+        .alert-danger {
+            background: rgba(239, 71, 111, 0.15);
+            color: #c92a4c;
+            border: 1px solid rgba(239, 71, 111, 0.3);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .document-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .document-upload-section {
+                padding: 1rem;
+            }
+
+            .file-upload-area {
+                padding: 1.5rem;
+            }
+
+            .file-upload-area i {
+                font-size: 2rem;
+            }
+        }
     </style>
 </head>
+
 <body>
     <!-- Overlay for Mobile -->
     <div class="overlay" id="overlay"></div>
-    
+
     {% include 'employee_html/employee_header.html' %}
 
     <!-- Main Content -->
     <div class="main-content" id="mainContent">
         <!-- Top Bar -->
         <div class="top-bar">
-            <div class="page-title">
-                <h1><i class="fas fa-cog"></i> Account Settings</h1>
-                <p>Manage your profile, privacy settings, and preferences</p>
+            <div class="top-bar-left" style="display: flex; align-items: center; gap: 15px;">
+                <button class="menu-toggle" id="menuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="page-title">
+                    <h1><i class="fas fa-cog"></i> Account Settings</h1>
+                    <p>Manage your profile, privacy settings, and preferences</p>
+                </div>
             </div>
 
-            
-                {% include 'employee_html/employee_dropdown.html' %}
+
+            {% include 'employee_html/employee_dropdown.html' %}
 
 
         </div>
@@ -940,20 +1149,20 @@
         <!-- Django Messages Display -->
         <div class="django-messages" id="djangoMessages">
             {% for message in messages %}
-                <div class="django-alert {{ message.tags }}" data-message-id="{{ forloop.counter }}">
-                    <div class="alert-icon">
-                        <i class="fas 
+            <div class="django-alert {{ message.tags }}" data-message-id="{{ forloop.counter }}">
+                <div class="alert-icon">
+                    <i class="fas 
                             {% if message.tags == 'error' %}fa-times-circle
                             {% elif message.tags == 'success' %}fa-check-circle
                             {% elif message.tags == 'warning' %}fa-exclamation-triangle
                             {% else %}fa-info-circle
                             {% endif %}"></i>
-                    </div>
-                    <div class="alert-content">{{ message }}</div>
-                    <button class="alert-close" onclick="removeMessage(this)">
-                        <i class="fas fa-times"></i>
-                    </button>
                 </div>
+                <div class="alert-content">{{ message }}</div>
+                <button class="alert-close" onclick="removeMessage(this)">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
             {% endfor %}
         </div>
 
@@ -964,6 +1173,7 @@
                 <h3>Settings</h3>
                 <ul class="settings-nav">
                     <li><a href="#profile" class="active"><i class="fas fa-user"></i> Profile</a></li>
+                    <li><a href="#documents"><i class="fas fa-file-upload"></i> Documents</a></li>
                     <li><a href="#privacy"><i class="fas fa-shield-alt"></i> Privacy & Security</a></li>
                     <li><a href="#location"><i class="fas fa-map-marker-alt"></i> Location</a></li>
                     <li><a href="#notifications"><i class="fas fa-bell"></i> Notifications</a></li>
@@ -977,25 +1187,31 @@
                 <!-- Profile Section -->
                 <div class="settings-section" id="profile">
                     <h2><i class="fas fa-user"></i> Profile Information</h2>
-                    <form method="POST" action="{% url 'update_employee_profile' %}" enctype="multipart/form-data" id="profileForm">
+                    <form method="POST" action="{% url 'update_employee_profile' %}" enctype="multipart/form-data"
+                        id="profileForm">
                         {% csrf_token %}
                         <div class="form-group">
                             <label for="profilePhoto">Profile Photo</label>
                             <div class="profile-photo-container">
-                                <div class="profile-avatar {% if pending_changes %}pending-changes{% endif %}" id="avatarContainer">
+                                <div class="profile-avatar {% if pending_changes %}pending-changes{% endif %}"
+                                    id="avatarContainer">
                                     {% if employee.profile_image %}
-                                        <img src="{{ employee.profile_image.url }}" alt="Profile Photo" id="currentProfileImage">
+                                    <img src="{{ employee.profile_image.url }}" alt="Profile Photo"
+                                        id="currentProfileImage">
                                     {% else %}
-                                        <i class="fas fa-user" id="defaultAvatarIcon"></i>
+                                    <i class="fas fa-user" id="defaultAvatarIcon"></i>
                                     {% endif %}
                                 </div>
                                 <div>
-                                    <input type="file" name="profile_image" id="profilePhoto" accept="image/*" style="display: none;" onchange="previewImage(this)">
-                                    <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('profilePhoto').click()">
+                                    <input type="file" name="profile_image" id="profilePhoto" accept="image/*"
+                                        style="display: none;" onchange="previewImage(this)">
+                                    <button type="button" class="btn btn-secondary btn-sm"
+                                        onclick="document.getElementById('profilePhoto').click()">
                                         <i class="fas fa-upload"></i> Upload Photo
                                     </button>
-                                    <button type="button" class="btn btn-danger btn-sm" onclick="showRemoveConfirmation()" 
-                                            {% if not employee.profile_image %}disabled style="opacity: 0.5; cursor: not-allowed;"{% endif %}>
+                                    <button type="button" class="btn btn-danger btn-sm"
+                                        onclick="showRemoveConfirmation()" {% if not employee.profile_image %}disabled
+                                        style="opacity: 0.5; cursor: not-allowed;" {% endif %}>
                                         <i class="fas fa-trash"></i> Remove Photo
                                     </button>
                                 </div>
@@ -1007,47 +1223,144 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="firstName">First Name *</label>
-                                <input type="text" id="firstName" name="first_name" class="form-control" 
-                                       value="{{ employee.first_name }}" required>
+                                <input type="text" id="firstName" name="first_name" class="form-control"
+                                    value="{{ employee.first_name }}" required>
                             </div>
                             <div class="form-group">
                                 <label for="lastName">Last Name *</label>
-                                <input type="text" id="lastName" name="last_name" class="form-control" 
-                                       value="{{ employee.last_name }}" required>
+                                <input type="text" id="lastName" name="last_name" class="form-control"
+                                    value="{{ employee.last_name }}" required>
                             </div>
                         </div>
-                        
+
                         <div class="form-group">
                             <label for="email">Email Address *</label>
-                            <input type="email" id="email" name="email" class="form-control" 
-                                   value="{{ employee.email }}" required>
+                            <input type="email" id="email" name="email" class="form-control"
+                                value="{{ employee.email }}" required>
                         </div>
-                        
+
                         <div class="form-group">
                             <label for="phone">Phone Number</label>
-                            <input type="tel" id="phone" name="phone" class="form-control" 
-                                   value="{{ employee.phone|default_if_none:'' }}" 
-                                   onblur="checkPhoneAvailability(this.value)">
+                            <input type="tel" id="phone" name="phone" class="form-control"
+                                value="{{ employee.phone|default_if_none:'' }}"
+                                onblur="checkPhoneAvailability(this.value)">
                             <small class="text-muted" id="phoneAvailability"></small>
                         </div>
-                        
+
                         <div class="form-group">
                             <label for="skills">Skills</label>
-                            <input type="text" id="skills" name="skills" class="form-control" 
-                                   value="{{ employee.skills|default_if_none:'' }}" 
-                                   placeholder="e.g., Plumbing, Electrical, Carpentry">
+                            <input type="text" id="skills" name="skills" class="form-control"
+                                value="{{ employee.skills|default_if_none:'' }}"
+                                placeholder="e.g., Plumbing, Electrical, Carpentry">
                         </div>
-                        
+
                         <div class="form-group">
                             <label for="bio">Bio/Description</label>
-                            <textarea id="bio" name="bio" class="form-control" rows="4" 
-                                      placeholder="Tell employers about your skills and experience">{{ employee.bio|default_if_none:'' }}</textarea>
+                            <textarea id="bio" name="bio" class="form-control" rows="4"
+                                placeholder="Tell employers about your skills and experience">{{ employee.bio|default_if_none:'' }}</textarea>
                         </div>
-                        
+
                         <button type="submit" class="btn btn-primary" id="saveProfileBtn">
                             <i class="fas fa-save"></i> Save Changes
                         </button>
                     </form>
+                </div>
+
+                <!-- Documents Section -->
+                <div class="settings-section" id="documents">
+                    <h2><i class="fas fa-file-upload"></i> Documents</h2>
+                    <p class="section-description">Upload important documents to verify your identity and credentials</p>
+                    
+                    <form method="POST" action="{% url 'upload_employee_document' %}" enctype="multipart/form-data" id="documentsForm">
+                        {% csrf_token %}
+                        
+                        <!-- Success/Error Messages -->
+                        {% if messages %}
+                        {% for message in messages %}
+                            {% if 'document' in message.tags %}
+                            <div class="alert {% if 'success' in message.tags %}alert-success{% else %}alert-danger{% endif %}" style="margin-bottom: 1.5rem;">
+                                <i class="fas fa-{% if 'success' in message.tags %}check-circle{% else %}exclamation-circle{% endif %}"></i>
+                                {{ message }}
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                        {% endif %}
+
+                        <!-- Aadhar Card Section -->
+                        <div class="document-upload-section">
+                            <h4 style="margin-bottom: 1rem;">
+                                <i class="fas fa-id-card"></i> Aadhar Card
+                            </h4>
+                            <p style="color: var(--text-light); margin-bottom: 1rem; font-size: 0.9rem;">
+                                Upload your Aadhar card for identity verification
+                            </p>
+
+                            {% if employee.aadhar_document %}
+                            <div class="document-display" style="margin-bottom: 1.5rem;">
+                                <div class="document-item">
+                                    <div style="display: flex; align-items: center; gap: 1rem;">
+                                        <i class="fas fa-file-pdf" style="font-size: 1.8rem; color: #dc3545;"></i>
+                                        <div style="flex: 1;">
+                                            <p style="margin: 0; font-weight: 500;">Aadhar Card Document</p>
+                                            <small style="color: var(--text-light);">
+                                                {% if employee.aadhar_verified %}
+                                                <i class="fas fa-check-circle" style="color: var(--success);"></i> Verified
+                                                {% else %}
+                                                <i class="fas fa-clock" style="color: var(--warning);"></i> Pending Verification
+                                                {% endif %}
+                                            </small>
+                                        </div>
+                                        <div style="display: flex; gap: 0.5rem;">
+                                            <a href="{{ employee.aadhar_document.url }}" class="btn btn-sm btn-outline" 
+                                               download target="_blank">
+                                                <i class="fas fa-download"></i> Download
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-danger" 
+                                                    onclick="deleteDocument('aadhar')">
+                                                <i class="fas fa-trash"></i> Remove
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <div class="file-upload-area" id="aadharUploadArea" onclick="document.getElementById('aadharFile').click()"
+                                 style="border: 2px dashed var(--border-color); border-radius: 8px; padding: 2rem; text-align: center; cursor: pointer; transition: all 0.3s;"
+                                 onmouseover="this.style.borderColor='var(--primary)'; this.style.backgroundColor='rgba(58, 134, 255, 0.05)'"
+                                 onmouseout="this.style.borderColor='var(--border-color)'; this.style.backgroundColor='transparent'">
+                                <i class="fas fa-cloud-upload-alt" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 0.5rem;"></i>
+                                <p style="margin: 0.5rem 0; font-weight: 500;">Click to upload or drag and drop</p>
+                                <small style="color: var(--text-light);">PDF, JPG, PNG (Max 5MB)</small>
+                            </div>
+                            
+                            <input type="file" id="aadharFile" name="aadhar_document" accept=".pdf,.jpg,.jpeg,.png" 
+                                   style="display: none;" onchange="handleFileSelect(this, 'aadhar')">
+                            <small class="file-error" id="aadharError" style="color: var(--danger); display: none; margin-top: 0.5rem;"></small>
+                        </div>
+
+                        <!-- Document Upload Button -->
+                        <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+                            <button type="submit" class="btn btn-primary" id="uploadDocumentsBtn">
+                                <i class="fas fa-upload"></i> Upload Documents
+                            </button>
+                            <button type="reset" class="btn btn-outline">
+                                <i class="fas fa-redo"></i> Clear
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Document Info -->
+                    <div class="document-info-box" style="margin-top: 2rem; padding: 1.5rem; background: rgba(58, 134, 255, 0.05); border-left: 4px solid var(--primary); border-radius: 8px;">
+                        <h5 style="margin-top: 0; color: var(--dark);"><i class="fas fa-info-circle"></i> Document Guidelines</h5>
+                        <ul style="margin: 0.5rem 0 0; padding-left: 1.5rem; color: var(--text-light); font-size: 0.9rem;">
+                            <li>Documents must be clear and readable</li>
+                            <li>Supported formats: PDF, JPG, PNG</li>
+                            <li>Maximum file size: 5MB</li>
+                            <li>Aadhar card must include all visible details</li>
+                            <li>Verification may take 1-2 business days</li>
+                        </ul>
+                    </div>
                 </div>
 
                 <!-- Privacy & Security Section -->
@@ -1055,7 +1368,7 @@
                     <h2><i class="fas fa-shield-alt"></i> Privacy & Security</h2>
                     <form method="POST" action="{% url 'update_employee_privacy' %}" id="privacyForm">
                         {% csrf_token %}
-                        
+
                         <div class="form-group">
                             <div class="privacy-option">
                                 <div class="privacy-option-content">
@@ -1063,61 +1376,56 @@
                                     <p>Add an extra layer of security to your account</p>
                                 </div>
                                 <label class="toggle-switch">
-                                    <input type="checkbox" name="two_factor_auth" 
-                                           {% if employee.two_factor_auth %}checked{% endif %}>
+                                    <input type="checkbox" name="two_factor_auth" {% if employee.two_factor_auth %}checked{% endif %}>
                                     <span class="toggle-slider"></span>
                                 </label>
                             </div>
-                            
+
                             <div class="privacy-option">
                                 <div class="privacy-option-content">
                                     <h5>Show Profile to Employers</h5>
                                     <p>Allow employers to view your profile</p>
                                 </div>
                                 <label class="toggle-switch">
-                                    <input type="checkbox" name="show_profile_to_employers" 
-                                           {% if employee.show_profile_to_employers %}checked{% endif %}>
+                                    <input type="checkbox" name="show_profile_to_employers" {% if employee.show_profile_to_employers %}checked{% endif %}>
                                     <span class="toggle-slider"></span>
                                 </label>
                             </div>
-                            
+
                             <div class="privacy-option">
                                 <div class="privacy-option-content">
                                     <h5>Share Work History</h5>
                                     <p>Show your completed jobs and ratings</p>
                                 </div>
                                 <label class="toggle-switch">
-                                    <input type="checkbox" name="share_work_history" 
-                                           {% if employee.share_work_history %}checked{% endif %}>
+                                    <input type="checkbox" name="share_work_history" {% if employee.share_work_history %}checked{% endif %}>
                                     <span class="toggle-slider"></span>
                                 </label>
                             </div>
-                            
+
                             <div class="privacy-option">
                                 <div class="privacy-option-content">
                                     <h5>Data Sharing for Analytics</h5>
                                     <p>Help improve our services</p>
                                 </div>
                                 <label class="toggle-switch">
-                                    <input type="checkbox" name="data_sharing_analytics" 
-                                           {% if employee.data_sharing_analytics %}checked{% endif %}>
+                                    <input type="checkbox" name="data_sharing_analytics" {% if employee.data_sharing_analytics %}checked{% endif %}>
                                     <span class="toggle-slider"></span>
                                 </label>
                             </div>
                         </div>
-                        
+
                         <div class="form-group">
                             <label for="privacy_level">Profile Visibility</label>
                             <select id="privacy_level" name="privacy_level" class="form-control">
                                 {% for value, label in PRIVACY_CHOICES %}
-                                    <option value="{{ value }}" 
-                                            {% if employee.privacy_level == value %}selected{% endif %}>
-                                        {{ label }}
-                                    </option>
+                                <option value="{{ value }}" {% if employee.privacy_level == value %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
                                 {% endfor %}
                             </select>
                         </div>
-                        
+
                         <div class="security-alerts">
                             <h3 style="margin-bottom: 1rem;">Security Status</h3>
                             <div class="alert-item">
@@ -1128,16 +1436,17 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-save"></i> Save Privacy Settings
                         </button>
-                        
+
                         <div style="margin-top: 1.5rem;">
                             <button type="button" class="btn btn-secondary" onclick="showModal('changePasswordModal')">
                                 <i class="fas fa-key"></i> Change Password
                             </button>
-                            <button type="button" class="btn btn-danger" style="margin-left: 10px;" onclick="showModal('deactivateModal')">
+                            <button type="button" class="btn btn-danger" style="margin-left: 10px;"
+                                onclick="showModal('deactivateModal')">
                                 <i class="fas fa-user-slash"></i> Deactivate Account
                             </button>
                         </div>
@@ -1149,56 +1458,52 @@
                     <h2><i class="fas fa-map-marker-alt"></i> Location Settings</h2>
                     <form method="POST" action="{% url 'update_employee_location' %}" id="locationForm">
                         {% csrf_token %}
-                        
+
                         <div class="form-group">
                             <label for="address">Street Address</label>
-                            <input type="text" id="address" name="address" class="form-control" 
-                                   value="{{ employee.address|default_if_none:'' }}" 
-                                   placeholder="Enter your street address">
+                            <input type="text" id="address" name="address" class="form-control"
+                                value="{{ employee.address|default_if_none:'' }}"
+                                placeholder="Enter your street address">
                         </div>
-                        
+
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="city">City</label>
-                                <input type="text" id="city" name="city" class="form-control" 
-                                       value="{{ employee.city|default_if_none:'' }}" 
-                                       placeholder="Enter your city">
+                                <input type="text" id="city" name="city" class="form-control"
+                                    value="{{ employee.city|default_if_none:'' }}" placeholder="Enter your city">
                             </div>
                             <div class="form-group">
                                 <label for="state">State/Province</label>
-                                <input type="text" id="state" name="state" class="form-control" 
-                                       value="{{ employee.state|default_if_none:'' }}" 
-                                       placeholder="Enter your state">
+                                <input type="text" id="state" name="state" class="form-control"
+                                    value="{{ employee.state|default_if_none:'' }}" placeholder="Enter your state">
                             </div>
                         </div>
-                        
+
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="zip_code">ZIP/Postal Code</label>
-                                <input type="text" id="zip_code" name="zip_code" class="form-control" 
-                                       value="{{ employee.zip_code|default_if_none:'' }}" 
-                                       placeholder="Enter your ZIP code">
+                                <input type="text" id="zip_code" name="zip_code" class="form-control"
+                                    value="{{ employee.zip_code|default_if_none:'' }}"
+                                    placeholder="Enter your ZIP code">
                             </div>
                             <div class="form-group">
                                 <label for="country">Country</label>
-                                <input type="text" id="country" name="country" class="form-control" 
-                                       value="{{ employee.country }}" 
-                                       placeholder="Enter your country">
+                                <input type="text" id="country" name="country" class="form-control"
+                                    value="{{ employee.country }}" placeholder="Enter your country">
                             </div>
                         </div>
-                        
+
                         <div class="form-group">
                             <label for="service_radius">Service Radius (km)</label>
                             <select id="service_radius" name="service_radius" class="form-control">
                                 {% for value, label in SERVICE_RADIUS_CHOICES %}
-                                    <option value="{{ value }}" 
-                                            {% if employee.service_radius == value %}selected{% endif %}>
-                                        {{ label }}
-                                    </option>
+                                <option value="{{ value }}" {% if employee.service_radius == value %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
                                 {% endfor %}
                             </select>
                         </div>
-                        
+
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-save"></i> Save Location Settings
                         </button>
@@ -1210,7 +1515,7 @@
                     <h2><i class="fas fa-bell"></i> Notification Preferences</h2>
                     <form method="POST" action="{% url 'update_employee_notifications' %}" id="notificationsForm">
                         {% csrf_token %}
-                        
+
                         <div class="form-group">
                             <div class="privacy-option">
                                 <div class="privacy-option-content">
@@ -1218,49 +1523,45 @@
                                     <p>Receive notifications for new job requests</p>
                                 </div>
                                 <label class="toggle-switch">
-                                    <input type="checkbox" name="job_alerts" 
-                                           {% if employee.job_alerts %}checked{% endif %}>
+                                    <input type="checkbox" name="job_alerts" {% if employee.job_alerts %}checked{% endif %}>
                                     <span class="toggle-slider"></span>
                                 </label>
                             </div>
-                            
+
                             <div class="privacy-option">
                                 <div class="privacy-option-content">
                                     <h5>Message Notifications</h5>
                                     <p>Get notified when employers send messages</p>
                                 </div>
                                 <label class="toggle-switch">
-                                    <input type="checkbox" name="message_notifications" 
-                                           {% if employee.message_notifications %}checked{% endif %}>
+                                    <input type="checkbox" name="message_notifications" {% if employee.message_notifications %}checked{% endif %}>
                                     <span class="toggle-slider"></span>
                                 </label>
                             </div>
-                            
+
                             <div class="privacy-option">
                                 <div class="privacy-option-content">
                                     <h5>Payment Alerts</h5>
                                     <p>Receive notifications for payment confirmations</p>
                                 </div>
                                 <label class="toggle-switch">
-                                    <input type="checkbox" name="payment_alerts" 
-                                           {% if employee.payment_alerts %}checked{% endif %}>
+                                    <input type="checkbox" name="payment_alerts" {% if employee.payment_alerts %}checked{% endif %}>
                                     <span class="toggle-slider"></span>
                                 </label>
                             </div>
-                            
+
                             <div class="privacy-option">
                                 <div class="privacy-option-content">
                                     <h5>Platform Updates</h5>
                                     <p>Get notified about new features and announcements</p>
                                 </div>
                                 <label class="toggle-switch">
-                                    <input type="checkbox" name="platform_updates" 
-                                           {% if employee.platform_updates %}checked{% endif %}>
+                                    <input type="checkbox" name="platform_updates" {% if employee.platform_updates %}checked{% endif %}>
                                     <span class="toggle-slider"></span>
                                 </label>
                             </div>
                         </div>
-                        
+
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-save"></i> Save Notification Settings
                         </button>
@@ -1272,75 +1573,70 @@
                     <h2><i class="fas fa-sliders-h"></i> Account Preferences</h2>
                     <form method="POST" action="{% url 'update_employee_preferences' %}" id="preferencesForm">
                         {% csrf_token %}
-                        
+
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="language">Language</label>
                                 <select id="language" name="language" class="form-control">
                                     {% for value, label in LANGUAGE_CHOICES %}
-                                        <option value="{{ value }}" 
-                                                {% if employee.language == value %}selected{% endif %}>
-                                            {{ label|title }}
-                                        </option>
+                                    <option value="{{ value }}" {% if employee.language == value %}selected{% endif %}>
+                                        {{ label|title }}
+                                    </option>
                                     {% endfor %}
                                 </select>
                             </div>
-                            
+
                             <div class="form-group">
                                 <label for="currency">Currency</label>
                                 <select id="currency" name="currency" class="form-control">
                                     {% for value, label in CURRENCY_CHOICES %}
-                                        <option value="{{ value }}" 
-                                                {% if employee.currency == value %}selected{% endif %}>
-                                            {{ label }}
-                                        </option>
+                                    <option value="{{ value }}" {% if employee.currency == value %}selected{% endif %}>
+                                        {{ label }}
+                                    </option>
                                     {% endfor %}
                                 </select>
                             </div>
                         </div>
-                        
+
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="timezone">Timezone</label>
                                 <select id="timezone" name="timezone" class="form-control">
                                     {% for value, label in TIMEZONE_CHOICES %}
-                                        <option value="{{ value }}" 
-                                                {% if employee.timezone == value %}selected{% endif %}>
-                                            {{ label }}
-                                        </option>
+                                    <option value="{{ value }}" {% if employee.timezone == value %}selected{% endif %}>
+                                        {{ label }}
+                                    </option>
                                     {% endfor %}
                                 </select>
                             </div>
-                            
+
                             <div class="form-group">
                                 <label for="date_format">Date Format</label>
                                 <select id="date_format" name="date_format" class="form-control">
                                     {% for value, label in DATE_FORMAT_CHOICES %}
-                                        <option value="{{ value }}" 
-                                                {% if employee.date_format == value %}selected{% endif %}>
-                                            {{ label }}
-                                        </option>
+                                    <option value="{{ value }}" {% if employee.date_format == value %}selected{% endif %}>
+                                        {{ label }}
+                                    </option>
                                     {% endfor %}
                                 </select>
                             </div>
                         </div>
-                        
+
                         <div class="form-group">
                             <label for="availability">Availability Status</label>
                             <select id="availability" name="availability" class="form-control">
                                 {% for value, label in AVAILABILITY_CHOICES %}
-                                    <option value="{{ value }}" 
-                                            {% if employee.availability == value %}selected{% endif %}>
-                                        <span class="status-indicator 
+                                <option value="{{ value }}" {% if employee.availability == value %}selected{% endif %}>
+                                    <span class="status-indicator 
                                             {% if value == 'available' %}status-available
                                             {% elif value == 'busy' %}status-busy
                                             {% else %}status-unavailable{% endif %}"></span>
-                                        {{ label }}
-                                    </option>
+                                    {{ label }}
+                                </option>
                                 {% endfor %}
                             </select>
                         </div>
-                        
+
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-save"></i> Save Preferences
                         </button>
@@ -1350,8 +1646,9 @@
                 <!-- Payment Section -->
                 <div class="settings-section" id="payment">
                     <h2><i class="fas fa-credit-card"></i> Payment Settings</h2>
-                    <p style="color: var(--text-light); margin-bottom: 1.5rem;">Manage your payment methods and earnings</p>
-                    
+                    <p style="color: var(--text-light); margin-bottom: 1.5rem;">Manage your payment methods and earnings
+                    </p>
+
                     <div style="background: var(--light); padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
                         <h4 style="margin-bottom: 1rem;">Current Balance</h4>
                         <div style="display: flex; align-items: center; gap: 20px;">
@@ -1363,7 +1660,7 @@
                             </button>
                         </div>
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="payment_method">Preferred Payment Method</label>
                         <select id="payment_method" class="form-control">
@@ -1373,7 +1670,7 @@
                             <option>Cash</option>
                         </select>
                     </div>
-                    
+
                     <button class="btn btn-primary">
                         <i class="fas fa-save"></i> Save Payment Settings
                     </button>
@@ -1396,41 +1693,45 @@
                     <div class="form-group">
                         <label for="current_password">Current Password</label>
                         <div class="password-field">
-                            <input type="password" id="current_password" name="current_password" 
-                                   class="form-control" required>
-                            <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('current_password', this)">
+                            <input type="password" id="current_password" name="current_password" class="form-control"
+                                required>
+                            <button type="button" class="password-toggle-btn"
+                                onclick="togglePasswordVisibility('current_password', this)">
                                 <i class="fas fa-eye"></i>
                             </button>
                         </div>
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="new_password">New Password</label>
                         <div class="password-field">
-                            <input type="password" id="new_password" name="new_password" 
-                                   class="form-control" required>
-                            <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('new_password', this)">
+                            <input type="password" id="new_password" name="new_password" class="form-control" required>
+                            <button type="button" class="password-toggle-btn"
+                                onclick="togglePasswordVisibility('new_password', this)">
                                 <i class="fas fa-eye"></i>
                             </button>
                         </div>
                         <small style="color: var(--text-light); display: block; margin-top: 5px;">
-                            Password must be at least 8 characters with uppercase, lowercase, number, and special character.
+                            Password must be at least 8 characters with uppercase, lowercase, number, and special
+                            character.
                         </small>
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="confirm_password">Confirm New Password</label>
                         <div class="password-field">
-                            <input type="password" id="confirm_password" name="confirm_password" 
-                                   class="form-control" required>
-                            <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('confirm_password', this)">
+                            <input type="password" id="confirm_password" name="confirm_password" class="form-control"
+                                required>
+                            <button type="button" class="password-toggle-btn"
+                                onclick="togglePasswordVisibility('confirm_password', this)">
                                 <i class="fas fa-eye"></i>
                             </button>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal('changePasswordModal')">Cancel</button>
+                    <button type="button" class="btn btn-secondary"
+                        onclick="closeModal('changePasswordModal')">Cancel</button>
                     <button type="submit" class="btn btn-primary" id="submitPasswordBtn">
                         <i class="fas fa-save"></i> Change Password
                     </button>
@@ -1443,16 +1744,18 @@
     <div class="modal" id="deactivateModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title" style="color: var(--danger);"><i class="fas fa-exclamation-triangle"></i> Deactivate Account</h3>
+                <h3 class="modal-title" style="color: var(--danger);"><i class="fas fa-exclamation-triangle"></i>
+                    Deactivate Account</h3>
                 <button class="modal-close" onclick="closeModal('deactivateModal')">&times;</button>
             </div>
             <form method="POST" action="{% url 'deactivate_employee_account' %}" id="deactivateForm">
                 {% csrf_token %}
                 <div class="modal-body">
-                    <div style="background: #fff3cd; color: #856404; padding: 1rem; border-radius: 6px; margin-bottom: 1.5rem;">
+                    <div
+                        style="background: #fff3cd; color: #856404; padding: 1rem; border-radius: 6px; margin-bottom: 1.5rem;">
                         <strong>Warning:</strong> This action is irreversible!
                     </div>
-                    
+
                     <p>When you deactivate your account:</p>
                     <ul style="margin-left: 1.5rem; margin-bottom: 1.5rem; color: var(--text-light);">
                         <li>Your profile will be hidden from employers</li>
@@ -1460,20 +1763,22 @@
                         <li>Your active applications will be cancelled</li>
                         <li>You can contact support to reactivate within 30 days</li>
                     </ul>
-                    
+
                     <div class="form-group">
                         <label for="deactivate_password">Enter your password to confirm:</label>
                         <div class="password-field">
-                            <input type="password" id="deactivate_password" name="password" 
-                                   class="form-control" required>
-                            <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('deactivate_password', this)">
+                            <input type="password" id="deactivate_password" name="password" class="form-control"
+                                required>
+                            <button type="button" class="password-toggle-btn"
+                                onclick="togglePasswordVisibility('deactivate_password', this)">
                                 <i class="fas fa-eye"></i>
                             </button>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal('deactivateModal')">Cancel</button>
+                    <button type="button" class="btn btn-secondary"
+                        onclick="closeModal('deactivateModal')">Cancel</button>
                     <button type="submit" class="btn btn-danger" id="deactivateSubmitBtn">
                         <i class="fas fa-user-slash"></i> Deactivate Account
                     </button>
@@ -1486,12 +1791,14 @@
     <div class="modal" id="removePhotoModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title" style="color: var(--warning);"><i class="fas fa-exclamation-triangle"></i> Remove Profile Photo</h3>
+                <h3 class="modal-title" style="color: var(--warning);"><i class="fas fa-exclamation-triangle"></i>
+                    Remove Profile Photo</h3>
                 <button class="modal-close" onclick="closeModal('removePhotoModal')">&times;</button>
             </div>
             <div class="modal-body">
                 <p>Are you sure you want to remove your profile photo?</p>
-                <p style="color: var(--text-light); margin-top: 10px;">Your profile will show a default avatar instead.</p>
+                <p style="color: var(--text-light); margin-top: 10px;">Your profile will show a default avatar instead.
+                </p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" onclick="closeModal('removePhotoModal')">Cancel</button>
@@ -1501,33 +1808,6 @@
     </div>
 
     <script>
-        // Mobile menu toggle
-        const menuToggle = document.getElementById('menuToggle');
-        const sidebar = document.getElementById('sidebar');
-        const sidebarClose = document.getElementById('sidebarClose');
-        const overlay = document.getElementById('overlay');
-        
-        if (menuToggle) {
-            menuToggle.addEventListener('click', function() {
-                sidebar.classList.add('active');
-                overlay.classList.add('active');
-            });
-        }
-        
-        if (sidebarClose) {
-            sidebarClose.addEventListener('click', function() {
-                sidebar.classList.remove('active');
-                overlay.classList.remove('active');
-            });
-        }
-        
-        if (overlay) {
-            overlay.addEventListener('click', function() {
-                sidebar.classList.remove('active');
-                overlay.classList.remove('active');
-            });
-        }
-        
         // Auto-hide Django messages
         function autoHideMessages() {
             const messages = document.querySelectorAll('.django-alert');
@@ -1544,7 +1824,7 @@
                 }, 5000);
             });
         }
-        
+
         // Remove message function
         function removeMessage(button) {
             const message = button.closest('.django-alert');
@@ -1557,12 +1837,12 @@
                 }, 300);
             }
         }
-        
+
         // Toggle password visibility
         function togglePasswordVisibility(inputId, button) {
             const input = document.getElementById(inputId);
             const icon = button.querySelector('i');
-            
+
             if (input.type === 'password') {
                 input.type = 'text';
                 icon.classList.remove('fa-eye');
@@ -1573,11 +1853,11 @@
                 icon.classList.add('fa-eye');
             }
         }
-        
+
         // Check phone availability
         function checkPhoneAvailability(phone) {
             if (!phone) return;
-            
+
             fetch(`/employee/settings/check-phone/?phone=${encodeURIComponent(phone)}`)
                 .then(response => response.json())
                 .then(data => {
@@ -1592,16 +1872,16 @@
                     console.error('Error checking phone:', error);
                 });
         }
-        
+
         // Profile photo functions
         function previewImage(input) {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
-                reader.onload = function(e) {
+                reader.onload = function (e) {
                     const container = document.getElementById('avatarContainer');
                     container.innerHTML = `<img src="${e.target.result}" alt="Preview" style="width: 100%; height: 100%; object-fit: cover;">`;
                     container.classList.add('pending-changes');
-                    
+
                     // Show status message
                     const status = document.getElementById('photoStatus');
                     status.innerHTML = '<span style="color: var(--info);"><i class="fas fa-info-circle"></i> New photo selected. Save changes to apply.</span>';
@@ -1613,17 +1893,17 @@
                 reader.readAsDataURL(input.files[0]);
             }
         }
-        
+
         function showRemoveConfirmation() {
             showModal('removePhotoModal');
         }
-        
+
         function confirmRemovePhoto() {
             document.getElementById('removePhotoFlag').value = '1';
             const container = document.getElementById('avatarContainer');
             container.innerHTML = '<i class="fas fa-user"></i>';
             container.classList.add('pending-changes');
-            
+
             // Show status message
             const status = document.getElementById('photoStatus');
             status.innerHTML = '<span style="color: var(--warning);"><i class="fas fa-exclamation-triangle"></i> Photo marked for removal. Save changes to apply.</span>';
@@ -1631,10 +1911,10 @@
             status.style.backgroundColor = '#fff3cd';
             status.style.padding = '10px';
             status.style.borderRadius = '6px';
-            
+
             closeModal('removePhotoModal');
         }
-        
+
         // Modal functions
         function showModal(modalId) {
             const modal = document.getElementById(modalId);
@@ -1643,7 +1923,7 @@
                 document.body.style.overflow = 'hidden';
             }
         }
-        
+
         function closeModal(modalId) {
             const modal = document.getElementById(modalId);
             if (modal) {
@@ -1651,39 +1931,39 @@
                 document.body.style.overflow = 'auto';
             }
         }
-        
+
         // Close modal when clicking outside
-        document.addEventListener('click', function(event) {
+        document.addEventListener('click', function (event) {
             if (event.target.classList.contains('modal')) {
                 event.target.classList.remove('show');
                 document.body.style.overflow = 'auto';
             }
         });
-        
+
         // Settings navigation
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             // Auto-hide messages
             autoHideMessages();
-            
+
             // Auto-show password modal if there was an error
             {% if open_password_modal %}
-                showModal('changePasswordModal');
+            showModal('changePasswordModal');
             {% endif %}
-            
+
             // Settings navigation active state
             const settingsNavItems = document.querySelectorAll('.settings-nav a');
             const settingsSections = document.querySelectorAll('.settings-section');
-            
+
             function updateActiveNav() {
                 let currentSectionId = '';
-                
+
                 settingsSections.forEach(section => {
                     const rect = section.getBoundingClientRect();
                     if (rect.top <= 150 && rect.bottom >= 150) {
                         currentSectionId = section.id;
                     }
                 });
-                
+
                 settingsNavItems.forEach(item => {
                     const href = item.getAttribute('href');
                     if (href === `#${currentSectionId}`) {
@@ -1693,24 +1973,24 @@
                     }
                 });
             }
-            
+
             settingsNavItems.forEach(item => {
-                item.addEventListener('click', function(e) {
+                item.addEventListener('click', function (e) {
                     e.preventDefault();
-                    
+
                     settingsNavItems.forEach(navItem => {
                         navItem.classList.remove('active');
                     });
-                    
+
                     this.classList.add('active');
-                    
+
                     const targetId = this.getAttribute('href').substring(1);
                     const targetSection = document.getElementById(targetId);
-                    
+
                     if (targetSection) {
                         const headerHeight = 80;
                         const targetPosition = targetSection.offsetTop - headerHeight - 10;
-                        
+
                         window.scrollTo({
                             top: targetPosition,
                             behavior: 'smooth'
@@ -1718,20 +1998,20 @@
                     }
                 });
             });
-            
+
             window.addEventListener('scroll', updateActiveNav);
             updateActiveNav();
-            
+
             // Form submission loading states
             const forms = document.querySelectorAll('form');
             forms.forEach(form => {
-                form.addEventListener('submit', function() {
+                form.addEventListener('submit', function () {
                     const submitBtn = this.querySelector('button[type="submit"]');
                     if (submitBtn && !submitBtn.disabled) {
                         submitBtn.disabled = true;
                         const originalText = submitBtn.innerHTML;
                         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
-                        
+
                         // Re-enable after 10 seconds if still disabled (in case of error)
                         setTimeout(() => {
                             if (submitBtn.disabled) {
@@ -1742,26 +2022,26 @@
                     }
                 });
             });
-            
+
             // Password form validation
             const passwordForm = document.getElementById('passwordForm');
             if (passwordForm) {
-                passwordForm.addEventListener('submit', function(e) {
+                passwordForm.addEventListener('submit', function (e) {
                     const newPassword = document.getElementById('new_password').value;
                     const confirmPassword = document.getElementById('confirm_password').value;
-                    
+
                     if (newPassword !== confirmPassword) {
                         e.preventDefault();
                         alert('New password and confirmation do not match.');
                         return false;
                     }
-                    
+
                     // Validate password strength
                     const hasUpperCase = /[A-Z]/.test(newPassword);
                     const hasLowerCase = /[a-z]/.test(newPassword);
                     const hasNumbers = /\d/.test(newPassword);
                     const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(newPassword);
-                    
+
                     if (newPassword.length < 8 || !hasUpperCase || !hasLowerCase || !hasNumbers || !hasSpecialChar) {
                         e.preventDefault();
                         alert('Password must be at least 8 characters long and contain uppercase, lowercase, number, and special character.');
@@ -1770,6 +2050,131 @@
                 });
             }
         });
+
+        // Document Upload Functions
+        function handleFileSelect(input, docType) {
+            const file = input.files[0];
+            const errorElement = document.getElementById(docType + 'Error');
+            
+            if (!file) return;
+
+            // File validation
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            const allowedFormats = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
+            
+            errorElement.classList.remove('show');
+            errorElement.textContent = '';
+
+            if (file.size > maxSize) {
+                errorElement.textContent = 'File size must be less than 5MB';
+                errorElement.classList.add('show');
+                input.value = '';
+                return;
+            }
+
+            if (!allowedFormats.includes(file.type)) {
+                errorElement.textContent = 'Please upload a PDF or image file (JPG, PNG)';
+                errorElement.classList.add('show');
+                input.value = '';
+                return;
+            }
+
+            // Show file preview/info
+            const uploadArea = document.getElementById(docType + 'UploadArea');
+            if (uploadArea) {
+                uploadArea.innerHTML = `
+                    <i class="fas fa-file-check" style="color: var(--success); font-size: 2rem;"></i>
+                    <p style="color: var(--success); margin: 0.5rem 0; font-weight: 500;">
+                        <i class="fas fa-check-circle"></i> File selected: ${file.name}
+                    </p>
+                    <small style="color: var(--text-light);">${(file.size / 1024 / 1024).toFixed(2)} MB</small>
+                `;
+            }
+        }
+
+        // Drag and drop support
+        document.addEventListener('DOMContentLoaded', function() {
+            const fileInputs = document.querySelectorAll('input[type="file"]');
+            fileInputs.forEach(input => {
+                const docType = input.name.split('_')[0]; // Extract doc type from input name
+                const uploadArea = document.getElementById(docType + 'UploadArea');
+                
+                if (uploadArea) {
+                    // Prevent default drag behaviors
+                    uploadArea.addEventListener('dragover', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        this.style.borderColor = 'var(--primary)';
+                        this.style.backgroundColor = 'rgba(58, 134, 255, 0.1)';
+                    }, false);
+
+                    uploadArea.addEventListener('dragleave', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        this.style.borderColor = 'var(--border-color)';
+                        this.style.backgroundColor = 'transparent';
+                    }, false);
+
+                    uploadArea.addEventListener('drop', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        this.style.borderColor = 'var(--border-color)';
+                        this.style.backgroundColor = 'transparent';
+                        
+                        const files = e.dataTransfer.files;
+                        if (files.length > 0) {
+                            input.files = files;
+                            handleFileSelect(input, docType);
+                        }
+                    }, false);
+                }
+            });
+        });
+
+        function deleteDocument(docType) {
+            if (!confirm('Are you sure you want to delete this document?')) {
+                return;
+            }
+
+            // Create a form to submit the delete request
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '{% url "delete_employee_document" %}';
+            
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+            if (csrfToken) {
+                form.appendChild(csrfToken.cloneNode(true));
+            }
+
+            const typeInput = document.createElement('input');
+            typeInput.type = 'hidden';
+            typeInput.name = 'document_type';
+            typeInput.value = docType;
+            form.appendChild(typeInput);
+
+            document.body.appendChild(form);
+            form.submit();
+            document.body.removeChild(form);
+        }
+
+        // Initialize document upload on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Existing initialization code...
+            
+            // Document form validation
+            const documentsForm = document.getElementById('documentsForm');
+            if (documentsForm) {
+                documentsForm.addEventListener('submit', function(e) {
+                    const aadharInput = document.getElementById('aadharFile');
+                    if (!aadharInput.files.length) {
+                        e.preventDefault();
+                        alert('Please select a document to upload');
+                        return false;
+                    }
+                });
+            }
+        });
     </script>
 </body>
+
 </html>

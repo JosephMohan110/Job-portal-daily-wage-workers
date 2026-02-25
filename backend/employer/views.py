@@ -191,14 +191,33 @@ def employer_dashboard(request):
                     rating_avg = reviews.aggregate(avg_rating=Avg('rating'))
                     avg_rating = rating_avg['avg_rating'] or 0.0
                 
-                # Calculate distance
-                distance = 100.0
+                # Calculate distance using pure geocoding
                 emp_coords = get_employee_location_coords(emp)
-                if employer_coords and emp_coords:
-                    distance = calculate_distance(employer_coords, emp_coords)
+                employer_coords = get_employer_location_coords(employer)
+                
+                if emp_coords and employer_coords:
+                    distance = calculate_distance(emp_coords, employer_coords)
+                    if distance is None:
+                        distance = 9999.0  # Fallback for calculation failure
+                else:
+                    distance = 9999.0  # Fallback for geocoding failure
                 
                 # Calculate wage estimate
                 wage_estimate = emp.years_experience * 100 + 500
+                
+                # Calculate skill match (simplified - 100% if has skills, 0% if not)
+                skill_count = emp.employee_skills.all().count()
+                skill_match = 100.0 if skill_count > 0 else 0.0
+                
+                # Calculate efficiency score (based on job completion rate)
+                completed_jobs = JobRequest.objects.filter(
+                    employee=emp,
+                    status='completed'
+                ).count()
+                total_jobs = JobRequest.objects.filter(employee=emp).count()
+                efficiency_score = 0.0
+                if total_jobs > 0:
+                    efficiency_score = round((completed_jobs / total_jobs) * 100, 1)
                 
                 workers_data.append({
                     'employee': emp,
@@ -209,6 +228,10 @@ def employer_dashboard(request):
                     'experience': emp.years_experience,
                     'response_time': emp.response_time or 'Not specified',
                     'job_title': emp.job_title or 'Worker',
+                    'city': emp.city or 'Unknown',
+                    'skill_match': round(skill_match, 1),
+                    'efficiency_score': round(efficiency_score, 1),
+                    'sentiment_boost': round(avg_rating - 3.0, 1) if avg_rating else 0.0,  # Neutral at 3.0
                 })
                 
             except Exception as e:
@@ -1381,58 +1404,146 @@ def compute_text_sentiment(text):
     return 0.0
 
 
-# Alternative geocoding function with fallback
-def get_coordinates(location_str, max_retries=3):
-    """Get coordinates for a location string with retry logic."""
+# Coordinate cache to avoid repeated API calls
+_COORDINATE_CACHE = {}
+
+def get_coordinates(location_str):
+    """
+    Get coordinates using ONLY geocoding (Nominatim API).
+    No fallbacks, pure geocoding only - tries multiple formats.
+    """
     if not location_str:
+        print(f"✗ [EMPTY] Location string is empty/None")
         return None
     
-    geolocator = Nominatim(user_agent="worker_finder_app", timeout=10)
+    # Clean input
+    location_str = str(location_str).strip()
+    location_key = location_str.lower()
     
-    for attempt in range(max_retries):
-        try:
-            time.sleep(1)  # Rate limiting
-            location = geolocator.geocode(location_str)
-            if location:
-                return (location.latitude, location.longitude)
-            break
-        except (GeocoderTimedOut, GeocoderServiceError) as e:
-            if attempt == max_retries - 1:
-                print(f"Geocoding failed for '{location_str}': {str(e)}")
-                return None
-            time.sleep(2)
-        except Exception as e:
-            print(f"Geocoding error for '{location_str}': {str(e)}")
-            return None
+    # Check cache first (exact match lowercase)
+    if location_key in _COORDINATE_CACHE:
+        result = _COORDINATE_CACHE[location_key]
+        print(f"✓ [CACHE HIT] '{location_str}' → {result}")
+        return result
     
-    return None
+    # Must have geopy
+    if not GEOPY_AVAILABLE:
+        print(f"✗ [NO GEOPY] Cannot geocode '{location_str}' - geopy not installed")
+        _COORDINATE_CACHE[location_key] = None
+        return None
+    
+    # Try multiple query formats
+    query_attempts = [
+        location_str,                      # Try as-is first
+        f"{location_str}, India",         # Add country
+        location_str.title(),              # Capitalize first letters
+        f"{location_str.title()}, India",  # Capitalize + country
+    ]
+    
+    # Pure geocoding via Nominatim with retry
+    try:
+        geolocator = Nominatim(user_agent="job_portal_geocoder_2024", timeout=20)
+        
+        for query in query_attempts:
+            print(f"⏳ [TRYING] '{query}'...")
+            
+            for attempt in range(3):
+                try:
+                    # Progressive delay: 1s, 2s, 3s
+                    time.sleep(1 + attempt)
+                    
+                    # Call Nominatim with extended timeout for retries
+                    location = geolocator.geocode(query, timeout=20, addressdetails=True)
+                    
+                    if location:
+                        coords = (location.latitude, location.longitude)
+                        _COORDINATE_CACHE[location_key] = coords
+                        print(f"   ✓ [SUCCESS] '{location_str}' → ({coords[0]:.4f}, {coords[1]:.4f})")
+                        print(f"   ✓ [CACHED] For future use with key: '{location_key}'")
+                        return coords
+                    else:
+                        print(f"   ✗ [NO RESULT] Nominatim returned nothing for '{query}'")
+                        # Try next query format if this one failed
+                        break
+                        
+                except (GeocoderTimedOut, GeocoderServiceError) as e:
+                    if attempt < 2:
+                        print(f"   ⚠ [RETRY] Attempt {attempt + 1}/3 - {type(e).__name__}")
+                    else:
+                        print(f"   ✗ [TIMEOUT] Final attempt failed - {type(e).__name__}")
+                        # Try next query format
+                        break
+                    
+                except Exception as e:
+                    print(f"   ✗ [ERROR DURING GEOCODE] {type(e).__name__}: {str(e)}")
+                    break
+        
+        # All query formats failed
+        print(f"✗ [ALL FAILED] Could not geocode '{location_str}' with any format")
+        _COORDINATE_CACHE[location_key] = None
+        return None
+        
+    except Exception as e:
+        print(f"✗ [SETUP ERROR] Failed to initialize Nominatim: {type(e).__name__}: {str(e)}")
+        _COORDINATE_CACHE[location_key] = None
+        return None
 
 
 def calculate_distance(coord1, coord2):
-    """Calculate distance between two coordinates."""
+    """
+    Calculate ACTUAL distance between two geocoded coordinates.
+    Returns None if coordinates are invalid (no fallback).
+    """
+    # Strict validation - both coordinates required
     if not coord1 or not coord2:
-        return 100.0  # Default large distance
+        print(f"✗ [INVALID] Missing coordinates: {coord1}, {coord2}")
+        return None
+    
+    # Must be valid coordinate tuples
+    if (not isinstance(coord1, (tuple, list)) or len(coord1) < 2 or
+        not isinstance(coord2, (tuple, list)) or len(coord2) < 2):
+        print(f"✗ [INVALID] Bad coordinate format")
+        return None
+    
+    # Must have geopy
+    if not GEOPY_AVAILABLE:
+        print(f"✗ [GEOPY] Not available for distance calculation")
+        return None
     
     try:
-        return round(geodesic(coord1, coord2).kilometers, 1)
-    except:
-        return 100.0
+        distance_km = geodesic(coord1, coord2).kilometers
+        result = round(distance_km, 1)
+        print(f"✓ [DISTANCE] {distance_km:.2f} km (rounded: {result} km)")
+        return result
+    except Exception as e:
+        print(f"✗ [CALC ERROR] {str(e)}")
+        return None
 
 
 def get_employee_location_coords(employee):
-    """Get coordinates for employee location."""
-    location_parts = []
-    if employee.city:
-        location_parts.append(employee.city)
-    if employee.state:
-        location_parts.append(employee.state)
-    if employee.country:
-        location_parts.append(employee.country)
+    """
+    Get employee coordinates from their location data via PURE GEOCODING.
+    """
+    if not employee.city:
+        print(f"✗ [NO CITY] Employee {employee.employee_id} has no city")
+        return None
     
-    if location_parts:
-        return get_coordinates(", ".join(location_parts))
+    city_str = str(employee.city).strip()
+    coords = get_coordinates(city_str)
+    return coords
+
+
+def get_employer_location_coords(employer):
+    """
+    Get employer coordinates from their location data via PURE GEOCODING.
+    """
+    if not employer.city:
+        print(f"✗ [NO CITY] Employer {employer.employer_id} has no city")
+        return None
     
-    return None
+    city_str = str(employer.city).strip()
+    coords = get_coordinates(city_str)
+    return coords
 
 
 # Main View: Employer Find Workers (FULL PIPELINE IMPLEMENTATION)
@@ -1443,6 +1554,8 @@ def employer_find_workers(request):
     2. K-Means Sim: Grade tiers
     3. Content Filtering: Skill match %
     4. KNN Sim: Distance + final score/sort
+    
+    PERSISTENT SEARCH: Results are saved in session and restored when revisiting
     """
     if 'employer_id' not in request.session:
         messages.error(request, "Please login first.")
@@ -1461,6 +1574,22 @@ def employer_find_workers(request):
     location_query = ''
     search_mode = 'employer_location'
     filter_desc = ' nearest to you'
+    
+    # Handle clear search request
+    if request.GET.get('clear_search') == '1':
+        # Clear saved search from session
+        if 'employer_search_results' in request.session:
+            del request.session['employer_search_results']
+        if 'employer_search_query' in request.session:
+            del request.session['employer_search_query']
+        if 'employer_location_query' in request.session:
+            del request.session['employer_location_query']
+        if 'employer_search_mode' in request.session:
+            del request.session['employer_search_mode']
+        if 'employer_search_filter_desc' in request.session:
+            del request.session['employer_search_filter_desc']
+        messages.info(request, "Search cleared. Perform a new search.")
+        return redirect('employer_find_workers')
 
     if request.method == 'POST':
         search_performed = True
@@ -1482,6 +1611,9 @@ def employer_find_workers(request):
         employer_coords = None
         if employer_location_parts:
             employer_coords = get_coordinates(", ".join(employer_location_parts))
+        
+        print(f"DEBUG: Employer location -> {', '.join(employer_location_parts) if employer_location_parts else 'Not provided'}")
+        print(f"DEBUG: Employer coords -> {employer_coords}")
         
         # Step 2: Base query for employees
         employees = Employee.objects.filter(
@@ -1552,22 +1684,35 @@ def employer_find_workers(request):
                         print(f"DEBUG: Error checking favorite status: {str(e)}")
                         pass
 
-                # Get employee coordinates
-                emp_coords = get_employee_location_coords(emp)
+                # Calculate distance using pure geocoding (NO fallback values)
+                print(f"\n🔍 [DISTANCE CALC] Employee {emp.employee_id} - {emp.first_name}")
+                print(f"   Employee City: '{emp.city}' | Employer City: '{employer.city}'")
                 
-                # Calculate distance
-                distance = 100.0
-                if employer_coords and emp_coords:
-                    distance = calculate_distance(employer_coords, emp_coords)
-                elif emp.city and employer.city:
-                    # Simple string comparison as fallback
-                    if emp.city.lower() == employer.city.lower():
-                        distance = 5.0
-                    elif employer.state and emp.state and emp.state.lower() == employer.state.lower():
-                        distance = 50.0
+                emp_coords = get_employee_location_coords(emp)
+                employer_coords = get_employer_location_coords(employer)
+                
+                # Skip if we cannot geocode either party
+                if emp_coords is None:
+                    print(f"   ✗ SKIP: Could not geocode employee city '{emp.city}'")
+                    continue
+                    
+                if employer_coords is None:
+                    print(f"   ✗ SKIP: Could not geocode employer city '{employer.city}'")
+                    continue
+                
+                # Calculate actual distance
+                distance = calculate_distance(emp_coords, employer_coords)
+                
+                # Skip if distance calculation failed
+                if distance is None:
+                    print(f"   ✗ SKIP: Distance calculation failed")
+                    continue
+                
+                print(f"   ✓ INCLUDE: Distance = {distance:.1f} km")
                 
                 # Check service radius
                 if distance > emp.service_radius and location_query:
+                    print(f"   ⊗ OUT OF RADIUS: {distance:.1f} km > {emp.service_radius} km")
                     continue  # Skip if out of radius AND location was specified
                 
                 # Step 1: Random Forest Simulation - Efficiency Score
@@ -1748,9 +1893,7 @@ def employer_find_workers(request):
                     'profile_image_url': emp.profile_image.url if emp.profile_image else None,
                     'response_time': emp.response_time,
                     'city': emp.city or 'Not specified',
-                    'city': emp.city or 'Not specified',
-                    'availability_status': emp.availability_status,
-                    'is_favorited': is_favorited,
+                    'years_experience': emp.years_experience,
                     'availability_status': emp.availability_status,
                     'is_favorited': is_favorited,
                 })
@@ -1806,6 +1949,115 @@ def employer_find_workers(request):
             messages.success(request, f"Found {len(workers)} matching workers{filter_desc}!")
         else:
             messages.info(request, "No workers found matching your criteria. Try broadening your search.")
+        
+        # Save search results to session for persistence
+        try:
+            # Convert workers list to JSON-serializable format
+            serialized_workers = []
+            for worker in workers:
+                worker_data = {
+                    'employee_id': worker['employee'].employee_id,
+                    'first_name': worker['employee'].first_name,
+                    'last_name': worker['employee'].last_name,
+                    'job_title': worker['employee'].job_title,
+                    'city': worker['city'],
+                    'experience': worker['years_experience'],
+                    'avg_rating': worker['avg_rating'],
+                    'review_count': worker['review_count'],
+                    'response_time': worker['response_time'],
+                    'distance': worker['distance'],
+                    'wage_estimate': worker['wage_estimate'],
+                    'efficiency_score': worker['efficiency_score'],
+                    'grade': worker['grade'],
+                    'tier_desc': worker['tier_desc'],
+                    'skill_match': worker['skill_match'],
+                    'final_score': worker['final_score'],
+                    'avg_sentiment': worker['avg_sentiment'],
+                    'sentiment_boost': worker['sentiment_boost'],
+                    'sentiment_category': worker['sentiment_category'],
+                    'has_profile_image': worker['has_profile_image'],
+                    'profile_image_url': worker['profile_image_url'],
+                    'is_favorited': worker['is_favorited'],
+                    'availability_status': worker['availability_status'],
+                }
+                serialized_workers.append(worker_data)
+            
+            # Store in session
+            request.session['employer_search_results'] = serialized_workers
+            request.session['employer_search_query'] = search_query
+            request.session['employer_location_query'] = location_query
+            request.session['employer_search_mode'] = search_mode
+            request.session['employer_search_filter_desc'] = filter_desc
+            request.session.modified = True
+            
+            print(f"DEBUG: Saved {len(serialized_workers)} workers to session")
+        except Exception as e:
+            print(f"DEBUG: Error saving search to session: {str(e)}")
+    
+    # If not POST and we have saved search results in session, restore them
+    elif 'employer_search_results' in request.session and request.GET.get('use_cache') != '0':
+        try:
+            # Restore from session
+            saved_workers = request.session.get('employer_search_results', [])
+            search_query = request.session.get('employer_search_query', '')
+            location_query = request.session.get('employer_location_query', '')
+            search_mode = request.session.get('employer_search_mode', 'employer_location')
+            filter_desc = request.session.get('employer_search_filter_desc', ' nearest to you')
+            
+            if saved_workers:
+                # Reconstruct worker objects from session data by fetching employees from DB
+                reconstructed_workers = []
+                for saved_worker in saved_workers:
+                    try:
+                        # Fetch the actual Employee object
+                        emp = Employee.objects.get(employee_id=saved_worker['employee_id'])
+                        
+                        # Check if favorited
+                        is_favorited = False
+                        if 'employer_id' in request.session:
+                            try:
+                                current_employer = Employer.objects.get(employer_id=request.session['employer_id'])
+                                is_favorited = EmployerFavorite.objects.filter(
+                                    employer=current_employer, 
+                                    employee=emp
+                                ).exists()
+                            except:
+                                pass
+                        
+                        # Reconstruct the full worker dictionary
+                        worker_dict = {
+                            'employee': emp,
+                            'efficiency_score': saved_worker.get('efficiency_score', 0),
+                            'grade': saved_worker.get('grade', 'D'),
+                            'tier_desc': saved_worker.get('tier_desc', 'New/Unverified'),
+                            'skill_match': saved_worker.get('skill_match', 0),
+                            'distance': saved_worker.get('distance', 0),
+                            'final_score': saved_worker.get('final_score', 0),
+                            'wage_estimate': saved_worker.get('wage_estimate', ''),
+                            'avg_rating': saved_worker.get('avg_rating', 0),
+                            'avg_sentiment': saved_worker.get('avg_sentiment', 0),
+                            'review_count': saved_worker.get('review_count', 0),
+                            'sentiment_boost': saved_worker.get('sentiment_boost', 0),
+                            'sentiment_category': saved_worker.get('sentiment_category', 'Normal'),
+                            'has_profile_image': saved_worker.get('has_profile_image', False),
+                            'profile_image_url': saved_worker.get('profile_image_url', None),
+                            'response_time': saved_worker.get('response_time', ''),
+                            'city': saved_worker.get('city', 'Not specified'),
+                            'years_experience': saved_worker.get('experience', 0),
+                            'availability_status': saved_worker.get('availability_status', ''),
+                            'is_favorited': is_favorited,
+                            'availability_months': [],  # Will populate if needed
+                        }
+                        reconstructed_workers.append(worker_dict)
+                    except Employee.DoesNotExist:
+                        # Skip if employee doesn't exist anymore
+                        continue
+                
+                workers = reconstructed_workers
+                search_performed = True
+                print(f"DEBUG: Restored and reconstructed {len(workers)} workers from session")
+        except Exception as e:
+            print(f"DEBUG: Error restoring search from session: {str(e)}")
     
     # Context for template
     context = {
@@ -1818,6 +2070,7 @@ def employer_find_workers(request):
         'location_query': location_query,
         'search_mode': search_mode,
         'filter_desc': filter_desc,
+        'results_cached': 'employer_search_results' in request.session,
     }
     
     return render(request, 'employer_html/employer_find_workers.html', context)

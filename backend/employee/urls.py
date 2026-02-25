@@ -3,6 +3,7 @@
 from django.contrib import admin
 from django.urls import path
 from . import views
+from .document_views import upload_employee_document, delete_employee_document
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -22,6 +23,9 @@ urlpatterns = [
     path('job/history/', views.employee_job_history, name='employee_job_history'),
     path('job/history/payment/<int:job_id>/', views.job_history_payment, name='job_history_payment'),
     path('job/history/review/<int:job_id>/', views.job_history_review, name='job_history_review'),
+    
+    # API Endpoints
+    path('api/job-review/<int:job_id>/', views.api_get_job_review, name='api_get_job_review'),
     
 
     #job request
@@ -83,6 +87,8 @@ urlpatterns = [
     path('settings/security-info/', views.get_employee_security_info, name='get_employee_security_info'),
     path('settings/check-phone/', views.check_phone_availability, name='check_phone_availability'),
     path('settings/get-stats/', views.get_employee_stats, name='get_employee_stats'),
+    path('settings/upload-document/', upload_employee_document, name='upload_employee_document'),
+    path('settings/delete-document/', delete_employee_document, name='delete_employee_document'),
 
 
     path('notifications', views.employee_notifications, name='employee_notifications'),

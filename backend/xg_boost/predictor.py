@@ -28,6 +28,14 @@ class XGBoostPredictor:
         """Check if model is successfully loaded"""
         return self.model_package is not None
         
+    def unload_model(self):
+        """Unload the model from memory to release file locks"""
+        try:
+            self.model_package = None
+            logger.info("Successfully unloaded XGBoost model package from memory")
+        except Exception as e:
+            logger.error(f"Error unloading model: {str(e)}")
+        
     def load_model(self):
         """Load the pre-trained XGBoost model package"""
         try:
@@ -79,6 +87,7 @@ class XGBoostPredictor:
         Returns predictions for all targets
         """
         if not self.model_package:
+            logger.error("Model package not loaded")
             return None
         
         try:
@@ -86,8 +95,13 @@ class XGBoostPredictor:
             data_info = self.model_package.get('data_info', {})
             all_original_features = data_info.get('original_features', [])
             
-            # Create full input dataframe with all 19 features
+            logger.info(f"Original features from model: {all_original_features}")
+            logger.info(f"Input data keys: {list(historical_data.keys())}")
+            
+            # Create full input dataframe with the 14 features
             full_input_data = self._create_full_input_dataframe(historical_data, all_original_features)
+            
+            logger.info(f"Created input dataframe with columns: {list(full_input_data.columns)}")
             
             predictions = {}
             
@@ -116,11 +130,21 @@ class XGBoostPredictor:
                     # If model_feature_names is not available, derive it (all features except target)
                     if not model_feature_names:
                         model_feature_names = [f for f in all_original_features if f != target]
+                        logger.warning(f"No feature_names found for {target}, using derived list: {model_feature_names}")
                     
-                    logger.info(f"Predicting {target} with {len(model_feature_names)} features")
+                    logger.info(f"Predicting {target} with features: {model_feature_names}")
                     
                     # Prepare input with ONLY the features this model needs
-                    X_input = full_input_data[model_feature_names].copy()
+                    # Use intersect to only include features that exist in both model expects and we have
+                    available_features = [f for f in model_feature_names if f in full_input_data.columns]
+                    
+                    if not available_features:
+                        logger.warning(f"No matching features for {target}. Model expects: {model_feature_names}, Available: {list(full_input_data.columns)}")
+                        predictions[target] = float(historical_data.get(target, 0))
+                        continue
+                    
+                    logger.info(f"Using features for {target}: {available_features}")
+                    X_input = full_input_data[available_features].copy()
                     
                     # Make prediction
                     if is_classification:
@@ -140,10 +164,12 @@ class XGBoostPredictor:
                     
                 except Exception as pred_error:
                     logger.error(f"Error predicting {target}: {str(pred_error)}")
+                    import traceback
+                    traceback.print_exc()
                     # Use fallback value
                     predictions[target] = float(historical_data.get(target, 0))
             
-            return predictions
+            return predictions if predictions else None
             
         except Exception as e:
             logger.error(f"Error predicting all targets: {str(e)}")
@@ -153,16 +179,18 @@ class XGBoostPredictor:
     
     def _create_full_input_dataframe(self, historical_data, all_features):
         """
-        Create a dataframe with all 19 features for prediction input
+        Create a dataframe with the 14 features the model was trained on
+        IMPORTANT: Model trained on ONLY 14 features - DO NOT add derived features!
         """
         latest_date = historical_data.get('latest_date', timezone.now().date())
         
+        # Only use the 14 features the model was trained on
         features = {
-            'timestamp': pd.Timestamp(latest_date).timestamp(),
-            'user_id': historical_data.get('user_id', 0),
-            'user_type': historical_data.get('user_type', 0),
-            'registration_date': pd.Timestamp(historical_data.get('registration_date', latest_date - timedelta(days=30))).timestamp(),
-            'account_status': historical_data.get('account_status', 1),
+            'timestamp': float(historical_data.get('timestamp', pd.Timestamp(latest_date).timestamp())),
+            'user_id': float(historical_data.get('user_id', 0)),
+            'user_type': float(historical_data.get('user_type', 0)),
+            'registration_date': float(historical_data.get('registration_date', pd.Timestamp(latest_date - timedelta(days=30)).timestamp())),
+            'account_status': float(historical_data.get('account_status', 1)),
             'total_bookings': float(historical_data.get('total_bookings', 0)),
             'completed_bookings': float(historical_data.get('completed_bookings', 0)),
             'cancelled_bookings': float(historical_data.get('cancelled_bookings', 0)),
@@ -171,12 +199,7 @@ class XGBoostPredictor:
             'platform_commission': float(historical_data.get('platform_commission', 0)),
             'avg_rating': float(historical_data.get('avg_rating', 4.5)),
             'total_reviews': float(historical_data.get('total_reviews', 0)),
-            'last_active': pd.Timestamp(latest_date).timestamp(),
-            'days_since_registration': float(historical_data.get('days_since_registration', 30)),
-            'days_since_last_active': float(historical_data.get('days_since_last_active', 1)),
-            'completion_rate': float(historical_data.get('completion_rate', 0.8)),
-            'cancellation_rate': float(historical_data.get('cancellation_rate', 0.05)),
-            'avg_earning_per_booking': float(historical_data.get('avg_earning_per_booking', 500)),
+            'last_active': float(historical_data.get('last_active', pd.Timestamp(latest_date).timestamp())),
         }
         
         return pd.DataFrame([features])

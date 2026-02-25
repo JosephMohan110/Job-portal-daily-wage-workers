@@ -409,6 +409,12 @@
                         <!-- <span class="nav-badge">5</span> -->
                     </a>
                 </li>
+                <li class="nav-item {% if current_page == 'verify_documents' %}active{% endif %}">
+                    <a href="{% url 'verify_documents' %}" class="nav-link">
+                        <i class="fas fa-file-shield nav-icon"></i>
+                        <span>Verify Documents</span>
+                    </a>
+                </li>
             </ul>
         </div>
 

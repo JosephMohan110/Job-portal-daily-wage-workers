@@ -2469,6 +2469,50 @@
 
             // Format CSV preview for better readability
             formatCsvPreview();
+
+            // Handle dataset file upload display - INSIDE DOMContentLoaded
+            const trainingFileInput = document.getElementById('trainingFile');
+            const datasetFileNameDisplay = document.getElementById('datasetFileName');
+            const datasetUploadArea = document.getElementById('datasetUploadArea');
+
+            if (trainingFileInput && datasetFileNameDisplay) {
+                trainingFileInput.addEventListener('change', function () {
+                    if (this.files.length > 0) {
+                        const file = this.files[0];
+                        const fileSize = (file.size / (1024 * 1024)).toFixed(2);
+                        datasetFileNameDisplay.textContent = `${file.name} (${fileSize} MB)`;
+                        datasetFileNameDisplay.style.color = 'var(--success-color)';
+                    } else {
+                        datasetFileNameDisplay.textContent = '';
+                    }
+                });
+
+                // Drag and drop functionality for dataset
+                if (datasetUploadArea) {
+                    datasetUploadArea.addEventListener('dragover', function (e) {
+                        e.preventDefault();
+                        this.classList.add('dragover');
+                    });
+
+                    datasetUploadArea.addEventListener('dragleave', function () {
+                        this.classList.remove('dragover');
+                    });
+
+                    datasetUploadArea.addEventListener('drop', function (e) {
+                        e.preventDefault();
+                        this.classList.remove('dragover');
+
+                        const files = e.dataTransfer.files;
+                        if (files.length > 0) {
+                            trainingFileInput.files = files;
+                            const file = files[0];
+                            const fileSize = (file.size / (1024 * 1024)).toFixed(2);
+                            datasetFileNameDisplay.textContent = `${file.name} (${fileSize} MB)`;
+                            datasetFileNameDisplay.style.color = 'var(--success-color)';
+                        }
+                    });
+                }
+            }
         });
 
         function switchTab(tabName) {
@@ -2742,50 +2786,6 @@
             const modal = document.getElementById('restoreModal');
             if (event.target == modal) {
                 closeRestoreModal();
-            }
-        }
-
-        // Handle dataset file upload display
-        const trainingFileInput = document.getElementById('trainingFile');
-        const datasetFileNameDisplay = document.getElementById('datasetFileName');
-        const datasetUploadArea = document.getElementById('datasetUploadArea');
-
-        if (trainingFileInput && datasetFileNameDisplay) {
-            trainingFileInput.addEventListener('change', function () {
-                if (this.files.length > 0) {
-                    const file = this.files[0];
-                    const fileSize = (file.size / (1024 * 1024)).toFixed(2);
-                    datasetFileNameDisplay.textContent = `${file.name} (${fileSize} MB)`;
-                    datasetFileNameDisplay.style.color = 'var(--success-color)';
-                } else {
-                    datasetFileNameDisplay.textContent = '';
-                }
-            });
-
-            // Drag and drop functionality for dataset
-            if (datasetUploadArea) {
-                datasetUploadArea.addEventListener('dragover', function (e) {
-                    e.preventDefault();
-                    this.classList.add('dragover');
-                });
-
-                datasetUploadArea.addEventListener('dragleave', function () {
-                    this.classList.remove('dragover');
-                });
-
-                datasetUploadArea.addEventListener('drop', function (e) {
-                    e.preventDefault();
-                    this.classList.remove('dragover');
-
-                    const files = e.dataTransfer.files;
-                    if (files.length > 0) {
-                        trainingFileInput.files = files;
-                        const file = files[0];
-                        const fileSize = (file.size / (1024 * 1024)).toFixed(2);
-                        datasetFileNameDisplay.textContent = `${file.name} (${fileSize} MB)`;
-                        datasetFileNameDisplay.style.color = 'var(--success-color)';
-                    }
-                });
             }
         }
     </script>

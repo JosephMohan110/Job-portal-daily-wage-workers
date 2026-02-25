@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -102,7 +103,8 @@
             font-weight: 500;
         }
 
-        .sidebar-menu a:hover, .sidebar-menu a.active {
+        .sidebar-menu a:hover,
+        .sidebar-menu a.active {
             background: rgba(255, 255, 255, 0.05);
             color: var(--white);
             border-left: 4px solid var(--primary);
@@ -381,10 +383,21 @@
             font-size: 0.9rem;
         }
 
-        .bg-blue { background: var(--primary); }
-        .bg-green { background: var(--success); }
-        .bg-orange { background: #ff9e00; }
-        .bg-purple { background: var(--secondary); }
+        .bg-blue {
+            background: var(--primary);
+        }
+
+        .bg-green {
+            background: var(--success);
+        }
+
+        .bg-orange {
+            background: #ff9e00;
+        }
+
+        .bg-purple {
+            background: var(--secondary);
+        }
 
         /* Earnings Chart */
         .earnings-chart-container {
@@ -441,7 +454,8 @@
             text-align: center;
         }
 
-        .chart-period-btn.active, .chart-period-btn:hover {
+        .chart-period-btn.active,
+        .chart-period-btn:hover {
             background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             color: var(--white);
             box-shadow: 0 4px 12px rgba(58, 134, 255, 0.3);
@@ -574,7 +588,8 @@
             display: inline-block;
         }
 
-        .filter-btn.active, .filter-btn:hover {
+        .filter-btn.active,
+        .filter-btn:hover {
             background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             color: var(--white);
             box-shadow: 0 4px 12px rgba(58, 134, 255, 0.3);
@@ -738,6 +753,7 @@
                 transform: translateY(50px);
                 opacity: 0;
             }
+
             to {
                 transform: translateY(0);
                 opacity: 1;
@@ -894,7 +910,9 @@
         }
 
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            to {
+                transform: rotate(360deg);
+            }
         }
 
 
@@ -1015,10 +1033,21 @@
             display: inline-block;
         }
 
-        .status-dot.pending { background: #ff9e00; }
-        .status-dot.processing { background: var(--primary); }
-        .status-dot.completed { background: var(--success); }
-        .status-dot.failed { background: var(--danger); }
+        .status-dot.pending {
+            background: #ff9e00;
+        }
+
+        .status-dot.processing {
+            background: var(--primary);
+        }
+
+        .status-dot.completed {
+            background: var(--success);
+        }
+
+        .status-dot.failed {
+            background: var(--danger);
+        }
 
         .withdrawal-empty {
             text-align: center;
@@ -1090,7 +1119,8 @@
             transition: all 0.3s;
         }
 
-        .pagination-btn.active, .pagination-btn:hover {
+        .pagination-btn.active,
+        .pagination-btn:hover {
             background: var(--primary);
             color: var(--white);
             border-color: var(--primary);
@@ -1110,7 +1140,8 @@
             transition: all 0.3s;
         }
 
-        .pagination-link.active, .pagination-link:hover {
+        .pagination-link.active,
+        .pagination-link:hover {
             background: var(--primary);
             color: var(--white);
             border-color: var(--primary);
@@ -1296,87 +1327,87 @@
                 font-size: 0.7rem;
             }
         }
-            
-            .sidebar.active {
-                transform: translateX(0);
-            }
-            
-            .main-content {
-                margin-left: 0;
-            }
-            
-            .sidebar-close {
-                display: block;
-            }
-            
-            .menu-toggle {
-                display: flex;
-            }
-            
-            .earnings-stats {
-                grid-template-columns: 1fr 1fr;
-            }
-            
-            .section-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 1rem;
-            }
-            
-            .filter-options {
-                align-self: flex-start;
-            }
+
+        .sidebar.open {
+            transform: translateX(0);
+        }
+
+        .main-content {
+            margin-left: 0;
+        }
+
+        .sidebar-close {
+            display: block;
+        }
+
+        .menu-toggle {
+            display: flex;
+        }
+
+        .earnings-stats {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .section-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .filter-options {
+            align-self: flex-start;
+        }
         }
 
         @media (max-width: 768px) {
             .earnings-stats {
                 grid-template-columns: 1fr;
             }
-            
+
             .top-bar {
                 padding: 1rem;
             }
-            
+
             .dashboard-content {
                 padding: 1.5rem;
             }
-            
+
             .menu-toggle {
                 margin-right: 10px;
             }
-            
+
             .stat-card {
                 padding: 1.2rem;
             }
-            
+
             .stat-icon {
                 width: 50px;
                 height: 50px;
                 font-size: 1.3rem;
             }
-            
+
             .stat-info h3 {
                 font-size: 1.6rem;
             }
-            
+
             .search-filter-bar {
                 flex-direction: column;
                 align-items: stretch;
             }
-            
+
             .search-box {
                 min-width: 100%;
             }
-            
+
             .filter-dropdown {
                 width: 100%;
             }
-            
+
             .chart-controls {
                 flex-wrap: wrap;
                 justify-content: center;
             }
-            
+
             .filter-options {
                 flex-wrap: wrap;
                 width: 100%;
@@ -1388,48 +1419,48 @@
             .user-info {
                 display: none;
             }
-            
+
             .top-bar {
                 padding: 0.8rem;
             }
-            
+
             .page-title h1 {
                 font-size: 1.5rem;
             }
-            
+
             .stat-card {
                 padding: 1rem;
                 flex-direction: column;
                 text-align: center;
                 gap: 10px;
             }
-            
+
             .stat-icon {
                 width: 50px;
                 height: 50px;
                 font-size: 1.2rem;
             }
-            
+
             .stat-info h3 {
                 font-size: 1.5rem;
                 margin-bottom: 2px;
             }
-            
+
             .stat-info p {
                 font-size: 0.8rem;
             }
-            
+
             .user-dropdown {
                 width: 200px;
                 right: -10px;
             }
-            
+
             .chart-header {
                 flex-direction: column;
                 gap: 1rem;
                 align-items: flex-start;
             }
-            
+
             .chart-controls {
                 width: 100%;
                 justify-content: center;
@@ -1452,21 +1483,6 @@
             margin-right: 15px;
         }
 
-        .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 999;
-            display: none;
-        }
-
-        .overlay.active {
-            display: block;
-        }
-        
         /* Additional stats cards */
         .additional-stats {
             display: grid;
@@ -1474,7 +1490,7 @@
             gap: 1rem;
             margin-bottom: 1.5rem;
         }
-        
+
         .mini-stat-card {
             background: var(--card-bg);
             border-radius: 10px;
@@ -1485,7 +1501,7 @@
             gap: 12px;
             border-left: 3px solid;
         }
-        
+
         .mini-stat-icon {
             width: 40px;
             height: 40px;
@@ -1496,24 +1512,24 @@
             font-size: 1rem;
             color: var(--white);
         }
-        
+
         .mini-stat-info h4 {
             font-size: 1.2rem;
             margin-bottom: 3px;
             color: var(--dark);
         }
-        
+
         .mini-stat-info p {
             color: var(--text-light);
             font-size: 0.8rem;
         }
-        
+
         @media (max-width: 768px) {
             .additional-stats {
                 grid-template-columns: repeat(2, 1fr);
             }
         }
-        
+
         @media (max-width: 480px) {
             .additional-stats {
                 grid-template-columns: 1fr;
@@ -1521,15 +1537,23 @@
         }
     </style>
 </head>
+
 <body>
 
     {% include 'employee_html/employee_header.html' %}
+
+    <!-- Error Message Display -->
+    {% if error_message %}
+    <div style="margin: 20px; padding: 15px; background-color: #fee; border: 1px solid #fcc; border-radius: 4px; color: #c00;">
+        <i class="fas fa-exclamation-circle"></i> {{ error_message }}
+    </div>
+    {% endif %}
 
     <!-- Main Content -->
     <div class="main-content">
         <!-- Top Bar -->
         <div class="top-bar">
-            <button class="menu-toggle" id="menuToggle" onclick="openSidebar()">
+            <button class="menu-toggle" id="menuToggle" onclick="toggleSidebarMenu()">
                 <i class="fas fa-bars"></i>
             </button>
             <div class="page-title">
@@ -1554,7 +1578,7 @@
                             <p>Today's Earnings</p>
                         </div>
                     </div>
-                    
+
                     <div class="mini-stat-card" style="border-left-color: var(--success);">
                         <div class="mini-stat-icon bg-green">
                             <i class="fas fa-calendar-week"></i>
@@ -1564,7 +1588,7 @@
                             <p>This Week</p>
                         </div>
                     </div>
-                    
+
                     <div class="mini-stat-card" style="border-left-color: var(--warning);">
                         <div class="mini-stat-icon bg-orange">
                             <i class="fas fa-calendar-alt"></i>
@@ -1574,7 +1598,7 @@
                             <p>This Month</p>
                         </div>
                     </div>
-                    
+
                     <div class="mini-stat-card" style="border-left-color: var(--secondary);">
                         <div class="mini-stat-icon bg-purple">
                             <i class="fas fa-chart-line"></i>
@@ -1597,7 +1621,7 @@
                             <p>Total Earnings Received</p>
                         </div>
                     </div>
-                    
+
                     <div class="stat-card">
                         <div class="stat-icon bg-green">
                             <i class="fas fa-briefcase"></i>
@@ -1607,7 +1631,7 @@
                             <p>Total Jobs Completed</p>
                         </div>
                     </div>
-                    
+
                     <div class="stat-card" style="border-left-color: var(--danger); justify-content: space-between;">
                         <div>
                             <div class="stat-info">
@@ -1627,24 +1651,24 @@
                     <div class="chart-header">
                         <div class="chart-title">
                             {% if chart_period == 'daily' %}
-                                Daily Earnings Trend
+                            Daily Earnings Trend
                             {% elif chart_period == 'weekly' %}
-                                Weekly Earnings Trend
+                            Weekly Earnings Trend
                             {% else %}
-                                Monthly Earnings Trend
+                            Monthly Earnings Trend
                             {% endif %}
                         </div>
                         <div class="chart-controls">
-                            <a href="?chart_period=daily{% if search_query %}&search={{ search_query }}{% endif %}{% if date_filter %}&date_filter={{ date_filter }}{% endif %}{% if payment_method_filter != 'all' %}&payment_method={{ payment_method_filter }}{% endif %}" 
-                               class="chart-period-btn {% if chart_period == 'daily' %}active{% endif %}">
+                            <a href="?chart_period=daily{% if search_query %}&search={{ search_query }}{% endif %}{% if date_filter %}&date_filter={{ date_filter }}{% endif %}{% if payment_method_filter != 'all' %}&payment_method={{ payment_method_filter }}{% endif %}"
+                                class="chart-period-btn {% if chart_period == 'daily' %}active{% endif %}">
                                 Daily
                             </a>
-                            <a href="?chart_period=weekly{% if search_query %}&search={{ search_query }}{% endif %}{% if date_filter %}&date_filter={{ date_filter }}{% endif %}{% if payment_method_filter != 'all' %}&payment_method={{ payment_method_filter }}{% endif %}" 
-                               class="chart-period-btn {% if chart_period == 'weekly' %}active{% endif %}">
+                            <a href="?chart_period=weekly{% if search_query %}&search={{ search_query }}{% endif %}{% if date_filter %}&date_filter={{ date_filter }}{% endif %}{% if payment_method_filter != 'all' %}&payment_method={{ payment_method_filter }}{% endif %}"
+                                class="chart-period-btn {% if chart_period == 'weekly' %}active{% endif %}">
                                 Weekly
                             </a>
-                            <a href="?chart_period=monthly{% if search_query %}&search={{ search_query }}{% endif %}{% if date_filter %}&date_filter={{ date_filter }}{% endif %}{% if payment_method_filter != 'all' %}&payment_method={{ payment_method_filter }}{% endif %}" 
-                               class="chart-period-btn {% if chart_period == 'monthly' or not chart_period %}active{% endif %}">
+                            <a href="?chart_period=monthly{% if search_query %}&search={{ search_query }}{% endif %}{% if date_filter %}&date_filter={{ date_filter }}{% endif %}{% if payment_method_filter != 'all' %}&payment_method={{ payment_method_filter }}{% endif %}"
+                                class="chart-period-btn {% if chart_period == 'monthly' or not chart_period %}active{% endif %}">
                                 Monthly
                             </a>
                         </div>
@@ -1659,15 +1683,18 @@
                     <form method="GET" action="{% url 'employee_earnings' %}" id="searchForm">
                         <div class="search-box">
                             <i class="fas fa-search"></i>
-                            <input type="text" name="search" placeholder="Search earnings by job title or employer..." 
-                                   value="{{ search_query }}" id="searchInput">
+                            <input type="text" name="search" placeholder="Search earnings by job title or employer..."
+                                value="{{ search_query }}" id="searchInput">
                         </div>
                         <select class="filter-dropdown" name="payment_method" id="paymentMethodFilter">
-                            <option value="all" {% if payment_method_filter == 'all' %}selected{% endif %}>All Payment Methods</option>
+                            <option value="all" {% if payment_method_filter == 'all' %}selected{% endif %}>All Payment
+                                Methods</option>
                             <option value="cash" {% if payment_method_filter == 'cash' %}selected{% endif %}>Cash</option>
                             <option value="upi" {% if payment_method_filter == 'upi' %}selected{% endif %}>UPI</option>
-                            <option value="bank" {% if payment_method_filter == 'bank' %}selected{% endif %}>Bank Transfer</option>
-                            <option value="online" {% if payment_method_filter == 'online' %}selected{% endif %}>Online Payment</option>
+                            <option value="bank" {% if payment_method_filter == 'bank' %}selected{% endif %}>Bank Transfer
+                            </option>
+                            <option value="online" {% if payment_method_filter == 'online' %}selected{% endif %}>Online
+                                Payment</option>
                         </select>
                         <select class="filter-dropdown" name="date_filter" id="dateFilter">
                             <option value="all" {% if date_filter == 'all' %}selected{% endif %}>All Time</option>
@@ -1691,14 +1718,14 @@
                 <div class="section-header">
                     <h2>Payment History</h2>
                     <div class="filter-options">
-                        <a href="?date_filter=all&chart_period={{ chart_period }}{% if search_query %}&search={{ search_query }}{% endif %}{% if payment_method_filter != 'all' %}&payment_method={{ payment_method_filter }}{% endif %}" 
-                           class="filter-btn {% if date_filter == 'all' or not date_filter %}active{% endif %}">All</a>
-                        <a href="?date_filter=today&chart_period={{ chart_period }}{% if search_query %}&search={{ search_query }}{% endif %}{% if payment_method_filter != 'all' %}&payment_method={{ payment_method_filter }}{% endif %}" 
-                           class="filter-btn {% if date_filter == 'today' %}active{% endif %}">Today</a>
-                        <a href="?date_filter=week&chart_period={{ chart_period }}{% if search_query %}&search={{ search_query }}{% endif %}{% if payment_method_filter != 'all' %}&payment_method={{ payment_method_filter }}{% endif %}" 
-                           class="filter-btn {% if date_filter == 'week' %}active{% endif %}">This Week</a>
-                        <a href="?date_filter=month&chart_period={{ chart_period }}{% if search_query %}&search={{ search_query }}{% endif %}{% if payment_method_filter != 'all' %}&payment_method={{ payment_method_filter }}{% endif %}" 
-                           class="filter-btn {% if date_filter == 'month' %}active{% endif %}">This Month</a>
+                        <a href="?date_filter=all&chart_period={{ chart_period }}{% if search_query %}&search={{ search_query }}{% endif %}{% if payment_method_filter != 'all' %}&payment_method={{ payment_method_filter }}{% endif %}"
+                            class="filter-btn {% if date_filter == 'all' or not date_filter %}active{% endif %}">All</a>
+                        <a href="?date_filter=today&chart_period={{ chart_period }}{% if search_query %}&search={{ search_query }}{% endif %}{% if payment_method_filter != 'all' %}&payment_method={{ payment_method_filter }}{% endif %}"
+                            class="filter-btn {% if date_filter == 'today' %}active{% endif %}">Today</a>
+                        <a href="?date_filter=week&chart_period={{ chart_period }}{% if search_query %}&search={{ search_query }}{% endif %}{% if payment_method_filter != 'all' %}&payment_method={{ payment_method_filter }}{% endif %}"
+                            class="filter-btn {% if date_filter == 'week' %}active{% endif %}">This Week</a>
+                        <a href="?date_filter=month&chart_period={{ chart_period }}{% if search_query %}&search={{ search_query }}{% endif %}{% if payment_method_filter != 'all' %}&payment_method={{ payment_method_filter }}{% endif %}"
+                            class="filter-btn {% if date_filter == 'month' %}active{% endif %}">This Month</a>
                     </div>
                 </div>
 
@@ -1748,8 +1775,9 @@
                                             <h3>No earnings yet</h3>
                                             <p>Complete jobs to see your earnings here</p>
                                             <p style="margin-top: 1rem; font-size: 0.9rem;">
-                                                <i class="fas fa-info-circle"></i> 
-                                                You have completed {{ total_jobs_completed }} jobs worth ₹{{ total_earnings|floatformat:0 }}
+                                                <i class="fas fa-info-circle"></i>
+                                                You have completed {{ total_jobs_completed }} jobs worth ₹{{
+                                                total_earnings|floatformat:0 }}
                                             </p>
                                         </div>
                                     </td>
@@ -1759,32 +1787,32 @@
                         </table>
                     </div>
                 </div>
-                
+
                 <!-- Pagination -->
                 {% if earnings_history.has_other_pages %}
                 <div class="pagination">
                     {% if earnings_history.has_previous %}
-                    <a href="?page={{ earnings_history.previous_page_number }}&chart_period={{ chart_period }}{% if search_query %}&search={{ search_query }}{% endif %}{% if date_filter %}&date_filter={{ date_filter }}{% endif %}{% if payment_method_filter != 'all' %}&payment_method={{ payment_method_filter }}{% endif %}" 
-                       class="pagination-link">
+                    <a href="?page={{ earnings_history.previous_page_number }}&chart_period={{ chart_period }}{% if search_query %}&search={{ search_query }}{% endif %}{% if date_filter %}&date_filter={{ date_filter }}{% endif %}{% if payment_method_filter != 'all' %}&payment_method={{ payment_method_filter }}{% endif %}"
+                        class="pagination-link">
                         <i class="fas fa-chevron-left"></i>
                     </a>
                     {% endif %}
-                    
+
                     {% for i in earnings_history.paginator.page_range %}
-                        {% if earnings_history.number == i %}
-                        <span class="pagination-link active">{{ i }}</span>
-                        {% elif i > earnings_history.number|add:'-3' and i < earnings_history.number|add:'3' %}
-                        <a href="?page={{ i }}&chart_period={{ chart_period }}{% if search_query %}&search={{ search_query }}{% endif %}{% if date_filter %}&date_filter={{ date_filter }}{% endif %}{% if payment_method_filter != 'all' %}&payment_method={{ payment_method_filter }}{% endif %}" 
-                           class="pagination-link">{{ i }}</a>
+                    {% if earnings_history.number == i %}
+                    <span class="pagination-link active">{{ i }}</span>
+                    {% elif i > earnings_history.number|add:'-3' and i < earnings_history.number|add:'3' %} <a
+                        href="?page={{ i }}&chart_period={{ chart_period }}{% if search_query %}&search={{ search_query }}{% endif %}{% if date_filter %}&date_filter={{ date_filter }}{% endif %}{% if payment_method_filter != 'all' %}&payment_method={{ payment_method_filter }}{% endif %}"
+                        class="pagination-link">{{ i }}</a>
                         {% endif %}
-                    {% endfor %}
-                    
-                    {% if earnings_history.has_next %}
-                    <a href="?page={{ earnings_history.next_page_number }}&chart_period={{ chart_period }}{% if search_query %}&search={{ search_query }}{% endif %}{% if date_filter %}&date_filter={{ date_filter }}{% endif %}{% if payment_method_filter != 'all' %}&payment_method={{ payment_method_filter }}{% endif %}" 
-                       class="pagination-link">
-                        <i class="fas fa-chevron-right"></i>
-                    </a>
-                    {% endif %}
+                        {% endfor %}
+
+                        {% if earnings_history.has_next %}
+                        <a href="?page={{ earnings_history.next_page_number }}&chart_period={{ chart_period }}{% if search_query %}&search={{ search_query }}{% endif %}{% if date_filter %}&date_filter={{ date_filter }}{% endif %}{% if payment_method_filter != 'all' %}&payment_method={{ payment_method_filter }}{% endif %}"
+                            class="pagination-link">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                        {% endif %}
                 </div>
                 {% endif %}
 
@@ -1824,13 +1852,16 @@
 
                 <div class="info-box">
                     <i class="fas fa-info-circle"></i>
-                    <strong>Available Balance:</strong> <span id="availableBalance">₹0</span> | Minimum withdrawal: ₹100<br>
+                    <strong>Available Balance:</strong> <span id="availableBalance">₹0</span> | Minimum withdrawal:
+                    ₹100<br>
                     <div style="margin-top: 10px; font-size: 0.9rem;">
                         <span id="pendingInfo" style="display: none;">
-                            <i class="fas fa-hourglass-half" style="color: #ff9e00;"></i> Pending Withdrawals: ₹<span id="pendingAmount">0</span>
+                            <i class="fas fa-hourglass-half" style="color: #ff9e00;"></i> Pending Withdrawals: ₹<span
+                                id="pendingAmount">0</span>
                         </span>
                         <span id="completedInfo" style="display: none;">
-                            <i class="fas fa-check-circle" style="color: #06d6a0;"></i> Completed Withdrawals: ₹<span id="completedAmount">0</span>
+                            <i class="fas fa-check-circle" style="color: #06d6a0;"></i> Completed Withdrawals: ₹<span
+                                id="completedAmount">0</span>
                         </span>
                     </div>
                 </div>
@@ -1876,7 +1907,8 @@
 
                 <!-- Razorpay Fields -->
                 <div id="razorpayFields" class="form-group hide">
-                    <div class="info-box" style="background: rgba(255, 209, 102, 0.1); border-left-color: #ff9e00; margin-bottom: 1.5rem;">
+                    <div class="info-box"
+                        style="background: rgba(255, 209, 102, 0.1); border-left-color: #ff9e00; margin-bottom: 1.5rem;">
                         <i class="fas fa-bolt"></i>
                         <strong>Razorpay Wallet:</strong> Fastest way to receive money directly to your Razorpay account
                     </div>
@@ -1886,15 +1918,18 @@
                     </div>
                     <div class="form-group">
                         <label for="razorpayPhone">Razorpay Phone (10 digits) *</label>
-                        <input type="tel" id="razorpayPhone" placeholder="Your registered phone with Razorpay" maxlength="10" pattern="[0-9]{10}">
+                        <input type="tel" id="razorpayPhone" placeholder="Your registered phone with Razorpay"
+                            maxlength="10" pattern="[0-9]{10}">
                     </div>
-                    <div class="info-box" style="background: rgba(58, 134, 255, 0.1); border-left-color: var(--primary);">
+                    <div class="info-box"
+                        style="background: rgba(58, 134, 255, 0.1); border-left-color: var(--primary);">
                         <i class="fas fa-info-circle"></i>
                         Instant transfer via Razorpay Wallet. Available 24/7, transferred within 5-30 minutes.
                     </div>
                 </div>
 
-                <div class="info-box" style="background: rgba(6, 214, 160, 0.1); border-left-color: var(--success); color: var(--success);">
+                <div class="info-box"
+                    style="background: rgba(6, 214, 160, 0.1); border-left-color: var(--success); color: var(--success);">
                     <i class="fas fa-clock"></i>
                     Amount will be transferred within 1-2 business days. No processing fees charged.
                 </div>
@@ -1911,23 +1946,23 @@
 
     <script>
         // Initialize on page load
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             initializeChart();
             loadWithdrawalHistory(1);
             updateAvailableBalance();
-            
+
             // Auto-submit form when filters change
-            document.getElementById('paymentMethodFilter').addEventListener('change', function() {
+            document.getElementById('paymentMethodFilter').addEventListener('change', function () {
                 document.getElementById('searchForm').submit();
             });
-            
-            document.getElementById('dateFilter').addEventListener('change', function() {
+
+            document.getElementById('dateFilter').addEventListener('change', function () {
                 document.getElementById('searchForm').submit();
             });
-            
+
             // Debounced search
             let searchTimeout;
-            document.getElementById('searchInput').addEventListener('input', function() {
+            document.getElementById('searchInput').addEventListener('input', function () {
                 clearTimeout(searchTimeout);
                 searchTimeout = setTimeout(() => {
                     document.getElementById('searchForm').submit();
@@ -1935,7 +1970,7 @@
             });
 
             // Close modal when clicking outside
-            document.getElementById('withdrawalModal').addEventListener('click', function(e) {
+            document.getElementById('withdrawalModal').addEventListener('click', function (e) {
                 if (e.target === this) {
                     closeWithdrawalModal();
                 }
@@ -1948,7 +1983,7 @@
             const totalEarnings = parseFloat('{{ total_earnings|default:0 }}');
             const pendingWithdrawals = parseFloat('{{ pending_withdrawals|default:0 }}');
             const completedWithdrawals = parseFloat('{{ completed_withdrawals|default:0 }}');
-            
+
             const balanceElement = document.getElementById('availableBalance');
             balanceElement.textContent = '₹' + totalEarnings.toLocaleString('en-IN', { maximumFractionDigits: 0 });
             balanceElement.dataset.pending = pendingWithdrawals;
@@ -1959,21 +1994,21 @@
             document.getElementById('withdrawalModal').classList.add('active');
             document.getElementById('withdrawalAmount').focus();
             clearWithdrawalForm();
-            
+
             // Display pending/completed withdrawal info
             const pendingAmount = parseFloat(document.getElementById('availableBalance').dataset.pending || 0);
             const completedAmount = parseFloat(document.getElementById('availableBalance').dataset.completed || 0);
-            
+
             const pendingInfo = document.getElementById('pendingInfo');
             const completedInfo = document.getElementById('completedInfo');
-            
+
             if (pendingAmount > 0) {
                 document.getElementById('pendingAmount').textContent = pendingAmount.toFixed(2);
                 pendingInfo.style.display = 'inline-block';
             } else {
                 pendingInfo.style.display = 'none';
             }
-            
+
             if (completedAmount > 0) {
                 document.getElementById('completedAmount').textContent = completedAmount.toFixed(2);
                 completedInfo.style.display = 'inline-block';
@@ -2007,11 +2042,11 @@
             const bankFields = document.getElementById('bankFields');
             const upiFields = document.getElementById('upiFields');
             const razorpayFields = document.getElementById('razorpayFields');
-            
+
             bankFields.classList.add('hide');
             upiFields.classList.add('hide');
             razorpayFields.classList.add('hide');
-            
+
             if (method === 'bank_transfer') {
                 bankFields.classList.remove('hide');
                 document.getElementById('accountNumber').focus();
@@ -2037,87 +2072,87 @@
 
         function submitWithdrawal() {
             hideError();
-            
+
             const amount = parseFloat(document.getElementById('withdrawalAmount').value);
             const paymentMethod = document.getElementById('paymentMethod').value;
             const totalEarnings = parseFloat('{{ total_earnings|default:0 }}');
-            
+
             // Validation
             if (!amount || amount <= 0) {
                 showError('Please enter a valid amount');
                 return;
             }
-            
+
             if (amount < 100) {
                 showError('Minimum withdrawal amount is ₹100');
                 return;
             }
-            
+
             if (amount > totalEarnings) {
                 showError('Insufficient balance');
                 return;
             }
-            
+
             if (!paymentMethod) {
                 showError('Please select a payment method');
                 return;
             }
-            
+
             const requestData = {
                 amount: amount,
                 payment_method: paymentMethod
             };
-            
+
             // Add payment method specific details
             if (paymentMethod === 'bank_transfer') {
                 const accountNumber = document.getElementById('accountNumber').value.trim();
                 const ifsc = document.getElementById('ifscCode').value.trim();
                 const bankName = document.getElementById('bankName').value.trim();
-                
+
                 if (!accountNumber || !ifsc || !bankName) {
                     showError('Please fill in all bank details');
                     return;
                 }
-                
+
                 requestData.account_number = accountNumber;
                 requestData.ifsc = ifsc;
                 requestData.bank_name = bankName;
             } else if (paymentMethod === 'upi') {
                 const upiId = document.getElementById('upiId').value.trim();
-                
+
                 if (!upiId || !upiId.includes('@')) {
                     showError('Please enter a valid UPI ID (e.g., yourname@upi)');
                     return;
                 }
-                
+
                 requestData.upi_id = upiId;
             } else if (paymentMethod === 'razorpay') {
                 const razorpayEmail = document.getElementById('razorpayEmail').value.trim();
                 const razorpayPhone = document.getElementById('razorpayPhone').value.trim();
-                
+
                 // Email validation
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 if (!razorpayEmail || !emailRegex.test(razorpayEmail)) {
                     showError('Please enter a valid email address');
                     return;
                 }
-                
+
                 // Phone validation
                 if (!razorpayPhone || razorpayPhone.length !== 10 || !/^\d{10}$/.test(razorpayPhone)) {
                     showError('Please enter a valid 10-digit phone number');
                     return;
                 }
-                
+
                 requestData.razorpay_email = razorpayEmail;
                 requestData.razorpay_phone = razorpayPhone;
             }
-            
+
             // Show loading state
             const submitBtn = document.getElementById('submitWithdrawalBtn');
             submitBtn.disabled = true;
             document.getElementById('submitBtnText').style.display = 'none';
             document.getElementById('submitBtnSpinner').style.display = 'inline-block';
-            
+
             // Send request
             fetch('{% url "initiate_withdrawal" %}', {
                 method: 'POST',
@@ -2127,29 +2162,29 @@
                 },
                 body: JSON.stringify(requestData)
             })
-            .then(response => response.json())
-            .then(data => {
-                submitBtn.disabled = false;
-                document.getElementById('submitBtnText').style.display = 'inline';
-                document.getElementById('submitBtnSpinner').style.display = 'none';
-                
-                if (data.success) {
-                    showSuccessMessage('Withdrawal request submitted successfully! Amount: ₹' + amount.toLocaleString('en-IN'));
-                    setTimeout(() => {
-                        closeWithdrawalModal();
-                        loadWithdrawalHistory(1);
-                    }, 2000);
-                } else {
-                    showError(data.error || 'Failed to process withdrawal');
-                }
-            })
-            .catch(error => {
-                submitBtn.disabled = false;
-                document.getElementById('submitBtnText').style.display = 'inline';
-                document.getElementById('submitBtnSpinner').style.display = 'none';
-                showError('An error occurred. Please try again.');
-                console.error('Error:', error);
-            });
+                .then(response => response.json())
+                .then(data => {
+                    submitBtn.disabled = false;
+                    document.getElementById('submitBtnText').style.display = 'inline';
+                    document.getElementById('submitBtnSpinner').style.display = 'none';
+
+                    if (data.success) {
+                        showSuccessMessage('Withdrawal request submitted successfully! Amount: ₹' + amount.toLocaleString('en-IN'));
+                        setTimeout(() => {
+                            closeWithdrawalModal();
+                            loadWithdrawalHistory(1);
+                        }, 2000);
+                    } else {
+                        showError(data.error || 'Failed to process withdrawal');
+                    }
+                })
+                .catch(error => {
+                    submitBtn.disabled = false;
+                    document.getElementById('submitBtnText').style.display = 'inline';
+                    document.getElementById('submitBtnSpinner').style.display = 'none';
+                    showError('An error occurred. Please try again.');
+                    console.error('Error:', error);
+                });
         }
 
         function showSuccessMessage(message) {
@@ -2164,26 +2199,26 @@
 
         function loadWithdrawalHistory(page = 1) {
             fetch(`{% url "get_withdrawal_history" %}?page=${page}`)
-            .then(response => response.json())
-            .then(data => {
-                const historyList = document.getElementById('withdrawalHistoryList');
-                
-                if (!data.success) {
-                    historyList.innerHTML = '<div class="withdrawal-empty"><i class="fas fa-inbox"></i><p>Error loading withdrawal history</p></div>';
-                    return;
-                }
-                
-                if (data.withdrawals.length === 0) {
-                    historyList.innerHTML = '<div class="withdrawal-empty"><i class="fas fa-inbox"></i><p>No withdrawal history yet</p></div>';
-                    return;
-                }
-                
-                let html = '';
-                data.withdrawals.forEach(withdrawal => {
-                    const statusClass = `status-${withdrawal.status}`;
-                    const statusDot = `<span class="status-dot ${withdrawal.status}"></span>`;
-                    
-                    html += `
+                .then(response => response.json())
+                .then(data => {
+                    const historyList = document.getElementById('withdrawalHistoryList');
+
+                    if (!data.success) {
+                        historyList.innerHTML = '<div class="withdrawal-empty"><i class="fas fa-inbox"></i><p>Error loading withdrawal history</p></div>';
+                        return;
+                    }
+
+                    if (data.withdrawals.length === 0) {
+                        historyList.innerHTML = '<div class="withdrawal-empty"><i class="fas fa-inbox"></i><p>No withdrawal history yet</p></div>';
+                        return;
+                    }
+
+                    let html = '';
+                    data.withdrawals.forEach(withdrawal => {
+                        const statusClass = `status-${withdrawal.status}`;
+                        const statusDot = `<span class="status-dot ${withdrawal.status}"></span>`;
+
+                        html += `
                         <div class="withdrawal-item">
                             <div class="withdrawal-info">
                                 <div class="withdrawal-amount">₹${parseFloat(withdrawal.amount).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</div>
@@ -2202,28 +2237,28 @@
                             </div>
                         </div>
                     `;
+                    });
+
+                    historyList.innerHTML = html;
+
+                    // Add pagination if needed
+                    if (data.total_pages > 1) {
+                        let paginationHtml = '<div style="text-align: center; padding: 1rem; border-top: 1px solid var(--border-color);">';
+                        if (data.has_previous) {
+                            paginationHtml += `<button class="btn btn-primary" onclick="loadWithdrawalHistory(${page - 1})" style="margin-right: 10px;"><i class="fas fa-chevron-left"></i> Previous</button>`;
+                        }
+                        paginationHtml += `<span style="margin: 0 10px;">Page ${page} of ${data.total_pages}</span>`;
+                        if (data.has_next) {
+                            paginationHtml += `<button class="btn btn-primary" onclick="loadWithdrawalHistory(${page + 1})" style="margin-left: 10px;">Next <i class="fas fa-chevron-right"></i></button>`;
+                        }
+                        paginationHtml += '</div>';
+                        historyList.innerHTML += paginationHtml;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading withdrawal history:', error);
+                    document.getElementById('withdrawalHistoryList').innerHTML = '<div class="withdrawal-empty"><i class="fas fa-inbox"></i><p>Error loading withdrawal history</p></div>';
                 });
-                
-                historyList.innerHTML = html;
-                
-                // Add pagination if needed
-                if (data.total_pages > 1) {
-                    let paginationHtml = '<div style="text-align: center; padding: 1rem; border-top: 1px solid var(--border-color);">';
-                    if (data.has_previous) {
-                        paginationHtml += `<button class="btn btn-primary" onclick="loadWithdrawalHistory(${page - 1})" style="margin-right: 10px;"><i class="fas fa-chevron-left"></i> Previous</button>`;
-                    }
-                    paginationHtml += `<span style="margin: 0 10px;">Page ${page} of ${data.total_pages}</span>`;
-                    if (data.has_next) {
-                        paginationHtml += `<button class="btn btn-primary" onclick="loadWithdrawalHistory(${page + 1})" style="margin-left: 10px;">Next <i class="fas fa-chevron-right"></i></button>`;
-                    }
-                    paginationHtml += '</div>';
-                    historyList.innerHTML += paginationHtml;
-                }
-            })
-            .catch(error => {
-                console.error('Error loading withdrawal history:', error);
-                document.getElementById('withdrawalHistoryList').innerHTML = '<div class="withdrawal-empty"><i class="fas fa-inbox"></i><p>Error loading withdrawal history</p></div>';
-            });
         }
 
         function getCookie(name) {
@@ -2245,187 +2280,188 @@
 
         function initializeChart() {
             const ctx = document.getElementById('earningsChart').getContext('2d');
-            
+
             // Use Django template variables passed from view
             const labels = {{ chart_labels|safe }};
             const chartData = {{ chart_data|safe }};
             const period = "{{ chart_period }}";
-            
-            // Chart title based on period
-            let chartTitle = 'Monthly Earnings Trend';
-            if (period === 'daily') {
-                chartTitle = 'Daily Earnings Trend';
-            } else if (period === 'weekly') {
-                chartTitle = 'Weekly Earnings Trend';
-            }
-            
-            // Create gradient
-            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-            gradient.addColorStop(0, 'rgba(58, 134, 255, 0.3)');
-            gradient.addColorStop(1, 'rgba(58, 134, 255, 0.05)');
-            
-            const chart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Earnings (₹)',
-                        data: chartData,
-                        backgroundColor: gradient,
-                        borderColor: 'rgba(58, 134, 255, 1)',
-                        borderWidth: 4,
-                        pointBackgroundColor: 'rgba(255, 255, 255, 1)',
-                        pointBorderColor: 'rgba(58, 134, 255, 1)',
-                        pointBorderWidth: 3,
-                        pointRadius: 8,
-                        pointHoverRadius: 10,
-                        fill: true,
-                        tension: 0.4,
-                        pointHoverBackgroundColor: 'rgba(58, 134, 255, 1)',
-                        pointHoverBorderColor: 'rgba(255, 255, 255, 1)',
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: true,
-                            position: 'top',
-                            labels: {
-                                color: 'rgba(0, 0, 0, 0.7)',
-                                font: {
-                                    size: 13,
-                                    weight: '500'
-                                },
-                                padding: 20,
-                                usePointStyle: true,
-                                pointStyle: 'circle'
-                            }
-                        },
-                        title: {
-                            display: true,
-                            text: chartTitle,
+
+        // Chart title based on period
+        let chartTitle = 'Monthly Earnings Trend';
+        if (period === 'daily') {
+            chartTitle = 'Daily Earnings Trend';
+        } else if (period === 'weekly') {
+            chartTitle = 'Weekly Earnings Trend';
+        }
+
+        // Create gradient
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(58, 134, 255, 0.3)');
+        gradient.addColorStop(1, 'rgba(58, 134, 255, 0.05)');
+
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Earnings (₹)',
+                    data: chartData,
+                    backgroundColor: gradient,
+                    borderColor: 'rgba(58, 134, 255, 1)',
+                    borderWidth: 4,
+                    pointBackgroundColor: 'rgba(255, 255, 255, 1)',
+                    pointBorderColor: 'rgba(58, 134, 255, 1)',
+                    pointBorderWidth: 3,
+                    pointRadius: 8,
+                    pointHoverRadius: 10,
+                    fill: true,
+                    tension: 0.4,
+                    pointHoverBackgroundColor: 'rgba(58, 134, 255, 1)',
+                    pointHoverBorderColor: 'rgba(255, 255, 255, 1)',
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            color: 'rgba(0, 0, 0, 0.7)',
                             font: {
-                                size: 16,
-                                weight: '600'
+                                size: 13,
+                                weight: '500'
                             },
-                            color: 'rgba(0, 0, 0, 0.8)',
-                            padding: {
-                                bottom: 20
-                            }
-                        },
-                        tooltip: {
-                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                            titleColor: 'rgba(0, 0, 0, 0.9)',
-                            bodyColor: 'rgba(0, 0, 0, 0.7)',
-                            borderColor: 'rgba(58, 134, 255, 0.2)',
-                            borderWidth: 1,
-                            padding: 12,
-                            boxPadding: 6,
+                            padding: 20,
                             usePointStyle: true,
-                            callbacks: {
-                                label: function(context) {
-                                    return `₹${context.parsed.y.toLocaleString('en-IN')}`;
-                                },
-                                labelColor: function(context) {
-                                    return {
-                                        borderColor: 'rgba(58, 134, 255, 1)',
-                                        backgroundColor: 'rgba(58, 134, 255, 1)',
-                                        borderWidth: 3,
-                                        borderRadius: 2
-                                    };
-                                }
-                            }
+                            pointStyle: 'circle'
                         }
                     },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: {
-                                color: 'rgba(0, 0, 0, 0.05)',
-                                drawBorder: false
-                            },
-                            ticks: {
-                                color: 'rgba(0, 0, 0, 0.6)',
-                                font: {
-                                    size: 12
-                                },
-                                padding: 10,
-                                callback: function(value) {
-                                    return '₹' + value.toLocaleString('en-IN');
-                                }
-                            },
-                            border: {
-                                display: false
-                            }
+                    title: {
+                        display: true,
+                        text: chartTitle,
+                        font: {
+                            size: 16,
+                            weight: '600'
                         },
-                        x: {
-                            grid: {
-                                color: 'rgba(0, 0, 0, 0.05)',
-                                drawBorder: false
-                            },
-                            ticks: {
-                                color: 'rgba(0, 0, 0, 0.6)',
-                                font: {
-                                    size: 12,
-                                    weight: '500'
-                                },
-                                padding: 10
-                            },
-                            border: {
-                                display: false
-                            }
+                        color: 'rgba(0, 0, 0, 0.8)',
+                        padding: {
+                            bottom: 20
                         }
                     },
-                    interaction: {
-                        intersect: false,
-                        mode: 'index'
-                    },
-                    elements: {
-                        line: {
-                            tension: 0.4
+                    tooltip: {
+                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                        titleColor: 'rgba(0, 0, 0, 0.9)',
+                        bodyColor: 'rgba(0, 0, 0, 0.7)',
+                        borderColor: 'rgba(58, 134, 255, 0.2)',
+                        borderWidth: 1,
+                        padding: 12,
+                        boxPadding: 6,
+                        usePointStyle: true,
+                        callbacks: {
+                            label: function (context) {
+                                return `₹${context.parsed.y.toLocaleString('en-IN')}`;
+                            },
+                            labelColor: function (context) {
+                                return {
+                                    borderColor: 'rgba(58, 134, 255, 1)',
+                                    backgroundColor: 'rgba(58, 134, 255, 1)',
+                                    borderWidth: 3,
+                                    borderRadius: 2
+                                };
+                            }
                         }
                     }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            color: 'rgba(0, 0, 0, 0.6)',
+                            font: {
+                                size: 12
+                            },
+                            padding: 10,
+                            callback: function (value) {
+                                return '₹' + value.toLocaleString('en-IN');
+                            }
+                        },
+                        border: {
+                            display: false
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            color: 'rgba(0, 0, 0, 0.6)',
+                            font: {
+                                size: 12,
+                                weight: '500'
+                            },
+                            padding: 10
+                        },
+                        border: {
+                            display: false
+                        }
+                    }
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
+                elements: {
+                    line: {
+                        tension: 0.4
+                    }
                 }
-            });
+            }
+        });
         }
 
         // ========== SIDEBAR FUNCTIONS ==========
 
         function openSidebar() {
-            document.getElementById('sidebar').classList.add('active');
-            document.getElementById('overlay').classList.add('active');
+            document.getElementById('sidebar').classList.add('open');
+            document.getElementById('employeeOverlay').classList.add('active');
         }
-        
+
         function closeSidebar() {
-            document.getElementById('sidebar').classList.remove('active');
-            document.getElementById('overlay').classList.remove('active');
+            document.getElementById('sidebar').classList.remove('open');
+            document.getElementById('employeeOverlay').classList.remove('active');
         }
-        
+
         function toggleDropdown() {
             const dropdown = document.getElementById('userDropdown');
             dropdown.classList.toggle('active');
         }
-        
+
         // Close sidebar when clicking on overlay
-        const overlay = document.getElementById('overlay');
+        const overlay = document.getElementById('employeeOverlay');
         if (overlay) {
-            overlay.addEventListener('click', function() {
+            overlay.addEventListener('click', function () {
                 closeSidebar();
                 this.classList.remove('active');
             });
         }
-        
+
         // Close dropdown when clicking outside
-        document.addEventListener('click', function(event) {
+        document.addEventListener('click', function (event) {
             const dropdown = document.getElementById('userDropdown');
             const profile = document.getElementById('userProfile');
-            
+
             if (dropdown && profile && !profile.contains(event.target) && !dropdown.contains(event.target)) {
                 dropdown.classList.remove('active');
             }
         });
     </script>
 </body>
+
 </html>

@@ -877,6 +877,11 @@
             gap: 4px;
             transition: all 0.3s;
             font-weight: 600;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            line-height: 1;
         }
 
         .btn-xs i {
@@ -893,6 +898,8 @@
             background: #c82333;
             transform: translateY(-2px);
             box-shadow: 0 5px 12px rgba(220, 53, 69, 0.3);
+            text-decoration: none;
+            color: var(--white);
         }
 
         .btn-primary-xs {
@@ -905,6 +912,8 @@
             background: var(--primary-dark);
             transform: translateY(-2px);
             box-shadow: 0 5px 12px rgba(74, 111, 255, 0.3);
+            text-decoration: none;
+            color: var(--white);
         }
 
         .btn-secondary-xs {
@@ -917,6 +926,8 @@
             background: #5a6268;
             transform: translateY(-2px);
             box-shadow: 0 5px 12px rgba(108, 117, 125, 0.3);
+            text-decoration: none;
+            color: var(--white);
         }
 
         /* Empty State */
@@ -1484,6 +1495,31 @@
                                         {% endif %}
                                     </span>
                                 </div>
+
+                                <div class="worker-response-time" style="margin: 12px 0; padding: 10px; background: #f0f4ff; border-left: 4px solid var(--primary); border-radius: 4px;">
+                                    <i class="fas fa-clock" style="color: var(--primary); margin-right: 8px;"></i>
+                                    <span style="color: var(--text-dark); font-weight: 500; font-size: 0.9rem;">Response Time: </span>
+                                    <span style="color: var(--primary); font-weight: 600;">{{ worker.response_time|default:"Within 24 hours" }}</span>
+                                </div>
+
+                                <div class="worker-details-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 15px 0; font-size: 0.9rem;">
+                                    <div style="padding: 10px; background: #f8f9fa; border-radius: 6px; border-left: 3px solid var(--warning);">
+                                        <span style="color: var(--text-light); display: block; margin-bottom: 4px; font-size: 0.8rem;">Experience</span>
+                                        <strong style="color: var(--text-dark);">{{ worker.years_experience|default:"0" }} years</strong>
+                                    </div>
+                                    <div style="padding: 10px; background: #f8f9fa; border-radius: 6px; border-left: 3px solid var(--success);">
+                                        <span style="color: var(--text-light); display: block; margin-bottom: 4px; font-size: 0.8rem;">Daily Rate</span>
+                                        <strong style="color: var(--text-dark);">{{ worker.wage_estimate|default:"Not specified" }}</strong>
+                                    </div>
+                                    <div style="padding: 10px; background: #f8f9fa; border-radius: 6px; border-left: 3px solid var(--info);">
+                                        <span style="color: var(--text-light); display: block; margin-bottom: 4px; font-size: 0.8rem;">Rating</span>
+                                        <strong style="color: var(--text-dark);">{{ worker.avg_rating|floatformat:1 }}/5 ⭐</strong>
+                                    </div>
+                                    <div style="padding: 10px; background: #f8f9fa; border-radius: 6px; border-left: 3px solid var(--danger);">
+                                        <span style="color: var(--text-light); display: block; margin-bottom: 4px; font-size: 0.8rem;">Reviews</span>
+                                        <strong style="color: var(--text-dark);">{{ worker.review_count|default:"0" }} reviews</strong>
+                                    </div>
+                                </div>
                                 
                                 <div class="worker-skills">
                                     {% if worker.skills %}
@@ -1524,15 +1560,15 @@
                                         </button>
                                     </form>
                                     
-                                    <a href="#" class="btn-xs btn-primary-xs">
+                                    <a href="{% url 'hire_employee' worker.employee.employee_id %}" class="btn-xs btn-primary-xs">
                                         <i class="fas fa-calendar-alt"></i> Hire
                                     </a>
 
-                                    <a href="#" class="btn-xs btn-primary-xs">
+                                    <a href="{% url 'contact_employee' worker.employee.employee_id %}" class="btn-xs btn-primary-xs">
                                         <i class="fas fa-message"></i> Message
                                     </a>
                                     
-                                    <a href="#" class="btn-xs btn-secondary-xs">
+                                    <a href="{% url 'view_employee_public_profile' worker.employee.employee_id %}" class="btn-xs btn-secondary-xs">
                                         <i class="fas fa-user"></i> Profile
                                     </a>
                                 </div>

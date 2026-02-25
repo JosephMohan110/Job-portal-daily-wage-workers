@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -101,7 +102,8 @@
             font-weight: 500;
         }
 
-        .sidebar-menu a:hover, .sidebar-menu a.active {
+        .sidebar-menu a:hover,
+        .sidebar-menu a.active {
             background: rgba(255, 255, 255, 0.05);
             color: var(--white);
             border-left: 4px solid var(--primary);
@@ -400,11 +402,26 @@
             font-weight: 500;
         }
 
-        .bg-blue { background: var(--primary); }
-        .bg-green { background: var(--success); }
-        .bg-orange { background: var(--warning); color: #000; }
-        .bg-pink { background: var(--danger); }
-        .bg-purple { background: var(--secondary); }
+        .bg-blue {
+            background: var(--primary);
+        }
+
+        .bg-green {
+            background: var(--success);
+        }
+
+        .bg-orange {
+            background: var(--warning);
+            color: #000;
+        }
+
+        .bg-pink {
+            background: var(--danger);
+        }
+
+        .bg-purple {
+            background: var(--secondary);
+        }
 
         /* Profile Completion Cards Section */
         .profile-completion-section {
@@ -569,9 +586,17 @@
             transition: width 0.5s ease;
         }
 
-        .progress-completed { background: var(--success); }
-        .progress-pending { background: var(--warning); }
-        .progress-not-started { background: var(--danger); }
+        .progress-completed {
+            background: var(--success);
+        }
+
+        .progress-pending {
+            background: var(--warning);
+        }
+
+        .progress-not-started {
+            background: var(--danger);
+        }
 
         .progress-text {
             display: flex;
@@ -847,7 +872,7 @@
             .stats-cards {
                 grid-template-columns: repeat(2, 1fr);
             }
-            
+
             .job-requests {
                 grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             }
@@ -857,37 +882,37 @@
             .sidebar {
                 transform: translateX(-100%);
             }
-            
+
             .sidebar.active {
                 transform: translateX(0);
             }
-            
+
             .main-content {
                 margin-left: 0;
             }
-            
+
             .sidebar-close {
                 display: block;
             }
-            
+
             .menu-toggle {
                 display: flex;
             }
-            
+
             .stats-cards {
                 grid-template-columns: repeat(2, 1fr);
             }
-            
+
             .welcome-section {
                 flex-direction: column;
                 text-align: center;
                 gap: 1.5rem;
             }
-            
+
             .date-time {
                 text-align: center;
             }
-            
+
             .profile-cards-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
@@ -897,39 +922,39 @@
             .stats-cards {
                 grid-template-columns: repeat(2, 1fr);
             }
-            
+
             .job-requests {
                 grid-template-columns: 1fr;
             }
-            
+
             .section-header {
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 15px;
             }
-            
+
             .top-bar {
                 padding: 1rem;
             }
-            
+
             .dashboard-content {
                 padding: 1.5rem;
             }
-            
+
             .menu-toggle {
                 margin-right: 10px;
             }
-            
+
             .stat-card {
                 padding: 1.2rem;
             }
-            
+
             .stat-icon {
                 width: 50px;
                 height: 50px;
                 font-size: 1.3rem;
             }
-            
+
             .stat-info h3 {
                 font-size: 1.6rem;
             }
@@ -950,7 +975,7 @@
             .profile-cards-grid {
                 grid-template-columns: 1fr;
             }
-            
+
             .completion-overview {
                 flex-direction: column;
                 text-align: center;
@@ -962,51 +987,51 @@
             .user-info {
                 display: none;
             }
-            
+
             .top-bar {
                 padding: 0.8rem;
             }
-            
+
             .page-title h1 {
                 font-size: 1.5rem;
             }
-            
+
             .page-title p {
                 font-size: 0.8rem;
             }
-            
+
             .stats-cards {
                 grid-template-columns: 1fr;
                 gap: 1rem;
             }
-            
+
             .stat-card {
                 padding: 1rem;
                 flex-direction: column;
                 text-align: center;
                 gap: 10px;
             }
-            
+
             .stat-icon {
                 width: 50px;
                 height: 50px;
                 font-size: 1.2rem;
             }
-            
+
             .stat-info h3 {
                 font-size: 1.5rem;
                 margin-bottom: 2px;
             }
-            
+
             .stat-info p {
                 font-size: 0.8rem;
             }
-            
+
             .user-dropdown {
                 width: 200px;
                 right: -10px;
             }
-            
+
             .job-card-header {
                 flex-direction: column;
                 gap: 10px;
@@ -1015,6 +1040,7 @@
         }
     </style>
 </head>
+
 <body>
     {% include 'employee_html/employee_header.html' %}
 
@@ -1027,7 +1053,7 @@
             </button>
             <div class="page-title">
                 <h1>EMPLOYEE DASHBOARD</h1>
-                <p>Manage and respond to incoming job requests</p> 
+                <p>Manage and respond to incoming job requests</p>
             </div>
 
             {% include 'employee_html/employee_dropdown.html' %}
@@ -1105,8 +1131,8 @@
                     <div class="progress-circle">
                         <svg>
                             <circle class="progress-circle-bg" cx="60" cy="60" r="50"></circle>
-                            <circle class="progress-circle-fill" cx="60" cy="60" r="50" 
-                                    stroke-dashoffset="{{ profile_circle_offset }}"></circle>
+                            <circle class="progress-circle-fill" cx="60" cy="60" r="50"
+                                stroke-dashoffset="{{ profile_circle_offset }}"></circle>
                         </svg>
                         <div class="progress-percentage">
                             {{ profile_completion }}<span>%</span>
@@ -1118,11 +1144,15 @@
                             <p>{{ profile_status_message }}</p>
                             <div style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
                                 <div style="display: flex; align-items: center; gap: 5px;">
-                                    <div style="width: 12px; height: 12px; background: var(--success); border-radius: 2px;"></div>
+                                    <div
+                                        style="width: 12px; height: 12px; background: var(--success); border-radius: 2px;">
+                                    </div>
                                     <span style="font-size: 0.9rem;">{{ profile_completed_items }} completed</span>
                                 </div>
                                 <div style="display: flex; align-items: center; gap: 5px;">
-                                    <div style="width: 12px; height: 12px; background: var(--warning); border-radius: 2px;"></div>
+                                    <div
+                                        style="width: 12px; height: 12px; background: var(--warning); border-radius: 2px;">
+                                    </div>
                                     <span style="font-size: 0.9rem;">{{ profile_pending_items }} pending</span>
                                 </div>
                             </div>
@@ -1145,16 +1175,17 @@
                         </div>
                         <div class="profile-card-progress">
                             <div class="progress-bar">
-                                <div class="progress-fill {% if profile_items.profile_photo.completed %}progress-completed{% else %}progress-not-started{% endif %}" 
-                                     style="width: {% if profile_items.profile_photo.completed %}100%{% else %}0%{% endif %}"></div>
+                                <div class="progress-fill {% if profile_items.profile_photo.completed %}progress-completed{% else %}progress-not-started{% endif %}"
+                                    style="width: {% if profile_items.profile_photo.completed %}100%{% else %}0%{% endif %}">
+                                </div>
                             </div>
                             <div class="progress-text">
                                 <span>Status</span>
                                 <span>
                                     {% if profile_items.profile_photo.completed %}
-                                        <i class="fas fa-check-circle" style="color: var(--success);"></i> Completed
+                                    <i class="fas fa-check-circle" style="color: var(--success);"></i> Completed
                                     {% else %}
-                                        <i class="fas fa-times-circle" style="color: var(--danger);"></i> Not Added
+                                    <i class="fas fa-times-circle" style="color: var(--danger);"></i> Not Added
                                     {% endif %}
                                 </span>
                             </div>
@@ -1179,16 +1210,17 @@
                         </div>
                         <div class="profile-card-progress">
                             <div class="progress-bar">
-                                <div class="progress-fill {% if profile_items.bio.completed %}progress-completed{% else %}progress-not-started{% endif %}" 
-                                     style="width: {% if profile_items.bio.completed %}100%{% else %}0%{% endif %}"></div>
+                                <div class="progress-fill {% if profile_items.bio.completed %}progress-completed{% else %}progress-not-started{% endif %}"
+                                    style="width: {% if profile_items.bio.completed %}100%{% else %}0%{% endif %}">
+                                </div>
                             </div>
                             <div class="progress-text">
                                 <span>Status</span>
                                 <span>
                                     {% if profile_items.bio.completed %}
-                                        <i class="fas fa-check-circle" style="color: var(--success);"></i> Completed
+                                    <i class="fas fa-check-circle" style="color: var(--success);"></i> Completed
                                     {% else %}
-                                        <i class="fas fa-times-circle" style="color: var(--danger);"></i> Not Added
+                                    <i class="fas fa-times-circle" style="color: var(--danger);"></i> Not Added
                                     {% endif %}
                                 </span>
                             </div>
@@ -1213,16 +1245,18 @@
                         </div>
                         <div class="profile-card-progress">
                             <div class="progress-bar">
-                                <div class="progress-fill {% if profile_items.skills.completed %}progress-completed{% else %}progress-not-started{% endif %}" 
-                                     style="width: {% if profile_items.skills.completed %}100%{% else %}0%{% endif %}"></div>
+                                <div class="progress-fill {% if profile_items.skills.completed %}progress-completed{% else %}progress-not-started{% endif %}"
+                                    style="width: {% if profile_items.skills.completed %}100%{% else %}0%{% endif %}">
+                                </div>
                             </div>
                             <div class="progress-text">
                                 <span>Status</span>
                                 <span>
                                     {% if profile_items.skills.completed %}
-                                        <i class="fas fa-check-circle" style="color: var(--success);"></i> {{ profile_items.skills.count }} skills
+                                    <i class="fas fa-check-circle" style="color: var(--success);"></i> {{
+                                    profile_items.skills.count }} skills
                                     {% else %}
-                                        <i class="fas fa-times-circle" style="color: var(--danger);"></i> Not Added
+                                    <i class="fas fa-times-circle" style="color: var(--danger);"></i> Not Added
                                     {% endif %}
                                 </span>
                             </div>
@@ -1247,16 +1281,18 @@
                         </div>
                         <div class="profile-card-progress">
                             <div class="progress-bar">
-                                <div class="progress-fill {% if profile_items.experience.completed %}progress-completed{% else %}progress-not-started{% endif %}" 
-                                     style="width: {% if profile_items.experience.completed %}100%{% else %}0%{% endif %}"></div>
+                                <div class="progress-fill {% if profile_items.experience.completed %}progress-completed{% else %}progress-not-started{% endif %}"
+                                    style="width: {% if profile_items.experience.completed %}100%{% else %}0%{% endif %}">
+                                </div>
                             </div>
                             <div class="progress-text">
                                 <span>Status</span>
                                 <span>
                                     {% if profile_items.experience.completed %}
-                                        <i class="fas fa-check-circle" style="color: var(--success);"></i> {{ profile_items.experience.count }} experiences
+                                    <i class="fas fa-check-circle" style="color: var(--success);"></i> {{
+                                    profile_items.experience.count }} experiences
                                     {% else %}
-                                        <i class="fas fa-times-circle" style="color: var(--danger);"></i> Not Added
+                                    <i class="fas fa-times-circle" style="color: var(--danger);"></i> Not Added
                                     {% endif %}
                                 </span>
                             </div>
@@ -1281,16 +1317,18 @@
                         </div>
                         <div class="profile-card-progress">
                             <div class="progress-bar">
-                                <div class="progress-fill {% if profile_items.certificates.completed %}progress-completed{% else %}progress-not-started{% endif %}" 
-                                     style="width: {% if profile_items.certificates.completed %}100%{% else %}0%{% endif %}"></div>
+                                <div class="progress-fill {% if profile_items.certificates.completed %}progress-completed{% else %}progress-not-started{% endif %}"
+                                    style="width: {% if profile_items.certificates.completed %}100%{% else %}0%{% endif %}">
+                                </div>
                             </div>
                             <div class="progress-text">
                                 <span>Status</span>
                                 <span>
                                     {% if profile_items.certificates.completed %}
-                                        <i class="fas fa-check-circle" style="color: var(--success);"></i> {{ profile_items.certificates.count }} certificates
+                                    <i class="fas fa-check-circle" style="color: var(--success);"></i> {{
+                                    profile_items.certificates.count }} certificates
                                     {% else %}
-                                        <i class="fas fa-times-circle" style="color: var(--danger);"></i> Not Added
+                                    <i class="fas fa-times-circle" style="color: var(--danger);"></i> Not Added
                                     {% endif %}
                                 </span>
                             </div>
@@ -1315,16 +1353,18 @@
                         </div>
                         <div class="profile-card-progress">
                             <div class="progress-bar">
-                                <div class="progress-fill {% if profile_items.portfolio.completed %}progress-completed{% else %}progress-not-started{% endif %}" 
-                                     style="width: {% if profile_items.portfolio.completed %}100%{% else %}0%{% endif %}"></div>
+                                <div class="progress-fill {% if profile_items.portfolio.completed %}progress-completed{% else %}progress-not-started{% endif %}"
+                                    style="width: {% if profile_items.portfolio.completed %}100%{% else %}0%{% endif %}">
+                                </div>
                             </div>
                             <div class="progress-text">
                                 <span>Status</span>
                                 <span>
                                     {% if profile_items.portfolio.completed %}
-                                        <i class="fas fa-check-circle" style="color: var(--success);"></i> {{ profile_items.portfolio.count }} items
+                                    <i class="fas fa-check-circle" style="color: var(--success);"></i> {{
+                                    profile_items.portfolio.count }} items
                                     {% else %}
-                                        <i class="fas fa-times-circle" style="color: var(--danger);"></i> Not Added
+                                    <i class="fas fa-times-circle" style="color: var(--danger);"></i> Not Added
                                     {% endif %}
                                 </span>
                             </div>
@@ -1346,7 +1386,7 @@
                         <i class="fas fa-history"></i> View All Activity
                     </a>
                 </div>
-                
+
                 {% if recent_activities %}
                 <ul class="activity-list">
                     {% for activity in recent_activities %}
@@ -1381,166 +1421,142 @@
 
             <div class="job-requests">
                 {% if recent_jobs %}
-                    {% for job in recent_jobs %}
-                        <div class="job-card">
-                            <div class="job-card-header">
-                                <div>
-                                    <div class="job-title">{{ job.title }}</div>
-                                    <div class="job-meta">
-                                        <div class="job-meta-item">
-                                            <i class="fas fa-map-marker-alt"></i>
-                                            <span>
-                                                {% if job.city %}{{ job.city }}{% endif %}
-                                                {% if job.state %}, {{ job.state }}{% endif %}
-                                            </span>
-                                        </div>
-                                        <div class="job-meta-item">
-                                            <i class="fas fa-clock"></i>
-                                            <span>{{ job.created_at|timesince }} ago</span>
-                                        </div>
-                                    </div>
+                {% for job in recent_jobs %}
+                <div class="job-card">
+                    <div class="job-card-header">
+                        <div>
+                            <div class="job-title">{{ job.title }}</div>
+                            <div class="job-meta">
+                                <div class="job-meta-item">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span>
+                                        {% if job.city %}{{ job.city }}{% endif %}
+                                        {% if job.state %}, {{ job.state }}{% endif %}
+                                    </span>
                                 </div>
-                                <div>
-                                    {% if job.priority == 'urgent' or job.priority == 'asap' %}
-                                        <span class="job-badge" style="background: var(--danger);">Urgent</span>
-                                    {% elif job.created_at|timesince < "1 day" %}
-                                        <span class="job-badge" style="background: var(--success);">New</span>
-                                    {% else %}
-                                        <span class="job-badge" style="background: var(--warning); color: #000;">Standard</span>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <div class="job-card-body">
-                                <div class="job-description">
-                                    {{ job.description|truncatewords:30 }}
-                                </div>
-                                <div class="job-details">
-                                    <div class="detail-item">
-                                        <span class="detail-label">Date</span>
-                                        <span class="detail-value">{{ job.proposed_date|date:"M d, Y" }}</span>
-                                    </div>
-                                    <div class="detail-item">
-                                        <span class="detail-label">Budget</span>
-                                        <span class="detail-value">₹{{ job.budget|default:"Negotiable" }}</span>
-                                    </div>
-                                    <div class="detail-item">
-                                        <span class="detail-label">Employer</span>
-                                        <span class="detail-value">{{ job.employer.company_name|default:job.employer.first_name }}</span>
-                                    </div>
-                                    <div class="detail-item">
-                                        <span class="detail-label">Status</span>
-                                        <span class="detail-value">{{ job.get_status_display }}</span>
-                                    </div>
-                                </div>
-                                <div class="job-actions">
-                                    {% if job.status == 'pending' %}
-                                        <form method="POST" action="{% url 'accept_job_request' %}">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="job_id" value="{{ job.job_id }}">
-                                            <button type="submit" class="btn btn-primary" 
-                                                    onclick="return confirm('Accept this job?')">
-                                                <i class="fas fa-check"></i> Accept
-                                            </button>
-                                        </form>
-                                        
-                                        <a href="{% url 'job_request_details' job.job_id %}" class="btn btn-outline">
-                                            <i class="fas fa-eye"></i> View Details
-                                        </a>
-                                    {% else %}
-                                        <a href="{% url 'job_request_details' job.job_id %}" class="btn btn-primary">
-                                            <i class="fas fa-eye"></i> View Details
-                                        </a>
-                                    {% endif %}
+                                <div class="job-meta-item">
+                                    <i class="fas fa-clock"></i>
+                                    <span>{{ job.created_at|timesince }} ago</span>
                                 </div>
                             </div>
                         </div>
-                    {% endfor %}
-                {% else %}
-                    <div class="no-jobs">
-                        <i class="fas fa-briefcase"></i>
-                        <h3>No Job Requests Found</h3>
-                        <p>You don't have any recent job requests. New requests will appear here.</p>
+                        <div>
+                            {% if job.priority == 'urgent' or job.priority == 'asap' %}
+                            <span class="job-badge" style="background: var(--danger);">Urgent</span>
+                            {% elif job.created_at|timesince < "1 day" %} <span class="job-badge"
+                                style="background: var(--success);">New</span>
+                                {% else %}
+                                <span class="job-badge" style="background: var(--warning); color: #000;">Standard</span>
+                                {% endif %}
+                        </div>
                     </div>
+                    <div class="job-card-body">
+                        <div class="job-description">
+                            {{ job.description|truncatewords:30 }}
+                        </div>
+                        <div class="job-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Date</span>
+                                <span class="detail-value">{{ job.proposed_date|date:"M d, Y" }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Budget</span>
+                                <span class="detail-value">₹{{ job.budget|default:"Negotiable" }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Employer</span>
+                                <span class="detail-value">{{ job.employer.company_name|default:job.employer.first_name
+                                    }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Status</span>
+                                <span class="detail-value">{{ job.get_status_display }}</span>
+                            </div>
+                        </div>
+                        <div class="job-actions">
+                            {% if job.status == 'pending' %}
+                            <form method="POST" action="{% url 'accept_job_request' %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="job_id" value="{{ job.job_id }}">
+                                <button type="submit" class="btn btn-primary"
+                                    onclick="return confirm('Accept this job?')">
+                                    <i class="fas fa-check"></i> Accept
+                                </button>
+                            </form>
+
+                            <a href="{% url 'job_request_details' job.job_id %}" class="btn btn-outline">
+                                <i class="fas fa-eye"></i> View Details
+                            </a>
+                            {% else %}
+                            <a href="{% url 'job_request_details' job.job_id %}" class="btn btn-primary">
+                                <i class="fas fa-eye"></i> View Details
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="no-jobs">
+                    <i class="fas fa-briefcase"></i>
+                    <h3>No Job Requests Found</h3>
+                    <p>You don't have any recent job requests. New requests will appear here.</p>
+                </div>
                 {% endif %}
             </div>
         </div>
     </div>
 
     <script>
-        // Mobile menu toggle
-        const menuToggle = document.getElementById('menuToggle');
-        const sidebar = document.getElementById('sidebar');
-        const sidebarClose = document.getElementById('sidebarClose');
-        const overlay = document.getElementById('overlay');
-        
-        if (menuToggle && sidebar) {
-            menuToggle.addEventListener('click', function() {
-                sidebar.classList.add('active');
-                overlay.classList.add('active');
-            });
-        }
-        
-        if (sidebarClose) {
-            sidebarClose.addEventListener('click', function() {
-                sidebar.classList.remove('active');
-                overlay.classList.remove('active');
-            });
-        }
-        
-        if (overlay) {
-            overlay.addEventListener('click', function() {
-                sidebar.classList.remove('active');
-                overlay.classList.remove('active');
-            });
-        }
-        
+
+
         // User profile dropdown toggle
         const userProfile = document.getElementById('userProfile');
         const userDropdown = document.getElementById('userDropdown');
-        
+
         if (userProfile && userDropdown) {
-            userProfile.addEventListener('click', function(e) {
+            userProfile.addEventListener('click', function (e) {
                 e.stopPropagation();
                 userDropdown.classList.toggle('active');
             });
-            
-            document.addEventListener('click', function() {
+
+            document.addEventListener('click', function () {
                 userDropdown.classList.remove('active');
             });
         }
-        
+
         // Update current time every minute
         function updateCurrentTime() {
             const now = new Date();
             const timeElement = document.querySelector('.current-time');
             const dateElement = document.querySelector('.current-date');
-            
+
             if (timeElement) {
-                const timeString = now.toLocaleTimeString('en-US', { 
-                    hour: '2-digit', 
+                const timeString = now.toLocaleTimeString('en-US', {
+                    hour: '2-digit',
                     minute: '2-digit',
-                    hour12: true 
+                    hour12: true
                 });
                 timeElement.textContent = timeString;
             }
-            
+
             if (dateElement) {
-                const dateString = now.toLocaleDateString('en-US', { 
-                    weekday: 'long', 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
+                const dateString = now.toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
                 });
                 dateElement.textContent = dateString;
             }
         }
-        
+
         // Initial update
         updateCurrentTime();
-        
+
         // Update time every minute
         setInterval(updateCurrentTime, 60000);
-        
+
         // Animate progress circle
         function animateProgressCircle() {
             const progressCircle = document.querySelector('.progress-circle-fill');
@@ -1549,18 +1565,18 @@
                 progressCircle.style.transition = 'stroke-dashoffset 1s ease';
             }
         }
-        
+
         // Initialize on page load
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             animateProgressCircle();
         });
-        
+
         // Job accept confirmation
         const acceptForms = document.querySelectorAll('form[action*="accept_job_request"]');
         acceptForms.forEach(form => {
             const submitButton = form.querySelector('button[type="submit"]');
             if (submitButton) {
-                submitButton.addEventListener('click', function(e) {
+                submitButton.addEventListener('click', function (e) {
                     if (!confirm('Are you sure you want to accept this job?')) {
                         e.preventDefault();
                         return false;
@@ -1573,4 +1589,5 @@
         });
     </script>
 </body>
+
 </html>

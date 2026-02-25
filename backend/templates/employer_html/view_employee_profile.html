@@ -68,11 +68,14 @@
         .profile-banner {
             height: 250px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-size: cover;
+            background-position: center;
             position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
             color: var(--white);
+            overflow: hidden;
         }
 
         .profile-info-section {
@@ -531,9 +534,11 @@
         <div class="profile-container">
             <!-- LinkedIn-style Profile Header -->
             <div class="profile-header">
-                <div class="profile-banner">
+                <div class="profile-banner"{% if employee.cover_image %} style="background-image: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), url('{{ employee.cover_image.url }}');"{% endif %}>
                     <div class="banner-content">
+                        {% if not employee.cover_image %}
                         <i class="fas fa-image" style="font-size: 3rem; opacity: 0.5;"></i>
+                        {% endif %}
                     </div>
                 </div>
 

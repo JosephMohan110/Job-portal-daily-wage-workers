@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.urls import path
 from . import views
+from .document_views import upload_employer_document, delete_employer_document
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -19,6 +20,10 @@ urlpatterns = [
     path('settings/update-preferences/', views.update_preferences, name='update_preferences'),
     path('settings/change-password/', views.change_password, name='change_password'),
     path('settings/deactivate-account/', views.deactivate_account, name='deactivate_account'),
+    
+    # Document URLs
+    path('settings/upload-document/', upload_employer_document, name='upload_employer_document'),
+    path('settings/delete-document/', delete_employer_document, name='delete_employer_document'),
     
     # Other pages
     path('hiring-history/', views.employer_hiring_history, name="employer_hiring_history"),

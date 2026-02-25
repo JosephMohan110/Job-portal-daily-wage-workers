@@ -77,14 +77,16 @@ urlpatterns = [
     
     # Real-time prediction API
     path('api/real-time-prediction/', views.real_time_prediction_api, name='real_time_prediction_api'),
+    
+    # Document Verification URLs
+    path('admin/verify-documents/', views.verify_documents, name='verify_documents'),
+    path('admin/update-document-status/', views.update_document_status, name='update_document_status'),
 
 
 
 
 
 ]
-
-
 
 
 if settings.DEBUG:

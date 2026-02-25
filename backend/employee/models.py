@@ -68,6 +68,7 @@ class Employee(models.Model):
     email = models.EmailField(max_length=100, unique=True)
     phone = models.CharField(max_length=15, unique=True, null=True, blank=True)
     profile_image = models.ImageField(upload_to='employee_profiles/', null=True, blank=True)
+    cover_image = models.ImageField(upload_to='employee_covers/', null=True, blank=True)
     
     # Professional Information
     job_title = models.CharField(max_length=200, null=True, blank=True, verbose_name="Professional Title")
@@ -154,6 +155,11 @@ class Employee(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     deactivation_date = models.DateTimeField(null=True, blank=True)
     deactivation_reason = models.TextField(null=True, blank=True)
+    
+    # Documents
+    aadhar_document = models.FileField(upload_to='employee_documents/aadhar/', null=True, blank=True)
+    aadhar_verified = models.BooleanField(default=False)
+    aadhar_upload_date = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
@@ -428,6 +434,97 @@ class JobRequest(models.Model):
     def time_ago(self):
         from django.utils.timesince import timesince
         return timesince(self.created_at)
+    
+    @property
+    def id(self):
+        """Alias for job_id to match template expectations"""
+        return self.job_id
+    
+    @property
+    def job_title(self):
+        """Alias for title field"""
+        return self.title
+    
+    @property
+    def job_description(self):
+        """Alias for description field"""
+        return self.description
+    
+    @property
+    def job_category(self):
+        """Alias for category field"""
+        return self.category
+    
+    @property
+    def duration(self):
+        """Alias for estimated_duration field"""
+        return self.estimated_duration
+    
+    @property
+    def posted_date(self):
+        """Alias for created_at field"""
+        return self.created_at
+    
+    @property
+    def experience_level(self):
+        """Get experience level from employer data or default"""
+        return getattr(self.employer, 'experience_level', 'Any Level')
+    
+    @property
+    def proposal_count(self):
+        """Get the count of proposals/applicants for this job"""
+        return self.actions.filter(action_type='viewed').count() or 1
+    
+    @property
+    def employer_name(self):
+        """Get formatted employer name"""
+        if self.employer:
+            name = f"{self.employer.first_name} {self.employer.last_name}".strip()
+            return name if name else self.employer.company_name or 'Unknown Employer'
+        return 'Unknown Employer'
+    
+    @property
+    def employer_avatar(self):
+        """Get employer profile image URL"""
+        if self.employer and self.employer.profile_image:
+            return self.employer.profile_image.url
+        return None
+    
+    @property
+    def employer_rating(self):
+        """Get employer rating from related data or default"""
+        return getattr(self.employer, 'rating', 4.5)
+    
+    @property
+    def employer_reviews(self):
+        """Get employer review count or default"""
+        return getattr(self.employer, 'total_reviews', 12)
+    
+    @property
+    def employer_completed_jobs(self):
+        """Get employer completed jobs count"""
+        if self.employer:
+            return self.employer.job_requests.filter(status='completed').count()
+        return 0
+    
+    @property
+    def paid_amount(self):
+        """Calculate total paid amount from Payment objects"""
+        from employer.models import Payment
+        payments = Payment.objects.filter(job=self, status='completed')
+        total = sum(p.amount for p in payments) if payments else 0
+        return f"{total:.2f}"
+    
+    @property
+    def remaining_amount(self):
+        """Calculate remaining amount (budget - paid amount)"""
+        if not self.budget:
+            return "0.00"
+        from employer.models import Payment
+        payments = Payment.objects.filter(job=self, status='completed')
+        paid = sum(p.amount for p in payments) if payments else 0
+        remaining = float(self.budget) - float(paid)
+        return f"{max(0, remaining):.2f}"
 
 
 class JobAction(models.Model):

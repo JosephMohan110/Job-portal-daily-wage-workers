@@ -334,7 +334,14 @@ def admin_dashboard(request):
             })
     
     # ML PREDICTION DATA SECTION
-    # ===== IMPORTANT: Use EXTENDED data with ALL 19 FEATURES for XGBoost =====
+    # ===== IMPORTANT: Model may have limited targets, use available ones =====
+    
+    # Initialize ML-related variables early to avoid NameError
+    ml_predictions = {}
+    feature_importance = {}
+    ml_model_loaded = False
+    available_predictions = []
+    using_real_ml = False
     
     # Get platform analytics data with ALL 19 FEATURES for ML predictions
     platform_data = get_platform_analytics_data_extended()
@@ -354,55 +361,78 @@ def admin_dashboard(request):
         if not predictor.loaded:
              predictor.load_model()
 
-        # Use the new predict_all_targets function for ALL 19 targets
-        ml_predictions_raw = predictor.predict_all_targets(platform_data)
-        ml_model_loaded = predictor.loaded
+        # Get available predictions FIRST to check what the model can do
         available_predictions = predictor.get_available_predictions()
         
-        # The ml_predictions now contain all 19 target predictions
-        ml_predictions = ml_predictions_raw
-        
-        print(f"DEBUGGING VIEW: Platform Data (19 FEATURES): {list(platform_data.keys())}")
-        print(f"DEBUGGING VIEW: ML Predictions count: {len(ml_predictions) if ml_predictions else 0}")
-        print(f"DEBUGGING VIEW: ML Model Loaded: {ml_model_loaded}")
-
-        # If ML model failed to load, use fallback
-        if not ml_model_loaded or not ml_predictions:
-            print("ML model not loaded or predictions failed, using fallback")
-            # ml_predictions = get_fallback_predictions(platform_data)
-            # feature_importance = get_fallback_feature_importance()
+        if not available_predictions:
+            logger.warning("ML Model has no available prediction targets")
             ml_model_loaded = False
-            available_predictions = []
             using_real_ml = False
         else:
-            using_real_ml = True
-            # Get feature importance if available in the model object, or use static list
-            feature_importance = predictor.get_feature_importance() 
+            logger.info(f"ML Model has {len(available_predictions)} available targets: {available_predictions}")
+            
+            # Use the predict_all_targets function (will only return available predictions)
+            ml_predictions_raw = predictor.predict_all_targets(platform_data)
+            ml_model_loaded = predictor.loaded
+            
+            # The ml_predictions now contain available target predictions
+            ml_predictions = ml_predictions_raw if ml_predictions_raw else {}
+            
+            print(f"DEBUGGING VIEW: Platform Data Features: {list(platform_data.keys())}")
+            print(f"DEBUGGING VIEW: ML Predictions returned: {len(ml_predictions) if ml_predictions else 0}")
+            print(f"DEBUGGING VIEW: ML Predictions keys: {list(ml_predictions.keys()) if ml_predictions else []}")
+            print(f"DEBUGGING VIEW: ML Model Loaded: {ml_model_loaded}")
+
+            # If ML model failed to load or no predictions, use fallback
+            if not ml_model_loaded or not ml_predictions:
+                print("ML model not loaded or predictions failed, using fallback")
+                ml_model_loaded = False
+                available_predictions = []
+                using_real_ml = False
+                feature_importance = {}
+            else:
+                using_real_ml = True
+                # Get feature importance if available in the model object
+                try:
+                    feature_importance = predictor.get_feature_importance() if hasattr(predictor, 'get_feature_importance') else {}
+                except:
+                    feature_importance = {}
+                    logger.warning("Could not retrieve feature importance from model")
 
     except Exception as e:
         print(f"Error getting ML predictions: {str(e)}")
         import traceback
         traceback.print_exc()
         # Fallback to statistical predictions
-        # ml_predictions = get_fallback_predictions(platform_data)
-        # feature_importance = get_fallback_feature_importance()
         ml_model_loaded = False
         available_predictions = []
         using_real_ml = False
+        feature_importance = {}
+        ml_predictions = {}
 
 
     # Get historical data for charts (last 6 months) - needed for predictions
     historical_data = get_historical_data(platform_data, 6)
     
     # 8. Prediction/forecast data
-    # PRIORITIZE ML PREDICTIONS IF AVAILABLE
+    # PRIORITIZE ML PREDICTIONS IF AVAILABLE (even if limited)
     # Create a mapped version of ML predictions for template compatibility
     ml_predictions_mapped = {}
+    
+    # Initialize default predictions
+    predicted_platform_commission = 0
+    predicted_total_bookings = 0
+    predicted_completed_bookings = 0
+    predicted_avg_rating = 4.5
+    predicted_new_users = 0
+    predicted_worker_growth = total_workers
+    predicted_revenue_growth = platform_revenue
     
     if using_real_ml and ml_predictions:
         # Map ML prediction keys to template-expected keys with "_next_month" suffix
         # The ML model returns keys like: 'new_users', 'revenue', 'avg_rating', etc.
         # The template expects: 'new_users_next_month', 'revenue_next_month', etc.
+        # NOTE: Model may only have some of these targets available
         
         prediction_key_mapping = {
             'new_users': 'new_users_next_month',
@@ -418,6 +448,7 @@ def admin_dashboard(request):
             'active_users': 'active_users_next_month',
             'total_spent': 'total_spent_next_month',
             'total_earned': 'total_earned_next_month',
+            'last_active': 'last_active_next_month',  # May be the only available model
         }
         
         # Create mapped predictions dictionary
@@ -425,23 +456,28 @@ def admin_dashboard(request):
             if actual_key in ml_predictions:
                 ml_predictions_mapped[template_key] = ml_predictions[actual_key]
         
-        # Get predictions for key metrics
-        predicted_platform_commission = ml_predictions.get('platform_commission', 0)
-        predicted_total_bookings = ml_predictions.get('total_bookings', 0) or ml_predictions.get('completed_bookings', 0)
-        predicted_completed_bookings = ml_predictions.get('completed_bookings', 0)
-        predicted_avg_rating = ml_predictions.get('avg_rating', 4.5)
+        # Get predictions for key metrics (use .get with defaults to handle limited models)
+        predicted_platform_commission = ml_predictions.get('platform_commission', 0) or 0
+        predicted_total_bookings = ml_predictions.get('total_bookings', 0) or ml_predictions.get('completed_bookings', 0) or 0
+        predicted_completed_bookings = ml_predictions.get('completed_bookings', 0) or 0
+        predicted_avg_rating = ml_predictions.get('avg_rating', 4.5) or 4.5
         
-        # Calculate worker growth from predicted booking metrics
-        # historical_data is a list, so get the last (current) month's data
-        current_month_data = historical_data[-1] if historical_data else {}
-        current_completed = current_month_data.get('completed_bookings', 100) if current_month_data else 100
-        predicted_new_users = max(0, int(predicted_completed_bookings - current_completed)) if predicted_completed_bookings > 0 else 0
-        predicted_worker_growth = int(total_workers + (predicted_new_users * 0.7))  # Assuming 70% of new users are workers
+        # Try to calculate worker growth from predicted booking metrics
+        if predicted_completed_bookings > 0 or predicted_total_bookings > 0:
+            # historical_data is a list, so get the last (current) month's data
+            current_month_data = historical_data[-1] if historical_data else {}
+            current_completed = current_month_data.get('completed_bookings', 100) if current_month_data else 100
+            predicted_new_users = max(0, int((predicted_completed_bookings or predicted_total_bookings) - current_completed))
+            predicted_worker_growth = int(total_workers + (predicted_new_users * 0.7))
         
         # Revenue prediction
-        predicted_revenue_growth = Decimal(str(predicted_platform_commission))
+        if predicted_platform_commission > 0:
+            predicted_revenue_growth = Decimal(str(predicted_platform_commission))
+        else:
+            # Fallback: use statistical prediction if ML doesn't have this target
+            predicted_revenue_growth = platform_revenue * Decimal(str(1 + revenue_growth/100)) if revenue_growth != 0 else platform_revenue
     else:
-        # Use simple heuristic if ML failed
+        # Use simple heuristic if ML failed or not available
         predicted_worker_growth = int(total_workers * (1 + worker_growth/100)) if worker_growth != 0 else total_workers
         predicted_revenue_growth = platform_revenue * Decimal(str(1 + revenue_growth/100)) if revenue_growth != 0 else platform_revenue
     
@@ -5087,6 +5123,9 @@ def upload_ml_model(request):
             # HANDLE OLD MODEL BACKUP BEFORE UPLOADING NEW ONE
             # ============================================
             
+            import shutil
+            import time
+            
             # Define paths
             xg_boost_dir = os.path.join(settings.BASE_DIR, 'xg_boost')
             current_model_path = os.path.join(xg_boost_dir, 'complete_xgboost_package.pkl')
@@ -5096,35 +5135,73 @@ def upload_ml_model(request):
             os.makedirs(xg_boost_dir, exist_ok=True)
             os.makedirs(old_models_dir, exist_ok=True)
             
+            # IMPORTANT: Unload the predictor BEFORE moving the model file
+            # This releases the file lock so we can move it
+            try:
+                from xg_boost.predictor import predictor
+                predictor.model_package = None  # Release the model from memory
+                print("[Model Upload] Released predictor model from memory")
+            except Exception as e:
+                print(f"[Model Upload] Note: Could not unload predictor: {e}")
+            
             # Check if current model exists and move it to old_models directory
             if os.path.exists(current_model_path):
-                # Find the next version number for old models
-                old_model_files = [f for f in os.listdir(old_models_dir) if f.endswith('.pkl')]
-                old_version_numbers = []
+                try:
+                    # Find the next version number for old models
+                    old_model_files = [f for f in os.listdir(old_models_dir) if f.endswith('.pkl')]
+                    old_version_numbers = []
+                    
+                    for filename in old_model_files:
+                        try:
+                            # Extract number from filename (e.g., "xgboost_model_1.pkl" -> 1)
+                            num = int(filename.replace('xgboost_model_', '').replace('.pkl', ''))
+                            old_version_numbers.append(num)
+                        except:
+                            pass
+                    
+                    next_version = max(old_version_numbers) + 1 if old_version_numbers else 1
+                    
+                    # Create new filename with version number
+                    old_model_filename = f'xgboost_model_{next_version}.pkl'
+                    old_model_path = os.path.join(old_models_dir, old_model_filename)
+                    
+                    # Move/rename the current model with retry logic
+                    max_retries = 3
+                    retry_count = 0
+                    
+                    while retry_count < max_retries:
+                        try:
+                            # Try using shutil.move (better cross-platform support)
+                            shutil.move(current_model_path, old_model_path)
+                            print(f"[Model Upload] Successfully backed up old model to {old_model_filename}")
+                            break
+                        except PermissionError as pe:
+                            retry_count += 1
+                            if retry_count < max_retries:
+                                print(f"[Model Upload] File locked, retrying ({retry_count}/{max_retries})...")
+                                time.sleep(0.5)  # Wait before retrying
+                            else:
+                                # If still locked, try removing the file reference
+                                try:
+                                    import gc
+                                    gc.collect()  # Force garbage collection
+                                    time.sleep(1)
+                                    shutil.move(current_model_path, old_model_path)
+                                    print(f"[Model Upload] Backup successful after GC")
+                                except Exception as final_error:
+                                    # If backup fails, continue anyway (new model will be saved)
+                                    print(f"[Model Upload] Warning: Could not backup old model: {final_error}")
+                    
+                    # Also archive the associated MLModel record if it exists
+                    active_models = MLModel.objects.filter(status='deployed', is_active=True)
+                    for active_model in active_models:
+                        active_model.status = 'archived'
+                        active_model.is_active = False
+                        active_model.save()
                 
-                for filename in old_model_files:
-                    try:
-                        # Extract number from filename (e.g., "xgboost_model_1.pkl" -> 1)
-                        num = int(filename.replace('xgboost_model_', '').replace('.pkl', ''))
-                        old_version_numbers.append(num)
-                    except:
-                        pass
-                
-                next_version = max(old_version_numbers) + 1 if old_version_numbers else 1
-                
-                # Create new filename with version number
-                old_model_filename = f'xgboost_model_{next_version}.pkl'
-                old_model_path = os.path.join(old_models_dir, old_model_filename)
-                
-                # Move/rename the current model
-                os.rename(current_model_path, old_model_path)
-                
-                # Also archive the associated MLModel record if it exists
-                active_models = MLModel.objects.filter(status='deployed', is_active=True)
-                for active_model in active_models:
-                    active_model.status = 'archived'
-                    active_model.is_active = False
-                    active_model.save()
+                except Exception as backup_error:
+                    # Log but don't fail - new model will be saved regardless
+                    print(f"[Model Upload] Note: Backup encountered error: {backup_error}")
             
             # ============================================
             # SAVE NEW UPLOADED MODEL WITH STANDARD NAME
@@ -6995,3 +7072,245 @@ def get_dashboard_stats(request):
             'success': False,
             'message': f'Error fetching stats: {str(e)}'
         }, status=500)
+
+
+# ==================== DOCUMENT VERIFICATION SYSTEM ====================
+
+@login_required(login_url='admin_login')
+def verify_documents(request):
+    """
+    Admin document verification dashboard
+    Shows pending employee Aadhar cards and employer Aadhar cards
+    """
+    try:
+        from employee.models import Employee
+        from django.db.models import Q
+        
+        # Get filter parameters
+        doc_type = request.GET.get('type', 'all')  # all, employee, employer
+        status_filter = request.GET.get('status', 'pending')  # pending, verified, rejected
+        search = request.GET.get('search', '').strip()
+        
+        # Build queries for employees with Aadhar documents
+        employee_docs = Employee.objects.filter(aadhar_document__isnull=False).exclude(aadhar_document='')
+        
+        # Build queries for employers with either Aadhar or business documents
+        employer_docs = Employer.objects.filter(
+            Q(aadhar_document__isnull=False, aadhar_document__gt='') |
+            Q(business_document__isnull=False, business_document__gt='')
+        )
+        
+        # Apply status filter
+        if status_filter == 'pending':
+            employee_docs = employee_docs.filter(aadhar_verified=False)
+            employer_docs_aadhar = Employer.objects.filter(aadhar_document__isnull=False).exclude(aadhar_document='').filter(aadhar_verified=False)
+            employer_docs_business = Employer.objects.filter(business_document__isnull=False).exclude(business_document='').filter(business_verified=False)
+            employer_docs = employer_docs_aadhar.union(employer_docs_business)
+        elif status_filter == 'verified':
+            employee_docs = employee_docs.filter(aadhar_verified=True)
+            employer_docs_aadhar = Employer.objects.filter(aadhar_document__isnull=False).exclude(aadhar_document='').filter(aadhar_verified=True)
+            employer_docs_business = Employer.objects.filter(business_document__isnull=False).exclude(business_document='').filter(business_verified=True)
+            employer_docs = employer_docs_aadhar.union(employer_docs_business)
+        
+        # Apply search filter
+        if search:
+            employee_docs = employee_docs.filter(
+                Q(full_name__icontains=search) | 
+                Q(email__icontains=search) |
+                Q(phone__icontains=search)
+            )
+            employer_docs = employer_docs.filter(
+                Q(first_name__icontains=search) |
+                Q(last_name__icontains=search) |
+                Q(company_name__icontains=search) |
+                Q(email__icontains=search)
+            )
+        
+        # Build documents list
+        documents = []
+        
+        if doc_type in ['all', 'employee']:
+            for emp in employee_docs:
+                if emp.aadhar_document:
+                    documents.append({
+                        'id': f'emp_{emp.employee_id}',
+                        'type': 'employee',
+                        'category': 'Aadhar Card',
+                        'owner_name': emp.full_name,
+                        'owner_email': emp.email,
+                        'owner_phone': emp.phone,
+                        'document_url': emp.aadhar_document.url,
+                        'upload_date': emp.aadhar_upload_date,
+                        'is_verified': emp.aadhar_verified,
+                        'owner_id': emp.employee_id,
+                    })
+        
+        if doc_type in ['all', 'employer']:
+            for emp in employer_docs:
+                # Add employer Aadhar document if exists
+                if emp.aadhar_document:
+                    documents.append({
+                        'id': f'employer_aadhar_{emp.employer_id}',
+                        'type': 'employer',
+                        'category': 'Aadhar Card',
+                        'owner_name': f"{emp.first_name} {emp.last_name}",
+                        'company_name': emp.company_name,
+                        'owner_email': emp.email,
+                        'document_url': emp.aadhar_document.url,
+                        'upload_date': emp.aadhar_upload_date,
+                        'is_verified': emp.aadhar_verified,
+                        'owner_id': emp.employer_id,
+                    })
+                
+                # Add employer business document if exists
+                if emp.business_document:
+                    documents.append({
+                        'id': f'employer_business_{emp.employer_id}',
+                        'type': 'employer',
+                        'category': 'Business Registration',
+                        'owner_name': f"{emp.first_name} {emp.last_name}",
+                        'company_name': emp.company_name,
+                        'owner_email': emp.email,
+                        'document_url': emp.business_document.url,
+                        'upload_date': emp.updated_at,
+                        'is_verified': emp.business_verified,
+                        'owner_id': emp.employer_id,
+                    })
+        
+        # Sort by upload date (newest first)
+        documents = sorted(documents, key=lambda x: x['upload_date'] or datetime.min, reverse=True)
+        
+        # Pagination
+        paginator = Paginator(documents, 10)
+        page_number = request.GET.get('page', 1)
+        page_obj = paginator.get_page(page_number)
+        
+        # Statistics
+        stats = {
+            'pending_employee': Employee.objects.filter(aadhar_document__isnull=False).exclude(aadhar_document='').filter(aadhar_verified=False).count(),
+            'verified_employee': Employee.objects.filter(aadhar_document__isnull=False).exclude(aadhar_document='').filter(aadhar_verified=True).count(),
+            'pending_employer_aadhar': Employer.objects.filter(aadhar_document__isnull=False).exclude(aadhar_document='').filter(aadhar_verified=False).count(),
+            'verified_employer_aadhar': Employer.objects.filter(aadhar_document__isnull=False).exclude(aadhar_document='').filter(aadhar_verified=True).count(),
+            'pending_employer_business': Employer.objects.filter(business_document__isnull=False).exclude(business_document='').filter(business_verified=False).count(),
+            'verified_employer_business': Employer.objects.filter(business_document__isnull=False).exclude(business_document='').filter(business_verified=True).count(),
+        }
+        
+        context = {
+            'documents': page_obj.object_list,
+            'page_obj': page_obj,
+            'stats': stats,
+            'doc_type': doc_type,
+            'status_filter': status_filter,
+            'search_query': search,
+            'current_page': 'verify_documents',
+        }
+        
+        return render(request, 'admin_html/verify_documents.html', context)
+    
+    except Exception as e:
+        print(f"[ERROR] Document verification view error: {str(e)}")
+        print(traceback.format_exc())
+        messages.error(request, f"Error loading documents: {str(e)}")
+        return redirect('admin_dashboard')
+
+
+@login_required(login_url='admin_login')
+@require_http_methods(["POST"])
+def update_document_status(request):
+    """
+    Update document verification status
+    """
+    try:
+        from employee.models import Employee
+        
+        document_id = request.POST.get('document_id', '')
+        action = request.POST.get('action', '')  # verify, reject
+        
+        if action not in ['verify', 'reject']:
+            return JsonResponse({'success': False, 'message': 'Invalid action'})
+        
+        if document_id.startswith('emp_'):
+            # Employee Aadhar document
+            emp_id = document_id.split('_')[1]
+            try:
+                employee = Employee.objects.get(employee_id=emp_id)
+                if action == 'verify':
+                    employee.aadhar_verified = True
+                    message = f"✓ Aadhar card for {employee.full_name} verified successfully"
+                else:
+                    employee.aadhar_document.delete(save=False)
+                    employee.aadhar_verified = False
+                    message = f"✗ Aadhar card for {employee.full_name} rejected"
+                
+                employee.save()
+                return JsonResponse({'success': True, 'message': message})
+            
+            except Employee.DoesNotExist:
+                return JsonResponse({'success': False, 'message': 'Employee not found'})
+        
+        elif document_id.startswith('employer_aadhar_'):
+            # Employer Aadhar document
+            emp_id = document_id.replace('employer_aadhar_', '')
+            try:
+                employer = Employer.objects.get(employer_id=emp_id)
+                if action == 'verify':
+                    employer.aadhar_verified = True
+                    message = f"✓ Aadhar card for {employer.first_name} {employer.last_name} verified successfully"
+                else:
+                    employer.aadhar_document.delete(save=False)
+                    employer.aadhar_verified = False
+                    message = f"✗ Aadhar card for {employer.first_name} {employer.last_name} rejected"
+                
+                employer.save()
+                return JsonResponse({'success': True, 'message': message})
+            
+            except Employer.DoesNotExist:
+                return JsonResponse({'success': False, 'message': 'Employer not found'})
+        
+        elif document_id.startswith('employer_business_'):
+            # Employer business document
+            emp_id = document_id.replace('employer_business_', '')
+            try:
+                employer = Employer.objects.get(employer_id=emp_id)
+                if action == 'verify':
+                    employer.business_verified = True
+                    message = f"✓ Business document for {employer.first_name} {employer.last_name} verified successfully"
+                else:
+                    employer.business_document.delete(save=False)
+                    employer.business_verified = False
+                    message = f"✗ Business document for {employer.first_name} {employer.last_name} rejected"
+                
+                employer.save()
+                return JsonResponse({'success': True, 'message': message})
+            
+            except Employer.DoesNotExist:
+                return JsonResponse({'success': False, 'message': 'Employer not found'})
+        
+        elif document_id.startswith('employer_'):
+            # Legacy employer business document ID format (backward compatibility)
+            emp_id = document_id.split('_')[1]
+            try:
+                employer = Employer.objects.get(employer_id=emp_id)
+                if action == 'verify':
+                    employer.business_verified = True
+                    message = f"✓ Business document for {employer.first_name} {employer.last_name} verified successfully"
+                else:
+                    employer.business_document.delete(save=False)
+                    employer.business_verified = False
+                    message = f"✗ Business document for {employer.first_name} {employer.last_name} rejected"
+                
+                employer.save()
+                return JsonResponse({'success': True, 'message': message})
+            
+            except Employer.DoesNotExist:
+                return JsonResponse({'success': False, 'message': 'Employer not found'})
+        
+        else:
+            return JsonResponse({'success': False, 'message': 'Invalid document ID'})
+    
+    except Exception as e:
+        print(f"[ERROR] Document status update error: {str(e)}")
+        return JsonResponse({'success': False, 'message': f'Error: {str(e)}'}, status=500)
+
+
+import traceback

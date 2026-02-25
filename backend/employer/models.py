@@ -56,6 +56,11 @@ class Employer(models.Model):
     email = models.EmailField(max_length=100, unique=True)
     phone = models.CharField(max_length=15, unique=True)
     profile_image = models.ImageField(upload_to='employer_profiles/', null=True, blank=True)
+    business_document = models.FileField(upload_to='employer_documents/business/', null=True, blank=True)
+    business_verified = models.BooleanField(default=False)
+    aadhar_document = models.FileField(upload_to='employer_documents/aadhar/', null=True, blank=True)
+    aadhar_verified = models.BooleanField(default=False)
+    aadhar_upload_date = models.DateTimeField(null=True, blank=True)
     total_spent = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     
     # Additional Profile Fields (from settings page)

@@ -188,283 +188,6 @@
             justify-content: center;
         }
 
-        /* Notification Dropdown */
-        .notification-dropdown {
-            position: absolute;
-            top: 100%;
-            right: 0;
-            background: var(--white);
-            width: 400px;
-            max-height: 500px;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(10px);
-            transition: all 0.3s ease;
-            border: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .notification-icon:focus-within .notification-dropdown,
-        .notification-dropdown.active {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-
-        .notification-dropdown::before {
-            content: '';
-            position: absolute;
-            top: -8px;
-            right: 25px;
-            width: 16px;
-            height: 16px;
-            background: var(--white);
-            transform: rotate(45deg);
-            border-top: 1px solid var(--border-color);
-            border-left: 1px solid var(--border-color);
-        }
-
-        /* Notification Header */
-        .notification-header {
-            padding: 1.2rem 1.5rem;
-            border-bottom: 2px solid var(--primary-light);
-            background: var(--white);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .notification-header h3 {
-            margin: 0;
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--dark);
-        }
-
-        .notification-actions {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .mark-all-read {
-            background: var(--primary);
-            color: var(--white);
-            border: none;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 0.8rem;
-            cursor: pointer;
-            text-decoration: none;
-            transition: background 0.3s;
-        }
-
-        .mark-all-read:hover {
-            background: #1d4ed8;
-        }
-
-        /* Notification List */
-        .notification-list {
-            flex: 1;
-            overflow-y: auto;
-            max-height: 350px;
-            padding: 5px 0;
-        }
-
-        /* Notification Item */
-        .notification-item {
-            display: flex;
-            padding: 1rem 1.5rem;
-            border-bottom: 1px solid var(--border-color);
-            transition: all 0.3s;
-            position: relative;
-            gap: 15px;
-            cursor: pointer;
-        }
-
-        .notification-item:hover {
-            background: var(--primary-light);
-        }
-
-        .notification-item.unread {
-            background: var(--primary-light);
-            border-left: 4px solid var(--primary);
-        }
-
-        /* Notification Icon */
-        .notification-item-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            font-size: 1.1rem;
-        }
-
-        .notification-item.job_request .notification-item-icon {
-            background: rgba(37, 99, 235, 0.1);
-            color: var(--primary);
-        }
-
-        .notification-item.job_accepted .notification-item-icon {
-            background: rgba(5, 150, 105, 0.1);
-            color: var(--success);
-        }
-
-        .notification-item.job_rejected .notification-item-icon {
-            background: rgba(220, 38, 38, 0.1);
-            color: var(--danger);
-        }
-
-        .notification-item.job_completed .notification-item-icon {
-            background: rgba(217, 119, 6, 0.1);
-            color: var(--warning);
-        }
-
-        .notification-item.payment_received .notification-item-icon {
-            background: rgba(17, 138, 178, 0.1);
-            color: #118ab2;
-        }
-
-        .notification-item.review_received .notification-item-icon {
-            background: rgba(147, 51, 234, 0.1);
-            color: #9333ea;
-        }
-
-        .notification-item.system .notification-item-icon {
-            background: rgba(100, 116, 139, 0.1);
-            color: var(--gray);
-        }
-
-        .notification-item.warning .notification-item-icon {
-            background: rgba(217, 119, 6, 0.1);
-            color: var(--warning);
-        }
-
-        .notification-item.reminder .notification-item-icon {
-            background: rgba(37, 99, 235, 0.1);
-            color: var(--primary);
-        }
-
-        /* Notification Content */
-        .notification-content {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .notification-title {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 5px;
-        }
-
-        .notification-title h4 {
-            margin: 0;
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: var(--dark);
-            line-height: 1.4;
-        }
-
-        .notification-time {
-            font-size: 0.75rem;
-            color: var(--gray);
-            white-space: nowrap;
-            margin-left: 10px;
-        }
-
-        .notification-message {
-            margin: 0;
-            font-size: 0.85rem;
-            color: var(--gray);
-            line-height: 1.5;
-            margin-bottom: 8px;
-        }
-
-        .notification-actions-item {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .notification-action-btn {
-            display: inline-block;
-            padding: 4px 12px;
-            background: var(--white);
-            color: var(--primary);
-            text-decoration: none;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            border: 1px solid var(--border-color);
-            transition: all 0.3s;
-        }
-
-        .notification-action-btn:hover {
-            background: var(--primary);
-            color: var(--white);
-            border-color: var(--primary);
-        }
-
-        .mark-read-btn {
-            background: transparent;
-            color: var(--gray);
-            border: 1px solid var(--border-color);
-            padding: 4px 12px;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-decoration: none;
-        }
-
-        .mark-read-btn:hover {
-            background: var(--gray-light);
-            color: var(--dark);
-        }
-
-        /* Unread Dot */
-        .unread-dot {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            width: 8px;
-            height: 8px;
-            background: var(--primary);
-            border-radius: 50%;
-        }
-
-        /* No Notifications */
-        .no-notifications {
-            text-align: center;
-            padding: 3rem 2rem;
-            color: var(--gray);
-        }
-
-        .no-notifications i {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-            color: var(--gray-light);
-        }
-
-        .no-notifications h4 {
-            margin: 0 0 0.5rem 0;
-            font-size: 1.1rem;
-            color: var(--dark);
-        }
-
-        .no-notifications p {
-            margin: 0;
-            font-size: 0.9rem;
-        }
-
         /* User Profile */
         .user-profile {
             display: flex;
@@ -513,100 +236,6 @@
         .user-role {
             font-size: 0.8rem;
             color: var(--gray);
-        }
-
-        /* User Dropdown */
-        .user-dropdown {
-            position: absolute;
-            top: 100%;
-            right: 0;
-            background: var(--white);
-            width: 220px;
-            border-radius: 8px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(10px);
-            transition: all 0.3s ease;
-            border: 1px solid var(--border-color);
-        }
-
-        .user-profile:focus-within .user-dropdown,
-        .user-dropdown.active {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-
-        .user-dropdown::before {
-            content: '';
-            position: absolute;
-            top: -8px;
-            right: 20px;
-            width: 16px;
-            height: 16px;
-            background: var(--white);
-            transform: rotate(45deg);
-            border-top: 1px solid var(--border-color);
-            border-left: 1px solid var(--border-color);
-        }
-
-        /* Dropdown Header */
-        .dropdown-header {
-            padding: 1rem;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .dropdown-header .user-avatar {
-            width: 45px;
-            height: 45px;
-        }
-
-        .dropdown-header .user-info .user-name {
-            font-size: 1rem;
-        }
-
-        .user-email {
-            font-size: 0.8rem;
-            color: var(--gray);
-        }
-
-        /* Dropdown Menu */
-        .dropdown-menu {
-            list-style: none;
-            padding: 0.5rem 0;
-        }
-
-        .dropdown-menu a {
-            display: flex;
-            align-items: center;
-            padding: 0.75rem 1rem;
-            color: var(--dark);
-            text-decoration: none;
-            transition: all 0.3s;
-            font-size: 0.9rem;
-        }
-
-        .dropdown-menu a:hover {
-            background: var(--primary-light);
-            color: var(--primary);
-        }
-
-        .dropdown-menu i {
-            margin-right: 10px;
-            width: 18px;
-            text-align: center;
-            color: var(--gray);
-        }
-
-        .dropdown-divider {
-            height: 1px;
-            background: var(--border-color);
-            margin: 0.5rem 0;
         }
 
         /* Dashboard Content */
@@ -1252,15 +881,6 @@
             .payment-summary-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
-
-            .notification-dropdown {
-                width: 320px;
-                right: -50px;
-            }
-
-            .notification-dropdown::before {
-                right: 70px;
-            }
         }
 
         @media (max-width: 768px) {
@@ -1339,15 +959,6 @@
                 left: -32px;
                 width: 20px;
                 height: 20px;
-            }
-
-            .notification-dropdown {
-                width: 280px;
-                right: -80px;
-            }
-
-            .notification-dropdown::before {
-                right: 100px;
             }
 
             .user-info {
@@ -1511,19 +1122,99 @@
             background: var(--primary);
             color: white;
         }
+
+        /* Form Group Styles */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 0.95rem;
+        }
+
+        .form-group textarea,
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: all 0.2s;
+            color: var(--dark);
+        }
+
+        .form-group textarea:focus,
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        /* Quick Reasons Container */
+        .quick-reasons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        /* Quick Reason Button */
+        .quick-reason-btn {
+            background: var(--primary-light);
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 10px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-weight: 500;
+        }
+
+        .quick-reason-btn:hover {
+            background: var(--primary);
+            color: var(--white);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+
+        .quick-reason-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Modal Overlay */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
     </style>
 </head>
-
-
-
-{% include 'employee_html/employee_header.html' %}
-
 
 <body>
     <!-- Overlay for Mobile -->
     <div class="overlay" id="overlay"></div>
 
-
+    {% include 'employee_html/employee_header.html' %}
 
     <!-- Main Content -->
     <div class="main-content" id="mainContent">
@@ -1911,7 +1602,6 @@
 
 
         {% else %}
-
         <!-- Dashboard Content -->
         <div class="dashboard-content">
             <!-- Stats Cards -->
@@ -2093,7 +1783,7 @@
                         </div>
                         <h3>No New Requests</h3>
                         <p>You don't have any pending job requests at the moment. New requests will appear here.</p>
-                        <a href="." class="empty-btn">
+                        <a href="{% url 'employee_job_request' %}" class="empty-btn">
                             <i class="fas fa-sync-alt"></i> Refresh
                         </a>
                     </div>
@@ -2197,9 +1887,9 @@
                         </div>
                         <h3>No Active Jobs</h3>
                         <p>You don't have any currently active jobs. Accept new requests to get started.</p>
-                        <a href="?tab=new-jobs" class="empty-btn" onclick="switchTab('new-jobs'); return false;">
+                        <button class="empty-btn" onclick="switchTab('new-jobs'); return false;">
                             <i class="fas fa-bell"></i> View New Requests
-                        </a>
+                        </button>
                     </div>
                     {% endif %}
                 </div>
@@ -2274,10 +1964,13 @@
                                     <a href="{% url 'job_request_details' job.job_id %}" class="btn btn-outline">
                                         <i class="fas fa-eye"></i> View Details
                                     </a>
-                                    <a href="{% url 'job_history_review' job.job_id %}?view_review=true"
-                                        class="btn btn-secondary">
+                                    <button type="button" class="btn btn-secondary review-btn" 
+                                        data-job-id="{{ job.job_id }}" 
+                                        data-job-title="{{ job.title|escapejs }}"
+                                        data-has-review="{% if job.reviews.all %}true{% else %}false{% endif %}"
+                                        onclick="openReviewModal(this)">
                                         <i class="fas fa-star"></i> See Review
-                                    </a>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -2378,448 +2071,351 @@
         {% endif %}
     </div>
 
-
-
-    <!-- Rejection Message Modal -->
-    <div id="rejectionModal" class="modal"
-        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 9999; align-items: center; justify-content: center;">
-        <div class="modal-content"
-            style="background: white; width: 90%; max-width: 500px; border-radius: 10px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); overflow: hidden;">
-            <div class="modal-header"
-                style="padding: 1.5rem; border-bottom: 1px solid var(--border-color); background: #f8fafc;">
-                <h3 style="margin: 0; font-size: 1.3rem; font-weight: 600; color: var(--dark);">
-                    <i class="fas fa-times-circle" style="color: var(--danger); margin-right: 10px;"></i>
-                    Decline Job Request
-                </h3>
-                <button class="modal-close"
-                    style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--gray);">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-
-            <div class="modal-body" style="padding: 1.5rem;">
-                <p id="jobTitlePreview" style="font-weight: 600; color: var(--dark); margin-bottom: 10px;">Job Title</p>
-                <p style="color: var(--gray); margin-bottom: 1.5rem; font-size: 0.95rem;">
-                    Please provide a reason for declining this job request. This message will be sent to the employer.
-                </p>
-
-                <form id="rejectionForm">
-                    {% csrf_token %}
-                    <input type="hidden" name="job_id" id="rejectionJobId">
-
-                    <div class="form-group" style="margin-bottom: 1.5rem;">
-                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--dark);">
-                            Reason for Declining <span style="color: var(--danger);">*</span>
-                        </label>
-                        <textarea name="rejection_message" id="rejectionMessage" rows="4"
-                            placeholder="Example: The salary is too low for the work required. / I'm not available on that date. / I don't have the required equipment for this job."
-                            style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.95rem; resize: vertical; transition: border 0.2s;"
-                            required></textarea>
-                        <div style="font-size: 0.85rem; color: var(--gray); margin-top: 6px;">
-                            Your message will help the employer understand your decision
+            <!-- Review Modal -->
+            <div id="review-modal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-header-left">
+                            <h2 id="review-modal-title">Review</h2>
+                            <p id="review-modal-job" class="modal-subtitle">Job Review</p>
                         </div>
+                        <button class="modal-close" onclick="closeReviewModal()">
+                            <i class="fas fa-times"></i>
+                        </button>
                     </div>
 
-                    <div class="suggested-reasons" style="margin-bottom: 1.5rem;">
-                        <div style="font-size: 0.9rem; color: var(--gray); margin-bottom: 8px;">Quick reasons:</div>
-                        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                            <button type="button" class="quick-reason"
-                                data-reason="The salary is lower than my minimum rate"
-                                style="background: var(--primary-light); border: 1px solid var(--primary); color: var(--primary); padding: 6px 12px; border-radius: 6px; font-size: 0.85rem; cursor: pointer; transition: all 0.2s;">
-                                Salary too low
-                            </button>
-                            <button type="button" class="quick-reason"
-                                data-reason="I'm not available on the proposed date"
-                                style="background: var(--primary-light); border: 1px solid var(--primary); color: var(--primary); padding: 6px 12px; border-radius: 6px; font-size: 0.85rem; cursor: pointer; transition: all 0.2s;">
-                                Not available
-                            </button>
-                            <button type="button" class="quick-reason"
-                                data-reason="The location is outside my service area"
-                                style="background: var(--primary-light); border: 1px solid var(--primary); color: var(--primary); padding: 6px 12px; border-radius: 6px; font-size: 0.85rem; cursor: pointer; transition: all 0.2s;">
-                                Location issue
-                            </button>
-                            <button type="button" class="quick-reason"
-                                data-reason="I don't have the required skills/equipment for this job"
-                                style="background: var(--primary-light); border: 1px solid var(--primary); color: var(--primary); padding: 6px 12px; border-radius: 6px; font-size: 0.85rem; cursor: pointer; transition: all 0.2s;">
-                                Skills mismatch
-                            </button>
-                        </div>
+                    <div class="modal-body" id="review-modal-body">
+                        <!-- Review content will be inserted here by JavaScript -->
                     </div>
-                </form>
-            </div>
 
-            <div class="modal-footer"
-                style="padding: 1.5rem; border-top: 1px solid var(--border-color); background: #f8fafc; display: flex; justify-content: flex-end; gap: 12px;">
-                <button class="btn btn-outline cancel-reject" style="padding: 10px 18px;">
-                    <i class="fas fa-times"></i> Cancel
-                </button>
-                <button class="btn btn-danger" id="submitRejection" style="padding: 10px 18px;">
-                    <i class="fas fa-paper-plane"></i> Send & Reject
-                </button>
-            </div>
-
-            <div class="loading-overlay"
-                style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.9); align-items: center; justify-content: center; border-radius: 10px;">
-                <div style="text-align: center;">
-                    <i class="fas fa-spinner fa-spin"
-                        style="font-size: 2rem; color: var(--primary); margin-bottom: 1rem;"></i>
-                    <p style="color: var(--dark); font-weight: 600;">Sending message...</p>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline" onclick="closeReviewModal()">
+                            Close
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
+
+            <!-- Rejection Modal -->
+            <div id="rejection-modal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-header-left">
+                            <h2 id="modal-job-title">Reject Job Request</h2>
+                            <p id="modal-job-desc" class="modal-subtitle">Why do you want to decline this job?</p>
+                        </div>
+                        <button class="modal-close" onclick="closeRejectionModal()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+
+                    <form method="POST" action="{% url 'update_job_status' %}" class="rejection-form"
+                        id="rejection-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="job_id" id="rejection-job-id" value="">
+                        <input type="hidden" name="status" value="rejected">
+
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label for="rejection-reason">Rejection Reason *</label>
+                                <textarea id="rejection-reason" name="rejection_reason" required
+                                    placeholder="Please explain why you're declining this job request..."
+                                    rows="5"></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Quick Reasons (Optional)</label>
+                                <div class="quick-reasons">
+                                    <button type="button" class="quick-reason-btn"
+                                        onclick="setQuickReason('Too busy with other projects')">
+                                        <i class="fas fa-hourglass-end"></i> Too Busy
+                                    </button>
+                                    <button type="button" class="quick-reason-btn"
+                                        onclick="setQuickReason('Skills don\'t match the requirements')">
+                                        <i class="fas fa-question-circle"></i> Skills Mismatch
+                                    </button>
+                                    <button type="button" class="quick-reason-btn"
+                                        onclick="setQuickReason('Budget is lower than expected')">
+                                        <i class="fas fa-money-bill-wave"></i> Low Budget
+                                    </button>
+                                    <button type="button" class="quick-reason-btn"
+                                        onclick="setQuickReason('Deadline is too tight')">
+                                        <i class="fas fa-clock"></i> Tight Deadline
+                                    </button>
+                                    <button type="button" class="quick-reason-btn"
+                                        onclick="setQuickReason('Location is inconvenient')">
+                                        <i class="fas fa-map-marker-alt"></i> Location Issue
+                                    </button>
+                                    <button type="button" class="quick-reason-btn"
+                                        onclick="setQuickReason('Job requirements are unclear')">
+                                        <i class="fas fa-exclamation-circle"></i> Unclear Requirements
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline" onclick="closeRejectionModal()">
+                                Cancel
+                            </button>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-check"></i> Confirm Decline
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Overlay for Modals -->
+            <div id="modal-overlay" class="modal-overlay" onclick="closeAllModals()"></div>
+        </main>
     </div>
 
-    <!-- Success Toast -->
-    <div id="successToast"
-        style="display: none; position: fixed; top: 20px; right: 20px; background: var(--success); color: white; padding: 1rem 1.5rem; border-radius: 8px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); z-index: 10000; align-items: center; gap: 12px;">
-        <i class="fas fa-check-circle" style="font-size: 1.2rem;"></i>
-        <div>
-            <strong>Success!</strong>
-            <p style="margin: 5px 0 0 0; font-size: 0.9rem;">Job rejected and message sent to employer.</p>
-        </div>
-    </div>
-
-    <!-- Error Toast -->
-    <div id="errorToast"
-        style="display: none; position: fixed; top: 20px; right: 20px; background: var(--danger); color: white; padding: 1rem 1.5rem; border-radius: 8px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); z-index: 10000; align-items: center; gap: 12px;">
-        <i class="fas fa-exclamation-circle" style="font-size: 1.2rem;"></i>
-        <div>
-            <strong>Error!</strong>
-            <p id="errorMessage" style="margin: 5px 0 0 0; font-size: 0.9rem;"></p>
-        </div>
-    </div>
-
-    <!-- Scripts -->
-
+    <!-- JavaScript -->
     <script>
-        // Mobile menu toggle
+        // Tab Switching
+        function switchTab(tabName) {
+            // Hide all tabs
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Remove active class from all buttons
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            // Show selected tab and highlight button
+            const selectedTab = document.getElementById(tabName);
+            if (selectedTab) {
+                selectedTab.classList.add('active');
+            }
+            
+            // Update URL
+            window.history.pushState(null, '', '?tab=' + tabName);
+        }
+
+        // Modal Functions - Rejection Modal
+        function openRejectionModal(jobId, jobTitle) {
+            const modal = document.getElementById('rejection-modal');
+            const overlay = document.getElementById('modal-overlay');
+            const jobIdInput = document.getElementById('rejection-job-id');
+            const jobTitleEl = document.getElementById('modal-job-title');
+            
+            jobIdInput.value = jobId;
+            jobTitleEl.textContent = 'Decline: ' + jobTitle;
+            
+            modal.style.display = 'flex';
+            overlay.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeRejectionModal() {
+            const modal = document.getElementById('rejection-modal');
+            
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+            
+            // Reset form
+            document.getElementById('rejection-reason').value = '';
+            document.getElementById('rejection-job-id').value = '';
+            
+            // Only hide overlay if both modals are closed
+            const reviewModal = document.getElementById('review-modal');
+            if (reviewModal.style.display === 'none') {
+                document.getElementById('modal-overlay').style.display = 'none';
+            }
+        }
+
+        function closeAllModals() {
+            document.getElementById('review-modal').style.display = 'none';
+            document.getElementById('rejection-modal').style.display = 'none';
+            document.getElementById('modal-overlay').style.display = 'none';
+            document.body.style.overflow = 'auto';
+            
+            // Reset rejection form
+            document.getElementById('rejection-reason').value = '';
+            document.getElementById('rejection-job-id').value = '';
+        }
+
+        function setQuickReason(reason) {
+            document.getElementById('rejection-reason').value = reason;
+        }
+
+        // Review Modal Functions
+        function openReviewModal(button) {
+            const jobId = button.dataset.jobId;
+            const jobTitle = button.dataset.jobTitle;
+            const modal = document.getElementById('review-modal');
+            const overlay = document.getElementById('modal-overlay');
+            const body = document.getElementById('review-modal-body');
+            
+            // Show loading state
+            body.innerHTML = '<p style="text-align: center; padding: 20px;"><i class="fas fa-spinner fa-spin"></i> Loading review...</p>';
+            
+            modal.style.display = 'flex';
+            overlay.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+            
+            // Update header
+            document.getElementById('review-modal-title').textContent = 'Review for: ' + jobTitle;
+            
+            // Fetch review data via AJAX
+            fetch(`/employee/api/job-review/${jobId}/`)
+                .then(response => {
+                    if (!response.ok) throw new Error('Failed to fetch review');
+                    return response.json();
+                })
+                .then(data => {
+                    displayReviewContent(data);
+                })
+                .catch(error => {
+                    console.error('Error fetching review:', error);
+                    body.innerHTML = `
+                        <div style="text-align: center; padding: 20px;">
+                            <i class="fas fa-exclamation-circle" style="font-size: 3rem; color: #dc2626; margin-bottom: 10px;"></i>
+                            <h3>Error Loading Review</h3>
+                            <p>Unable to load the review at this moment.</p>
+                        </div>
+                    `;
+                });
+        }
+
+        function displayReviewContent(data) {
+            const body = document.getElementById('review-modal-body');
+            
+            if (!data.has_review) {
+                body.innerHTML = `
+                    <div style="text-align: center; padding: 40px 20px;">
+                        <i class="fas fa-star" style="font-size: 3rem; color: #d97706; margin-bottom: 15px;"></i>
+                        <h3>No Review Yet</h3>
+                        <p style="color: #666; margin: 10px 0;">The employer has not submitted a review for this job yet.</p>
+                        <p style="font-size: 0.9rem; color: #999;">Reviews are typically submitted after job completion.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Display review
+            let reviewHTML = '';
+            if (data.reviews && data.reviews.length > 0) {
+                const review = data.reviews[0];
+                const stars = generateStarRating(review.rating);
+                
+                reviewHTML = `
+                    <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 15px;">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div style="width: 50px; height: 50px; background: #2563eb; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">
+                                    ${(review.employer_name?.substring(0, 2) || 'EM').toUpperCase()}
+                                </div>
+                                <div>
+                                    <div style="font-weight: 600; color: #1e293b;">${review.employer_name}</div>
+                                    <div style="font-size: 0.9rem; color: #64748b;">${new Date(review.created_at).toLocaleDateString('en-US', {year: 'numeric', month: 'short', day: 'numeric'})}</div>
+                                </div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="color: #d97706; margin-bottom: 5px;">${stars}</div>
+                                <div style="font-size: 0.9rem; font-weight: 600; color: #1e293b;">${review.rating.toFixed(1)}/5</div>
+                            </div>
+                        </div>
+                        <p style="color: #1e293b; line-height: 1.6; margin: 0;">${review.review_text}</p>
+                    </div>
+                `;
+            } else {
+                reviewHTML = `
+                    <div style="text-align: center; padding: 40px 20px;">
+                        <i class="fas fa-star" style="font-size: 3rem; color: #d97706; margin-bottom: 15px;"></i>
+                        <h3>No Review Yet</h3>
+                        <p style="color: #666; margin: 10px 0;">The employer has not submitted a review for this job yet.</p>
+                        <p style="font-size: 0.9rem; color: #999;">Reviews are typically submitted after job completion.</p>
+                    </div>
+                `;
+            }
+            
+            body.innerHTML = reviewHTML;
+        }
+
+        function generateStarRating(rating) {
+            let stars = '';
+            for (let i = 1; i <= 5; i++) {
+                if (i <= Math.floor(rating)) {
+                    stars += '<i class="fas fa-star" style="color: #d97706; margin-right: 3px;"></i>';
+                } else if (i - rating < 1) {
+                    stars += '<i class="fas fa-star-half-alt" style="color: #d97706; margin-right: 3px;"></i>';
+                } else {
+                    stars += '<i class="far fa-star" style="color: #d97706; margin-right: 3px;"></i>';
+                }
+            }
+            return stars;
+        }
+
+        function closeReviewModal() {
+            const modal = document.getElementById('review-modal');
+            
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+            
+            // Only hide overlay if both modals are closed
+            const rejectionModal = document.getElementById('rejection-modal');
+            if (rejectionModal.style.display === 'none') {
+                document.getElementById('modal-overlay').style.display = 'none';
+            }
+        }
+
+        // Rejection Modal - Trigger buttons
+        document.querySelectorAll('.reject-btn-trigger').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const jobTitle = this.dataset.title || 'Job Request';
+                const jobId = this.closest('.reject-form').querySelector('input[name="job_id"]').value;
+                openRejectionModal(jobId, jobTitle);
+            });
+        });
+
+        // Mobile Menu Toggle
         const menuToggle = document.getElementById('menuToggle');
-        const sidebar = document.getElementById('sidebar');
-        const sidebarClose = document.getElementById('sidebarClose');
-        const overlay = document.getElementById('overlay');
+        const overlay = document.querySelector('.overlay');
+        const sidebar = document.querySelector('.sidebar');
 
         if (menuToggle && sidebar) {
-            menuToggle.addEventListener('click', function () {
-                sidebar.classList.add('active');
-                overlay.classList.add('active');
-                document.body.style.overflow = 'hidden';
+            menuToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('active');
+                if (overlay) {
+                    overlay.style.display = sidebar.classList.contains('active') ? 'block' : 'none';
+                }
             });
         }
 
-        if (sidebarClose) {
-            sidebarClose.addEventListener('click', function () {
-                sidebar.classList.remove('active');
-                overlay.classList.remove('active');
-                document.body.style.overflow = '';
-            });
-        }
-
+        // Close sidebar when overlay is clicked
         if (overlay) {
-            overlay.addEventListener('click', function () {
+            overlay.addEventListener('click', function() {
                 sidebar.classList.remove('active');
-                overlay.classList.remove('active');
-                document.body.style.overflow = '';
+                this.style.display = 'none';
             });
         }
 
-        // Tab switching functionality
-        function switchTab(tabId) {
-            // Remove active class from all buttons and contents
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-
-            // Add active class to clicked button and corresponding content
-            const btn = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
-            const content = document.getElementById(tabId);
-
-            if (btn && content) {
-                btn.classList.add('active');
-                content.classList.add('active');
-
-                // Update URL without reload if supported
-                if (history.pushState) {
-                    const url = new URL(window.location);
-                    url.searchParams.set('tab', tabId);
-                    window.history.pushState({}, '', url);
-                }
-            }
-        }
-
-        // Initialize from URL
-        document.addEventListener('DOMContentLoaded', function () {
-            const urlParams = new URLSearchParams(window.location.search);
-            const tabParam = urlParams.get('tab');
-            if (tabParam) {
-                switchTab(tabParam);
-            }
-
-            // Initialize all functionality after DOM is loaded
-            initializeRejectionModal();
-            initializeNotificationDropdown();
-            initializeUserDropdown();
-        });
-
-        // REJECTION MODAL FUNCTIONALITY
-        function initializeRejectionModal() {
-            let currentJobId = null;
-            let currentJobTitle = null;
-
-            // Remove the old reject button logic first to prevent conflicts
-            const oldRejectButtons = document.querySelectorAll('.reject-btn-trigger');
-            oldRejectButtons.forEach(btn => {
-                // Remove any existing event listeners
-                const newBtn = btn.cloneNode(true);
-                btn.parentNode.replaceChild(newBtn, btn);
-            });
-
-            // Now attach the modal functionality
-            document.querySelectorAll('.reject-btn-trigger').forEach(btn => {
-                btn.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-
-                    const form = this.closest('form');
-                    const jobId = form.querySelector('input[name="job_id"]').value;
-                    const jobTitle = this.getAttribute('data-title');
-
-                    currentJobId = jobId;
-                    currentJobTitle = jobTitle;
-
-                    // Update modal content
-                    document.getElementById('jobTitlePreview').textContent = `"${jobTitle}"`;
-                    document.getElementById('rejectionJobId').value = jobId;
-                    document.getElementById('rejectionMessage').value = '';
-
-                    // Show modal
-                    document.getElementById('rejectionModal').style.display = 'flex';
-                    document.body.style.overflow = 'hidden';
-                });
-            });
-
-            // Quick reason buttons
-            document.querySelectorAll('.quick-reason').forEach(btn => {
-                btn.addEventListener('click', function () {
-                    const reason = this.getAttribute('data-reason');
-                    document.getElementById('rejectionMessage').value = reason;
-                    // Focus on textarea after selecting quick reason
-                    document.getElementById('rejectionMessage').focus();
-                });
-            });
-
-            // Modal close functionality
-            document.querySelectorAll('.modal-close, .cancel-reject').forEach(btn => {
-                btn.addEventListener('click', function () {
-                    closeModal();
-                });
-            });
-
-            // Close modal when clicking outside
-            const modal = document.getElementById('rejectionModal');
-            if (modal) {
-                modal.addEventListener('click', function (e) {
-                    if (e.target === this) {
-                        closeModal();
-                    }
-                });
-            }
-
-            // Submit rejection form
-            const submitBtn = document.getElementById('submitRejection');
-            if (submitBtn) {
-                submitBtn.addEventListener('click', function () {
-                    submitRejectionForm();
-                });
-            }
-
-            // Handle Enter key in message field
-            const messageField = document.getElementById('rejectionMessage');
-            if (messageField) {
-                messageField.addEventListener('keydown', function (e) {
-                    if (e.key === 'Enter' && e.ctrlKey) {
-                        e.preventDefault();
-                        submitRejectionForm();
-                    }
-                });
-            }
-
-            function closeModal() {
-                document.getElementById('rejectionModal').style.display = 'none';
-                document.body.style.overflow = '';
-            }
-
-            function submitRejectionForm() {
-                const form = document.getElementById('rejectionForm');
-                const messageField = document.getElementById('rejectionMessage');
-                const loadingOverlay = document.querySelector('.loading-overlay');
-                const submitBtn = document.getElementById('submitRejection');
-
-                if (!form || !messageField || !loadingOverlay || !submitBtn) {
-                    showError('Form elements not found');
-                    return;
-                }
-
-                // Validate message
-                if (!messageField.value.trim()) {
-                    showError('Please enter a reason for declining the job.');
-                    messageField.focus();
-                    return;
-                }
-
-                // Show loading
-                loadingOverlay.style.display = 'flex';
-                submitBtn.disabled = true;
-
-                // Prepare form data
-                const formData = new FormData(form);
-
-                // Send AJAX request
-                fetch("{% url 'send_rejection_message' %}", {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value,
-                        'X-Requested-With': 'XMLHttpRequest',
-                    }
-                })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! Status: ${response.status}`);
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        loadingOverlay.style.display = 'none';
-                        submitBtn.disabled = false;
-
-                        if (data.success) {
-                            // Show success toast
-                            showSuccess();
-
-                            // Close modal
-                            closeModal();
-
-                            // Reload page after delay
-                            setTimeout(() => {
-                                window.location.href = data.redirect || "{% url 'employee_job_request' %}";
-                            }, 2000);
-                        } else {
-                            showError(data.error || 'An error occurred. Please try again.');
-                        }
-                    })
-                    .catch(error => {
-                        loadingOverlay.style.display = 'none';
-                        submitBtn.disabled = false;
-                        console.error('Error:', error);
-                        showError('Network error. Please check your connection.');
-                    });
-            }
-        }
-
-        // NOTIFICATION DROPDOWN FUNCTIONALITY
-        function initializeNotificationDropdown() {
-            const notificationIcon = document.querySelector('.notification-icon');
-            const notificationDropdown = document.querySelector('.notification-dropdown');
-
-            if (notificationIcon && notificationDropdown) {
-                notificationIcon.addEventListener('click', function (e) {
-                    e.stopPropagation();
-                    notificationDropdown.classList.toggle('active');
-                    notificationIcon.classList.toggle('active');
-                });
-
-                document.addEventListener('click', function (e) {
-                    if (!notificationIcon.contains(e.target) && !notificationDropdown.contains(e.target)) {
-                        notificationDropdown.classList.remove('active');
-                        notificationIcon.classList.remove('active');
-                    }
-                });
-            }
-        }
-
-        // USER DROPDOWN FUNCTIONALITY
-        function initializeUserDropdown() {
-            const userProfile = document.getElementById('userProfile');
-            const userDropdown = document.getElementById('userDropdown');
-
-            if (userProfile && userDropdown) {
-                userProfile.addEventListener('click', function (e) {
-                    e.stopPropagation();
-                    userDropdown.classList.toggle('active');
-                });
-
-                document.addEventListener('click', function (e) {
-                    if (!userProfile.contains(e.target) && !userDropdown.contains(e.target)) {
-                        userDropdown.classList.remove('active');
-                    }
-                });
-            }
-        }
-
-        // Add loading state to submitting forms (for non-modal forms)
-        document.querySelectorAll('form:not(#rejectionForm)').forEach(form => {
-            form.addEventListener('submit', function () {
-                const btn = this.querySelector('button[type="submit"]');
-                if (btn) {
-                    const originalText = btn.innerHTML;
-                    btn.disabled = true;
-                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-
-                    // Re-enable after 10 seconds in case of error
-                    setTimeout(() => {
-                        btn.disabled = false;
-                        btn.innerHTML = originalText;
-                    }, 10000);
-                }
-            });
-        });
-
-        // Toast functions
-        function showSuccess() {
-            const toast = document.getElementById('successToast');
-            if (toast) {
-                toast.style.display = 'flex';
-
-                // Auto-hide after 5 seconds
-                setTimeout(() => {
-                    toast.style.display = 'none';
-                }, 5000);
-            }
-        }
-
-        function showError(message) {
-            const toast = document.getElementById('errorToast');
-            const messageElement = document.getElementById('errorMessage');
-
-            if (toast && messageElement) {
-                messageElement.textContent = message;
-                toast.style.display = 'flex';
-
-                // Auto-hide after 5 seconds
-                setTimeout(() => {
-                    toast.style.display = 'none';
-                }, 5000);
-            }
-        }
-
-        // ESC key to close modal
-        document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape') {
-                const modal = document.getElementById('rejectionModal');
-                if (modal && modal.style.display === 'flex') {
-                    modal.style.display = 'none';
-                    document.body.style.overflow = '';
+        // Close modals when clicking outside
+        window.addEventListener('click', function(event) {
+            const rejectionModal = document.getElementById('rejection-modal');
+            const reviewModal = document.getElementById('review-modal');
+            const modalOverlay = document.getElementById('modal-overlay');
+            
+            if (event.target === modalOverlay) {
+                if (rejectionModal && rejectionModal.style.display === 'flex') {
+                    closeRejectionModal();
+                } else if (reviewModal && reviewModal.style.display === 'flex') {
+                    closeReviewModal();
                 }
             }
         });
 
-        // Prevent form submission on Enter key in rejection modal
-        document.getElementById('rejectionForm')?.addEventListener('keydown', function (e) {
-            if (e.key === 'Enter' && !e.ctrlKey) {
-                e.preventDefault();
-            }
-        });
+        // Prevent form submission if needed and show toast
+        const rejectionForm = document.getElementById('rejection-form');
+        if (rejectionForm) {
+            rejectionForm.addEventListener('submit', function(e) {
+                // Form will submit to Django backend
+                // You can add additional validation here if needed
+            });
+        }
     </script>
-
 </body>
 
 </html>

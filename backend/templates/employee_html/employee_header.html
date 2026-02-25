@@ -28,11 +28,9 @@
         background-color: var(--bg-light);
         color: var(--text-main);
         min-height: 100vh;
-        display: block;
-        /* Changed from flex to block to fix spacing issue */
     }
 
-    /* Simple Sidebar */
+    /* ===== SIDEBAR ===== */
     .sidebar {
         width: var(--sidebar-width);
         background: var(--sidebar-bg);
@@ -45,6 +43,7 @@
         display: flex;
         flex-direction: column;
         transition: transform 0.3s ease;
+        overflow-y: auto;
     }
 
     .sidebar-header {
@@ -53,6 +52,7 @@
         align-items: center;
         padding: 0 1.5rem;
         border-bottom: 1px solid #334155;
+        flex-shrink: 0;
     }
 
     .logo {
@@ -120,11 +120,12 @@
         font-size: 1.1rem;
     }
 
-    /* User Profile in Sidebar */
+    /* ===== SIDEBAR FOOTER ===== */
     .sidebar-footer {
         padding: 1rem 1.5rem;
         border-top: 1px solid #334155;
         background: #0f172a;
+        flex-shrink: 0;
     }
 
     .user-card {
@@ -146,6 +147,7 @@
         justify-content: center;
         font-weight: 600;
         font-size: 0.9rem;
+        flex-shrink: 0;
     }
 
     .user-info-sm {
@@ -166,7 +168,7 @@
         color: #94a3b8;
     }
 
-    /* Mobile Sidebar */
+    /* ===== SIDEBAR CLOSE BTN (mobile) ===== */
     .sidebar-close {
         display: none;
         margin-left: auto;
@@ -175,17 +177,17 @@
         color: #94a3b8;
         font-size: 1.25rem;
         cursor: pointer;
+        padding: 4px 8px;
     }
 
-    /* Main Content */
+    /* ===== MAIN CONTENT ===== */
     .main-content {
-        flex: 1;
         margin-left: var(--sidebar-width);
-        width: calc(100% - var(--sidebar-width));
+        min-height: 100vh;
         transition: margin-left 0.3s ease;
     }
 
-    /* Top Bar */
+    /* ===== TOP BAR ===== */
     .top-bar {
         height: var(--header-height);
         background: white;
@@ -199,17 +201,30 @@
         z-index: 99;
     }
 
+    /* ===== HAMBURGER MENU TOGGLE =====
+       Use !important to beat any conflicting page-level CSS cascade */
     .menu-toggle {
-        display: none;
+        display: none !important;
         background: transparent;
         border: none;
         color: var(--text-main);
         font-size: 1.5rem;
         cursor: pointer;
         margin-right: 1rem;
+        padding: 6px 10px;
+        border-radius: 6px;
+        transition: background 0.2s;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
     }
 
-    .overlay {
+    .menu-toggle:hover {
+        background: var(--bg-light);
+    }
+
+    /* ===== OVERLAY ===== */
+    .employee-overlay {
         position: fixed;
         top: 0;
         left: 0;
@@ -218,52 +233,63 @@
         background: rgba(0, 0, 0, 0.5);
         z-index: 999;
         display: none;
+        cursor: pointer;
     }
 
-    .overlay.active {
+    .employee-overlay.active {
         display: block;
     }
 
-    /* Responsive */
+    /* ===== RESPONSIVE ===== */
     @media (max-width: 992px) {
         .sidebar {
             transform: translateX(-100%);
-            box-shadow: 4px 0 24px rgba(0, 0, 0, 0.1);
+            box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
         }
 
-        .sidebar.active {
+        .sidebar.open {
             transform: translateX(0);
         }
 
         .main-content {
-            margin-left: 0;
-            width: 100%;
+            margin-left: 0 !important;
+            width: 100% !important;
         }
 
         .sidebar-close {
-            display: block;
+            display: flex !important;
         }
 
+        /* CRITICAL: !important beats any page-level menu-toggle CSS */
         .menu-toggle {
-            display: block;
+            display: flex !important;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .top-bar {
+            padding: 0 1rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .top-bar {
+            padding: 0 0.75rem;
         }
     }
 </style>
 
-{% include 'chat_bot/chat_bot.html' %}
-{% include 'voice_assistant/voice_widget.html' %}
+<!-- ===== OVERLAY (unique class to avoid conflicts) ===== -->
+<div class="employee-overlay" id="employeeOverlay" onclick="closeSidebarMenu()"></div>
 
-<!-- Overlay for Mobile -->
-<div class="overlay" id="overlay"></div>
-
-<!-- Sidebar -->
+<!-- ===== SIDEBAR ===== -->
 <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
         <a href="{% url 'employee_dashboard' %}" class="logo">
             <i class="fas fa-hands-helping"></i>
             <span class="logo-text">WorkNest</span>
         </a>
-        <button class="sidebar-close" id="sidebarClose">
+        <button class="sidebar-close" id="sidebarClose" onclick="closeSidebarMenu()">
             <i class="fas fa-times"></i>
         </button>
     </div>
@@ -319,7 +345,7 @@
         <li>
             <a href="{% url 'message_dashboard' %}"
                 class="{% if request.resolver_match.url_name == 'message_dashboard' %}active{% endif %}">
-                <i class="fas fa-comment-alt"></i> <!-- Updated icon -->
+                <i class="fas fa-comment-alt"></i>
                 <span>Messages</span>
             </a>
         </li>
@@ -359,40 +385,63 @@
     </div>
 </aside>
 
+<!-- ===== CHATBOT & VOICE (after sidebar, so chat_bot.html's stray tags don't break sidebar) ===== -->
+{% include 'chat_bot/chat_bot.html' %}
+{% include 'voice_assistant/voice_widget.html' %}
+
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const menuToggle = document.querySelector('.menu-toggle');
-        const sidebar = document.getElementById('sidebar');
-        const overlay = document.getElementById('overlay');
-        const sidebarClose = document.getElementById('sidebarClose');
+    /* ---- GLOBAL SIDEBAR FUNCTIONS (callable via onclick from any page) ---- */
 
-        function toggleSidebar() {
-            sidebar.classList.toggle('active');
-            overlay.classList.toggle('active');
+    function openSidebarMenu() {
+        var sidebar = document.getElementById('sidebar');
+        var overlay = document.getElementById('employeeOverlay');
+        if (sidebar) sidebar.classList.add('open');
+        if (overlay) overlay.classList.add('active');
+    }
+
+    function closeSidebarMenu() {
+        var sidebar = document.getElementById('sidebar');
+        var overlay = document.getElementById('employeeOverlay');
+        if (sidebar) sidebar.classList.remove('open');
+        if (overlay) overlay.classList.remove('active');
+    }
+
+    function toggleSidebarMenu() {
+        var sidebar = document.getElementById('sidebar');
+        if (sidebar && sidebar.classList.contains('open')) {
+            closeSidebarMenu();
+        } else {
+            openSidebarMenu();
+        }
+    }
+
+    /* ---- ATTACH EVENT LISTENERS ---- */
+    function initSidebarToggle() {
+        /* Find ALL .menu-toggle buttons on the page and attach click handler */
+        var toggleBtns = document.querySelectorAll('.menu-toggle');
+        for (var i = 0; i < toggleBtns.length; i++) {
+            (function (btn) {
+                /* Remove any existing listener first to prevent duplicates */
+                btn.removeEventListener('click', toggleSidebarMenu);
+                btn.addEventListener('click', toggleSidebarMenu);
+            })(toggleBtns[i]);
         }
 
-        function closeSidebar() {
-            sidebar.classList.remove('active');
-            overlay.classList.remove('active');
-        }
-
-        if (menuToggle) {
-            menuToggle.addEventListener('click', toggleSidebar);
-        }
-
-        if (sidebarClose) {
-            sidebarClose.addEventListener('click', closeSidebar);
-        }
-
-        if (overlay) {
-            overlay.addEventListener('click', closeSidebar);
-        }
-
-        // Handle window resize
+        /* Close on window resize to desktop */
         window.addEventListener('resize', function () {
             if (window.innerWidth > 992) {
-                closeSidebar();
+                closeSidebarMenu();
             }
         });
-    });
+    }
+
+    /* Triple-redundant init: runs as soon as possible, then on DOMContentLoaded, then on load */
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initSidebarToggle);
+    } else {
+        /* DOM already ready (script runs after parsing) */
+        initSidebarToggle();
+    }
+    /* Fallback in case DOMContentLoaded already fired */
+    window.addEventListener('load', initSidebarToggle);
 </script>

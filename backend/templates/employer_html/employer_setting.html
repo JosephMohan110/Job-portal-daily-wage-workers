@@ -618,6 +618,196 @@
         color: var(--settings-primary);
     }
 
+    /* Section Description */
+    .section-description {
+        color: var(--text-light);
+        font-size: 0.95rem;
+        margin-bottom: 1.5rem;
+        line-height: 1.5;
+    }
+
+    /* Document Upload Section */
+    .document-upload-section {
+        background: var(--light);
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        border: 1px solid var(--border-color);
+    }
+
+    .document-upload-section h4 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--settings-primary);
+        margin: 0 0 0.5rem 0;
+    }
+
+    /* File Upload Area */
+    .file-upload-area {
+        border: 2px dashed var(--border-color);
+        border-radius: 8px;
+        padding: 2rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: var(--white);
+    }
+
+    .file-upload-area:hover {
+        border-color: var(--settings-primary);
+        background-color: rgba(142, 68, 173, 0.05);
+    }
+
+    .file-upload-area i {
+        font-size: 2.5rem;
+        color: var(--settings-primary);
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .file-upload-area p {
+        margin: 0.5rem 0;
+        font-weight: 500;
+        color: var(--text-dark);
+    }
+
+    .file-upload-area small {
+        color: var(--text-light);
+        display: block;
+    }
+
+    /* Document Display */
+    .document-display {
+        background: var(--white);
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        border: 1px solid var(--border-color);
+    }
+
+    .document-item {
+        padding: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .document-item:last-child {
+        border-bottom: none;
+    }
+
+    .document-item i {
+        font-size: 1.8rem;
+        margin-right: 1rem;
+    }
+
+    .document-item p {
+        margin: 0;
+        font-weight: 500;
+        color: var(--text-dark);
+    }
+
+    .document-item small {
+        display: block;
+        color: var(--text-light);
+        margin-top: 0.25rem;
+    }
+
+    /* Document Info Box */
+    .document-info-box {
+        background: rgba(142, 68, 173, 0.05);
+        border-left: 4px solid var(--settings-primary);
+        border-radius: 8px;
+        padding: 1.5rem;
+    }
+
+    .document-info-box h5 {
+        margin: 0 0 1rem 0;
+        color: var(--text-dark);
+        font-weight: 600;
+    }
+
+    .document-info-box ul {
+        margin: 0;
+        padding-left: 1.5rem;
+        color: var(--text-light);
+        font-size: 0.9rem;
+    }
+
+    .document-info-box li {
+        margin-bottom: 0.5rem;
+    }
+
+    /* File Error Messages */
+    .file-error {
+        color: var(--danger);
+        font-size: 0.9rem;
+        display: block;
+        margin-top: 0.5rem;
+    }
+
+    /* Alert Styles */
+    .alert {
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        animation: slideIn 0.3s ease;
+        border-left: 4px solid;
+    }
+
+    .alert-success {
+        background-color: #d4edda;
+        color: #155724;
+        border-color: #28a745;
+    }
+
+    .alert-danger {
+        background-color: #f8d7da;
+        color: #721c24;
+        border-color: #dc3545;
+    }
+
+    .alert i {
+        flex-shrink: 0;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    /* Button Outline Style */
+    .btn-outline {
+        background: var(--white);
+        color: var(--settings-primary);
+        border: 2px solid var(--settings-primary);
+    }
+
+    .btn-outline:hover {
+        background: var(--settings-primary);
+        color: var(--white);
+    }
+
+    /* Secondary Button */
+    .btn-secondary {
+        background: var(--secondary);
+        color: var(--white);
+    }
+
+    .btn-secondary:hover {
+        background: #5a6268;
+        color: var(--white);
+    }
+
     /* Responsive Design */
     @media (max-width: 1200px) {
         .settings-container {
@@ -756,6 +946,7 @@
                 <h3>Settings</h3>
                 <ul class="settings-nav">
                     <li><a href="#profile" class="active"><i class="fas fa-user"></i> Profile</a></li>
+                    <li><a href="#documents"><i class="fas fa-file-upload"></i> Documents</a></li>
                     <li><a href="#payment"><i class="fas fa-credit-card"></i> Payment Methods</a></li>
                     <li><a href="#privacy"><i class="fas fa-shield-alt"></i> Privacy & Security</a></li>
                     <li><a href="#location"><i class="fas fa-map-marker-alt"></i> Location</a></li>
@@ -869,6 +1060,94 @@
                             <i class="fas fa-times"></i> Cancel Changes
                         </button>
                     </form>
+                </div>
+
+                <!-- Documents Section -->
+                <div class="settings-section" id="documents">
+                    <h2><i class="fas fa-file-upload"></i> Documents</h2>
+                    <p class="section-description">Upload your Aadhar card for verification</p>
+                    
+                    <form method="POST" action="{% url 'upload_employer_document' %}" enctype="multipart/form-data" id="documentsForm">
+                        {% csrf_token %}
+                        
+                        <!-- Success/Error Messages -->
+                        <div id="messageContainer"></div>
+
+                        <!-- Aadhar Card Document -->
+                        <div class="document-upload-section">
+                            <h4 style="margin-bottom: 1rem;">
+                                <i class="fas fa-id-card"></i> Aadhar Card
+                            </h4>
+                            <p style="color: var(--text-light); margin-bottom: 1rem; font-size: 0.9rem;">
+                                Upload a copy of your personal Aadhar identification card
+                            </p>
+
+                            {% if employer.aadhar_document %}
+                            <div class="document-display" style="margin-bottom: 1.5rem;">
+                                <div class="document-item">
+                                    <div style="display: flex; align-items: center; gap: 1rem;">
+                                        <i class="fas fa-id-card" style="font-size: 1.8rem; color: #17a2b8;"></i>
+                                        <div style="flex: 1;">
+                                            <p style="margin: 0; font-weight: 500;">Aadhar Card</p>
+                                            <small style="color: var(--text-light);">
+                                                {% if employer.aadhar_verified %}
+                                                <i class="fas fa-check-circle" style="color: var(--success);"></i> Verified
+                                                {% else %}
+                                                <i class="fas fa-clock" style="color: var(--warning);"></i> Pending Verification
+                                                {% endif %}
+                                            </small>
+                                        </div>
+                                        <div style="display: flex; gap: 0.5rem;">
+                                            <a href="{{ employer.aadhar_document.url }}" class="btn btn-sm btn-outline" 
+                                               download target="_blank">
+                                                <i class="fas fa-download"></i> Download
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-danger" 
+                                                    onclick="deleteDocument('aadhar')">
+                                                <i class="fas fa-trash"></i> Remove
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <div class="file-upload-area" id="aadharUploadArea" onclick="document.getElementById('aadharFile').click()"
+                                 style="border: 2px dashed var(--border-color); border-radius: 8px; padding: 2rem; text-align: center; cursor: pointer; transition: all 0.3s;"
+                                 onmouseover="this.style.borderColor='var(--primary)'; this.style.backgroundColor='rgba(58, 134, 255, 0.05)'"
+                                 onmouseout="this.style.borderColor='var(--border-color)'; this.style.backgroundColor='transparent'">
+                                <i class="fas fa-cloud-upload-alt" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 0.5rem;"></i>
+                                <p style="margin: 0.5rem 0; font-weight: 500;">Click to upload or drag and drop</p>
+                                <small style="color: var(--text-light);">PDF, JPG, PNG (Max 5MB)</small>
+                            </div>
+                            
+                            <input type="file" id="aadharFile" name="aadhar_document" accept=".pdf,.jpg,.jpeg,.png" 
+                                   style="display: none;" onchange="handleFileSelect(this, 'aadhar')">
+                            <small class="file-error" id="aadharError" style="color: var(--danger); display: none; margin-top: 0.5rem;"></small>
+                        </div>
+
+                        <!-- Document Save Button -->
+                        <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+                            <button type="submit" class="btn btn-primary" id="uploadDocumentsBtn">
+                                <i class="fas fa-save"></i> Save Aadhar Card
+                            </button>
+                            <button type="reset" class="btn btn-outline">
+                                <i class="fas fa-redo"></i> Clear
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Document Info -->
+                    <div class="document-info-box" style="margin-top: 2rem; padding: 1.5rem; background: rgba(58, 134, 255, 0.05); border-left: 4px solid var(--primary); border-radius: 8px;">
+                        <h5 style="margin-top: 0; color: var(--dark);"><i class="fas fa-info-circle"></i> Document Guidelines</h5>
+                        <ul style="margin: 0.5rem 0 0; padding-left: 1.5rem; color: var(--text-light); font-size: 0.9rem;">
+                            <li>Documents must be clear and readable</li>
+                            <li>Supported formats: PDF, JPG, PNG</li>
+                            <li>Maximum file size: 5MB</li>
+                            <li>All documents must be valid and current</li>
+                            <li>Verification may take 2-3 business days</li>
+                        </ul>
+                    </div>
                 </div>
 
                 <!-- Location Section -->
@@ -1822,6 +2101,213 @@
                 }
             });
         }
+    </script>
+
+    <!-- Document Management Scripts -->
+    <script>
+        // Documents Form Submission Handler (AJAX)
+        const documentsForm = document.getElementById('documentsForm');
+        if (documentsForm) {
+            documentsForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Get the submit button
+                const submitBtn = document.getElementById('uploadDocumentsBtn');
+                const originalText = submitBtn.innerHTML;
+                
+                // Show loading state
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+                
+                // Check if at least one file is selected
+                const aadharInput = document.getElementById('aadharFile');
+                if (!aadharInput.files.length) {
+                    showMessage('Please select an Aadhar card to upload.', 'error');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                    return;
+                }
+                
+                // Create FormData
+                const formData = new FormData(this);
+                
+                // Send upload request
+                fetch('{% url "upload_employer_document" %}', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showMessage('Aadhar card uploaded successfully! It will be verified shortly.', 'success');
+                        // Reset the form
+                        documentsForm.reset();
+                        // Reload page after 1 second to show the uploaded document
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1000);
+                    } else {
+                        showMessage(data.error || 'Failed to upload Aadhar card.', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showMessage('An error occurred while uploading. Please try again.', 'error');
+                })
+                .finally(() => {
+                    // Restore button
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                });
+            });
+        }
+        
+        // Function to show messages
+        function showMessage(message, type) {
+            const messageContainer = document.getElementById('messageContainer');
+            const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+            const icon = type === 'success' ? 'check-circle' : 'exclamation-circle';
+            
+            messageContainer.innerHTML = `
+                <div class="alert ${alertClass}" style="margin-bottom: 1.5rem;">
+                    <i class="fas fa-${icon}"></i> ${message}
+                </div>
+            `;
+            
+            // Auto-hide error messages after 5 seconds
+            if (type === 'error') {
+                setTimeout(() => {
+                    messageContainer.innerHTML = '';
+                }, 5000);
+            }
+        }
+        
+        // Handle file selection for documents
+        function handleFileSelect(input, docType) {
+            const file = input.files[0];
+            const errorDiv = document.getElementById(docType + 'Error');
+
+            // Clear previous error messages
+            if (errorDiv) {
+                errorDiv.style.display = 'none';
+                errorDiv.textContent = '';
+            }
+
+            if (!file) return;
+
+            // File validation
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
+
+            if (file.size > maxSize) {
+                if (errorDiv) {
+                    errorDiv.textContent = 'File size exceeds 5MB limit.';
+                    errorDiv.style.display = 'block';
+                }
+                input.value = '';
+                return;
+            }
+
+            if (!allowedTypes.includes(file.type)) {
+                if (errorDiv) {
+                    errorDiv.textContent = 'Only PDF, JPG, and PNG files are allowed.';
+                    errorDiv.style.display = 'block';
+                }
+                input.value = '';
+                return;
+            }
+
+            // Show the upload area as ready
+            const uploadArea = document.getElementById(docType + 'UploadArea');
+            if (uploadArea) {
+                uploadArea.style.borderColor = 'var(--success)';
+                uploadArea.style.backgroundColor = 'rgba(40, 167, 69, 0.05)';
+            }
+        }
+
+        // Delete document function
+        function deleteDocument(docType) {
+            if (!confirm('Are you sure you want to delete this document?')) {
+                return;
+            }
+
+            // Create form data
+            const formData = new FormData();
+            formData.append('document_type', docType);
+            formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+
+            // Send delete request
+            fetch('{% url "delete_employer_document" %}', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Remove document display
+                    location.reload();
+                } else {
+                    alert('Error: ' + (data.error || 'Could not delete document'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error deleting document');
+            });
+        }
+
+        // Drag and drop handlers for document upload areas
+        document.addEventListener('DOMContentLoaded', function() {
+            const uploadAreas = document.querySelectorAll('.file-upload-area');
+            
+            uploadAreas.forEach(area => {
+                // Prevent default drag behaviors
+                ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                    area.addEventListener(eventName, preventDefaults, false);
+                });
+
+                function preventDefaults(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+
+                // Highlight drop area when item is dragged over it
+                ['dragenter', 'dragover'].forEach(eventName => {
+                    area.addEventListener(eventName, highlight, false);
+                });
+
+                ['dragleave', 'drop'].forEach(eventName => {
+                    area.addEventListener(eventName, unhighlight, false);
+                });
+
+                function highlight(e) {
+                    area.style.borderColor = 'var(--settings-primary)';
+                    area.style.backgroundColor = 'rgba(142, 68, 173, 0.05)';
+                }
+
+                function unhighlight(e) {
+                    area.style.borderColor = 'var(--border-color)';
+                    area.style.backgroundColor = 'transparent';
+                }
+
+                // Handle dropped files
+                area.addEventListener('drop', handleDrop, false);
+
+                function handleDrop(e) {
+                    const dt = e.dataTransfer;
+                    const files = dt.files;
+                    
+                    // Get the associated file input
+                    const fileInput = area.nextElementSibling;
+                    if (fileInput && fileInput.type === 'file') {
+                        fileInput.files = files;
+                        // Trigger change event
+                        const event = new Event('change', { bubbles: true });
+                        fileInput.dispatchEvent(event);
+                    }
+                }
+            });
+        });
     </script>
 </body>
 </html>
