@@ -8,11 +8,11 @@
         <div class="hero-content">
             <h1>Connecting Daily Wage Workers with Job Opportunities</h1>
             <p>Find work or hire skilled workers quickly and easily</p>
-            <div class="search-box">
-                <input type="text" class="search-input" placeholder="Search for jobs or skills..."
-                    aria-label="Search jobs or skills">
-                <button class="search-btn" aria-label="Search">Search</button>
-            </div>
+            <form method="GET" action="{% url 'search_employees' %}" class="search-box">
+                <input type="text" name="q" class="search-input" placeholder="Search for jobs or skills..."
+                    aria-label="Search jobs or skills" required>
+                <button type="submit" class="search-btn" aria-label="Search">Search</button>
+            </form>
         </div>
     </div>
 </section>
@@ -69,7 +69,7 @@
                     <div class="login-form">
                         <h3 class="form-title">Welcome Back</h3>
 
-                        <!-- Display Messages (Django) -->
+                        <!-- Display Messages (Django)
                         <div class="messages" id="employeeMessages">
                             {% if messages %}
                             {% for message in messages %}
@@ -77,7 +77,7 @@
                             </div>
                             {% endfor %}
                             {% endif %}
-                        </div>
+                        </div> -->
 
                         <!-- the employe name= employee login is given in the home app view and urls-->
                         <form method="POST" action="{% url 'employee_login' %}">
@@ -122,14 +122,14 @@
                         <h3 class="form-title">Welcome Back</h3>
 
                         <!-- Display Messages (Django) -->
-                        <div class="messages" id="employerMessages">
+                        <!-- <div class="messages" id="employerMessages">
                             {% if messages %}
                             {% for message in messages %}
                             <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">{{ message }}
                             </div>
                             {% endfor %}
                             {% endif %}
-                        </div>
+                        </div> -->
 
                         <form method="POST" action="{% url 'employer_login' %}">
                             {% csrf_token %}

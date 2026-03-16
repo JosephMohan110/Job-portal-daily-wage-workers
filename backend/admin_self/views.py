@@ -342,6 +342,7 @@ def admin_dashboard(request):
     ml_model_loaded = False
     available_predictions = []
     using_real_ml = False
+    full_year_forecast = []
     
     # Get platform analytics data with ALL 19 FEATURES for ML predictions
     platform_data = get_platform_analytics_data_extended()
@@ -349,10 +350,7 @@ def admin_dashboard(request):
     # ALSO get analytics data for DASHBOARD DISPLAY (has new_users_this_month, deleted_accounts_this_month, etc.)
     analytics_data = get_platform_analytics_data()
     
-    # Initialize mapped predictions dictionary
-    ml_predictions_mapped = {}
-    
-    # Get ML predictions from the XGBoost model using complete_xgboost_package.pkl
+    # Get ML predictions with automatic 12-month forecast (NO FALLBACK VALUES)
     try:
         # Import the predictor here to avoid circular imports
         from xg_boost.predictor import predictor
@@ -361,62 +359,46 @@ def admin_dashboard(request):
         if not predictor.loaded:
              predictor.load_model()
 
-        # Get available predictions FIRST to check what the model can do
-        available_predictions = predictor.get_available_predictions()
+        # Use the new predict_all_months method for complete 12-month forecast
+        ml_predictions_all = predictor.predict_all_months(platform_data)
         
-        if not available_predictions:
-            logger.warning("ML Model has no available prediction targets")
-            ml_model_loaded = False
-            using_real_ml = False
-        else:
-            logger.info(f"ML Model has {len(available_predictions)} available targets: {available_predictions}")
-            
-            # Use the predict_all_targets function (will only return available predictions)
-            ml_predictions_raw = predictor.predict_all_targets(platform_data)
+        if ml_predictions_all:
+            # Extract next month predictions and full year forecast
+            ml_predictions = {k: v for k, v in ml_predictions_all.items() if not k.startswith('full_') and k != 'forecast_generated' and k != 'forecast_months_count'}
+            full_year_forecast = ml_predictions_all.get('full_year_forecast', [])
             ml_model_loaded = predictor.loaded
+            using_real_ml = len(ml_predictions) > 0
             
-            # The ml_predictions now contain available target predictions
-            ml_predictions = ml_predictions_raw if ml_predictions_raw else {}
+            logger.info(f"ML Model successfully generated {len(full_year_forecast)} month forecast")
+            print(f"ADMIN DASHBOARD: Generated forecast for {len(full_year_forecast)} months")
+        else:
+            ml_model_loaded = predictor.loaded
+            using_real_ml = False
+            logger.warning("ML Model predictions returned empty")
             
-            print(f"DEBUGGING VIEW: Platform Data Features: {list(platform_data.keys())}")
-            print(f"DEBUGGING VIEW: ML Predictions returned: {len(ml_predictions) if ml_predictions else 0}")
-            print(f"DEBUGGING VIEW: ML Predictions keys: {list(ml_predictions.keys()) if ml_predictions else []}")
-            print(f"DEBUGGING VIEW: ML Model Loaded: {ml_model_loaded}")
-
-            # If ML model failed to load or no predictions, use fallback
-            if not ml_model_loaded or not ml_predictions:
-                print("ML model not loaded or predictions failed, using fallback")
-                ml_model_loaded = False
-                available_predictions = []
-                using_real_ml = False
-                feature_importance = {}
-            else:
-                using_real_ml = True
-                # Get feature importance if available in the model object
-                try:
-                    feature_importance = predictor.get_feature_importance() if hasattr(predictor, 'get_feature_importance') else {}
-                except:
-                    feature_importance = {}
-                    logger.warning("Could not retrieve feature importance from model")
+        # Get feature importance
+        try:
+            feature_importance = predictor.get_feature_importance() if hasattr(predictor, 'get_feature_importance') else {}
+        except:
+            feature_importance = {}
+            logger.warning("Could not retrieve feature importance from model")
 
     except Exception as e:
         print(f"Error getting ML predictions: {str(e)}")
         import traceback
         traceback.print_exc()
-        # Fallback to statistical predictions
+        # Still continue without predictions - don't use fallback values
         ml_model_loaded = False
-        available_predictions = []
         using_real_ml = False
         feature_importance = {}
         ml_predictions = {}
-
+        full_year_forecast = []
 
     # Get historical data for charts (last 6 months) - needed for predictions
     historical_data = get_historical_data(platform_data, 6)
     
     # 8. Prediction/forecast data
-    # PRIORITIZE ML PREDICTIONS IF AVAILABLE (even if limited)
-    # Create a mapped version of ML predictions for template compatibility
+    # Use ML predictions for dashboard display
     ml_predictions_mapped = {}
     
     # Initialize default predictions
@@ -430,37 +412,14 @@ def admin_dashboard(request):
     
     if using_real_ml and ml_predictions:
         # Map ML prediction keys to template-expected keys with "_next_month" suffix
-        # The ML model returns keys like: 'new_users', 'revenue', 'avg_rating', etc.
-        # The template expects: 'new_users_next_month', 'revenue_next_month', etc.
-        # NOTE: Model may only have some of these targets available
+        # The ML model returns keys like: 'new_users_next_month', 'revenue_next_month', 'avg_rating_next_month', etc.
+        # Already properly formatted from predict_all_months method
         
-        prediction_key_mapping = {
-            'new_users': 'new_users_next_month',
-            'deleted_accounts': 'deleted_accounts_next_month',
-            'deleted_users': 'deleted_accounts_next_month',  # Alternative key name
-            'completed_bookings': 'completed_bookings_next_month',
-            'total_bookings': 'total_bookings_next_month',
-            'success_rate': 'success_rate_next_month',
-            'revenue': 'revenue_next_month',
-            'total_revenue': 'revenue_next_month',  # Alternative key name
-            'platform_commission': 'commission_next_month',
-            'avg_rating': 'avg_rating_next_month',
-            'active_users': 'active_users_next_month',
-            'total_spent': 'total_spent_next_month',
-            'total_earned': 'total_earned_next_month',
-            'last_active': 'last_active_next_month',  # May be the only available model
-        }
-        
-        # Create mapped predictions dictionary
-        for actual_key, template_key in prediction_key_mapping.items():
-            if actual_key in ml_predictions:
-                ml_predictions_mapped[template_key] = ml_predictions[actual_key]
-        
-        # Get predictions for key metrics (use .get with defaults to handle limited models)
+        # Get predictions for key metrics directly
         predicted_platform_commission = ml_predictions.get('platform_commission', 0) or 0
-        predicted_total_bookings = ml_predictions.get('total_bookings', 0) or ml_predictions.get('completed_bookings', 0) or 0
-        predicted_completed_bookings = ml_predictions.get('completed_bookings', 0) or 0
-        predicted_avg_rating = ml_predictions.get('avg_rating', 4.5) or 4.5
+        predicted_total_bookings = ml_predictions.get('total_bookings', 0) or 0
+        predicted_completed_bookings = ml_predictions.get('completed_bookings_next_month', 0) or ml_predictions.get('completed_bookings', 0) or 0
+        predicted_avg_rating = ml_predictions.get('avg_rating_next_month', 4.5) or ml_predictions.get('avg_rating', 4.5) or 4.5
         
         # Try to calculate worker growth from predicted booking metrics
         if predicted_completed_bookings > 0 or predicted_total_bookings > 0:
@@ -474,12 +433,22 @@ def admin_dashboard(request):
         if predicted_platform_commission > 0:
             predicted_revenue_growth = Decimal(str(predicted_platform_commission))
         else:
-            # Fallback: use statistical prediction if ML doesn't have this target
-            predicted_revenue_growth = platform_revenue * Decimal(str(1 + revenue_growth/100)) if revenue_growth != 0 else platform_revenue
+            # Use ML's growth percentage if available
+            revenue_growth_pct = ml_predictions.get('revenue_growth_percent', 0)
+            if revenue_growth_pct != 0:
+                predicted_revenue_growth = platform_revenue * Decimal(str(1 + revenue_growth_pct/100))
+            else:
+                predicted_revenue_growth = platform_revenue
     else:
-        # Use simple heuristic if ML failed or not available
-        predicted_worker_growth = int(total_workers * (1 + worker_growth/100)) if worker_growth != 0 else total_workers
-        predicted_revenue_growth = platform_revenue * Decimal(str(1 + revenue_growth/100)) if revenue_growth != 0 else platform_revenue
+        # Use simple ML-based prediction chain if next_month unavailable
+        if ml_predictions:
+            # Use available ML predictions even if not in _next_month format
+            predicted_platform_commission = ml_predictions.get('platform_commission', platform_revenue)
+            predicted_revenue_growth = Decimal(str(predicted_platform_commission)) if predicted_platform_commission > 0 else platform_revenue
+        else:
+            # No predictions available - just use current month values (no fallback multipliers)
+            predicted_worker_growth = total_workers
+            predicted_revenue_growth = platform_revenue
     
     # 9. Get top performing categories (this month)
     top_categories = JobRequest.objects.filter(
@@ -493,11 +462,12 @@ def admin_dashboard(request):
     # Calculate growth rates for display
     growth_rates = calculate_growth_rates(historical_data, platform_data)
     
-    # Prepare chart data
-    chart_data = prepare_chart_data(historical_data, ml_predictions)
+    # Prepare chart data with ML predictions
+    chart_data = prepare_chart_data(historical_data, ml_predictions if using_real_ml else {})
     
     # Serialize chart data for safe usage in template
     json_chart_data = json.dumps(chart_data, cls=NumpyValuesEncoder)
+    json_full_year = json.dumps(full_year_forecast, cls=NumpyValuesEncoder)
     
     # Calculate next month for display
     next_month_date = datetime.now().replace(day=28) + timedelta(days=4)
@@ -543,9 +513,11 @@ def admin_dashboard(request):
         # Recent Activity
         'recent_activities': recent_activities[:3],
         
-        # Simple Predictions
+        # ML-Based Predictions (from 12-month forecast)
         'predicted_worker_growth': predicted_worker_growth,
         'predicted_revenue': format_currency(predicted_revenue_growth),
+        'full_year_forecast': full_year_forecast,
+        'json_full_year_forecast': json_full_year,
         
         # Categories
         'top_categories': top_categories,
@@ -559,39 +531,21 @@ def admin_dashboard(request):
         # DASHBOARD DISPLAY DATA (for table and stats)
         'platform_data': analytics_data,  # Contains new_users_this_month, deleted_accounts_this_month, etc.
         
-        # ML PREDICTION DATA - ALL 19 TARGETS
+        # ML PREDICTION DATA - NEXT MONTH + 12-MONTH FORECAST
         'using_real_ml': using_real_ml,
         'ml_model_loaded': ml_model_loaded,
-        'ml_predictions': ml_predictions_mapped if using_real_ml and ml_predictions else ml_predictions or {},
+        'ml_predictions': ml_predictions if using_real_ml and ml_predictions else {},
         'feature_importance': feature_importance,
         'json_feature_importance': json.dumps(feature_importance, cls=NumpyValuesEncoder),
         'chart_data': chart_data,
         'json_chart_data': json_chart_data,
         'growth_rates': growth_rates,
-        'next_month': next_month,
-        'available_predictions': available_predictions,
+        'next_month': (now.replace(day=28) + timedelta(days=4)).strftime('%B %Y'),
+        'available_predictions': predictor.get_available_predictions() if ml_model_loaded else [],
         
-        # All 19 Target Predictions (for display in admin_dashboard.html)
-        'predictions_all_targets': ml_predictions_mapped if using_real_ml and ml_predictions else ml_predictions if ml_predictions else {},
-        'prediction_timestamp': ml_predictions.get('timestamp', 0) if using_real_ml and ml_predictions else 0,
-        'prediction_user_id': ml_predictions.get('user_id', 0) if using_real_ml and ml_predictions else 0,
-        'prediction_user_type': ml_predictions.get('user_type', 0) if using_real_ml and ml_predictions else 0,
-        'prediction_registration_date': ml_predictions.get('registration_date', 0) if using_real_ml and ml_predictions else 0,
-        'prediction_account_status': ml_predictions.get('account_status', 0) if using_real_ml and ml_predictions else 0,
-        'prediction_total_bookings': ml_predictions.get('total_bookings', 0) if using_real_ml and ml_predictions else 0,
-        'prediction_completed_bookings': ml_predictions.get('completed_bookings', 0) if using_real_ml and ml_predictions else 0,
-        'prediction_cancelled_bookings': ml_predictions.get('cancelled_bookings', 0) if using_real_ml and ml_predictions else 0,
-        'prediction_total_spent': ml_predictions.get('total_spent', 0) if using_real_ml and ml_predictions else 0,
-        'prediction_total_earned': ml_predictions.get('total_earned', 0) if using_real_ml and ml_predictions else 0,
-        'prediction_platform_commission': ml_predictions.get('platform_commission', 0) if using_real_ml and ml_predictions else 0,
-        'prediction_avg_rating': ml_predictions.get('avg_rating', 0) if using_real_ml and ml_predictions else 0,
-        'prediction_total_reviews': ml_predictions.get('total_reviews', 0) if using_real_ml and ml_predictions else 0,
-        'prediction_last_active': ml_predictions.get('last_active', 0) if using_real_ml and ml_predictions else 0,
-        'prediction_days_since_registration': ml_predictions.get('days_since_registration', 0) if using_real_ml and ml_predictions else 0,
-        'prediction_days_since_last_active': ml_predictions.get('days_since_last_active', 0) if using_real_ml and ml_predictions else 0,
-        'prediction_completion_rate': ml_predictions.get('completion_rate', 0) if using_real_ml and ml_predictions else 0,
-        'prediction_cancellation_rate': ml_predictions.get('cancellation_rate', 0) if using_real_ml and ml_predictions else 0,
-        'prediction_avg_earning_per_booking': ml_predictions.get('avg_earning_per_booking', 0) if using_real_ml and ml_predictions else 0,
+        # Prediction source
+        'prediction_source': 'XGBoost ML Model (12-Month Forecast)' if using_real_ml else 'ML Model Initialization',
+        'forecast_months_available': len(full_year_forecast),
     }
     
     
@@ -1167,10 +1121,8 @@ def get_ml_predictions():
         print(f"Error getting ML predictions: {str(e)}")
         import traceback
         traceback.print_exc()
-        # Return fallback if ML fails
-        # fallback = get_fallback_predictions(get_platform_analytics_data())
-        fallback['using_real_ml'] = False
-        return fallback
+        # Return empty dict without fallback - let the view handle it
+        return {}
 
 
 
@@ -6006,50 +5958,58 @@ def redirect_with_tab(tab_name):
 
 @admin_required
 def analytics_prediction(request):
-    """Analytics and prediction view with ML integration"""
+    """Analytics and prediction view with ML integration - NO FALLBACK VALUES"""
     
     # Get current platform data
     platform_data = get_platform_analytics_data()
     
-    # Get ML predictions
-    # Get ML predictions
+    # Get ML predictions with automatic 12-month forecast
     from xg_boost.predictor import predictor
+    
+    ml_predictions = {}
+    full_year_forecast = []
+    ml_model_loaded = False
+    using_real_ml = False
     
     try:
         if not predictor.loaded:
             predictor.load_model()
-            
-        # Get predictions using future_predictions logic
-        ml_predictions = predictor.predict(platform_data)
         
-        if ml_predictions is None:
+        # Use the new predict_all_months method for automatic monthly predictions
+        # This generates predictions for all 12 months WITHOUT fallback values
+        ml_predictions = predictor.predict_all_months(platform_data)
+        
+        if ml_predictions and 'full_year_forecast' in ml_predictions:
+            full_year_forecast = ml_predictions['full_year_forecast']
+            ml_model_loaded = predictor.loaded
+            using_real_ml = True
+        
+        # Ensure we have at least next_month predictions
+        if not ml_predictions:
             ml_predictions = {}
-
-        # Add flag for template
-        ml_predictions['using_real_ml'] = predictor.loaded and len(ml_predictions) > 0
-        
-        # Add raw predictions for compatibility if needed
-        ml_predictions['raw_predictions'] = ml_predictions.copy()
+            ml_model_loaded = False
+            using_real_ml = False
+            
+        # Add metadata
+        ml_predictions['using_real_ml'] = using_real_ml and ml_model_loaded
+        ml_predictions['full_year_forecast'] = full_year_forecast
+        ml_predictions['forecast_generated'] = len(full_year_forecast) > 0
         
     except Exception as e:
-        print(f"Error in analytics_prediction: {e}")
-        ml_predictions = get_fallback_predictions(platform_data)
-        ml_predictions['using_real_ml'] = False
-
-    # Ensure ml_predictions is not None before proceeding
-    if not ml_predictions:
-         ml_predictions = get_fallback_predictions(platform_data)
-         ml_predictions['using_real_ml'] = False
+        logger.error(f"Error in analytics_prediction: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        # Even on error, still try to get model-based predictions without fallback
+        ml_predictions = {}
+        ml_model_loaded = False
+        using_real_ml = False
 
     # Check if we have real ML predictions
-    ml_model_loaded = predictor.loaded
-    using_real_ml = ml_predictions.get('using_real_ml', False) and ml_model_loaded
+    ml_model_loaded = predictor.loaded and ml_model_loaded
+    using_real_ml = using_real_ml and ml_model_loaded
     
     # Get feature importance
     feature_importance = get_feature_importance()
-    
-    # Get churn risk users
-    churn_users = get_churn_risk_users()
     
     # Get historical data for charts (last 6 months)
     historical_data = get_historical_data(platform_data, 6)
@@ -6057,47 +6017,53 @@ def analytics_prediction(request):
     # Get growth rates
     growth_rates = calculate_growth_rates(historical_data, platform_data)
     
-    # Prepare AI insights
-    ai_insights = generate_ai_insights(platform_data, ml_predictions, churn_users)
-    
     # Prepare chart data - Use ML predictions for next month
     chart_data = prepare_chart_data(historical_data, ml_predictions)
     
     # Get available predictions from model
     available_predictions = predictor.get_available_predictions() if predictor.loaded else []
     
-    # Calculate next month
+    # Calculate next month and full year
     from datetime import datetime, timedelta
     next_month_date = datetime.now().replace(day=28) + timedelta(days=4)
     next_month = next_month_date.strftime('%B %Y')
     
     # Serialize chart data to JSON for safe template usage
     import json
-    # Serialize chart data to JSON for safe template usage
-    import json
     json_chart_data = json.dumps(chart_data, cls=NumpyValuesEncoder)
+    json_full_year = json.dumps(full_year_forecast, cls=NumpyValuesEncoder)
     
     context = {
         'platform_data': platform_data,
         'ml_predictions': ml_predictions,
-        'churn_users': churn_users[:10],
+        'full_year_forecast': full_year_forecast,
+        'json_full_year_forecast': json_full_year,
         'feature_importance': feature_importance,
         'json_feature_importance': json.dumps(feature_importance, cls=NumpyValuesEncoder),
         'historical_data': historical_data,
         'growth_rates': growth_rates,
-        'ai_insights': ai_insights[:4],
         'chart_data': chart_data,
-        'json_chart_data': json_chart_data, # NEW: formatted JSON string
+        'json_chart_data': json_chart_data,
         'current_month': datetime.now().strftime('%B %Y'),
         'next_month': next_month,
         'ml_model_loaded': ml_model_loaded,
         'using_real_ml': using_real_ml,
         'available_predictions': available_predictions,
         
+        # Explicit next month critical metrics
+        'next_month_revenue': ml_predictions.get('platform_commission', 0) or ml_predictions.get('revenue_next_month', 0),
+        'next_month_commission': ml_predictions.get('commission_next_month', 0) or ml_predictions.get('platform_commission', 0),
+        'next_month_completed_bookings': ml_predictions.get('completed_bookings_next_month', 0) or ml_predictions.get('completed_bookings', 0),
+        'next_month_total_bookings': ml_predictions.get('total_bookings_next_month', 0) or ml_predictions.get('total_bookings', 0),
+        'next_month_rating': ml_predictions.get('avg_rating_next_month', 0) or ml_predictions.get('avg_rating', 4.5),
+        'next_month_success_rate': ml_predictions.get('success_rate_next_month', 0),
+        'next_month_new_users': ml_predictions.get('new_users_next_month', 0),
+        'next_month_deleted_accounts': ml_predictions.get('deleted_accounts_next_month', 0),
+        
         # For debugging in template
-        'prediction_source': 'XGBoost ML Model' if using_real_ml else 'Statistical Trend Analysis',
+        'prediction_source': 'XGBoost ML Model (12-Month Forecast)' if using_real_ml else 'ML Model Initialization',
         'prediction_count': len(available_predictions),
-        'raw_predictions_count': len(ml_predictions.get('raw_predictions', {})),
+        'forecast_months_available': len(full_year_forecast),
     }
     
     # Debug output
@@ -6108,16 +6074,46 @@ def analytics_prediction(request):
     print(f"Using Real ML: {using_real_ml}")
     print(f"Prediction Source: {context['prediction_source']}")
     print(f"Available Predictions from Model: {len(available_predictions)}")
-    if ml_predictions.get('raw_predictions'):
-        print(f"Raw predictions received: {list(ml_predictions['raw_predictions'].keys())}")
-    print(f"JSON Chart Data Length: {len(json_chart_data)}")
+    print(f"Full Year Forecast Generated: {len(full_year_forecast)} months")
+    if full_year_forecast:
+        print(f"First forecast month: {full_year_forecast[0].get('date', 'N/A')}")
+        print(f"Last forecast month: {full_year_forecast[-1].get('date', 'N/A')}")
     print("="*60)
     
     return render(request, 'admin_html/analytics_prediction.html', context)
 
 
 # Helper functions for analytics_prediction
-def get_platform_analytics_data():
+
+def generate_ml_based_predictions(platform_data):
+    """
+    Generate ML-based predictions without fallback values.
+    Uses the model's predict_all_months method to automatically forecast all 12 months.
+    
+    This is the replacement for the old commented-out get_fallback_predictions function.
+    It ensures predictions always come from the ML model, never from hardcoded values.
+    """
+    try:
+        from xg_boost.predictor import predictor
+        
+        if not predictor.loaded:
+            predictor.load_model()
+        
+        if not predictor.loaded:
+            return {}
+        
+        # Use the predict_all_months method for complete 12-month forecast
+        predictions = predictor.predict_all_months(platform_data)
+        
+        if predictions:
+            predictions['using_real_ml'] = True
+            return predictions
+        else:
+            return {}
+            
+    except Exception as e:
+        logger.error(f"Error in generate_ml_based_predictions: {str(e)}")
+        return {}
     """Get current platform metrics"""
     today = timezone.now().date()
     start_of_month = today.replace(day=1)
@@ -6309,22 +6305,41 @@ def generate_ai_insights(platform_data, predictions, churn_users):
     return insights
 
 def prepare_chart_data(historical_data, predictions):
-    """Format data for Chart.js"""
+    """
+    Format data for Chart.js charts.
+    Ensures revenue and completed bookings are always properly populated.
+    """
     labels = [d['month'] for d in historical_data]
     revenue_data = [d['revenue'] for d in historical_data]
+    bookings_data = [d['completed_bookings'] for d in historical_data]
     growth_data = [d['new_users'] for d in historical_data]
     deletions_data = [d['deleted_users'] for d in historical_data]
     
-    # Add prediction
+    # Add next month prediction
     next_month = (timezone.now() + timedelta(days=30)).strftime('%b')
     labels.append(next_month + ' (Pred)')
-    revenue_data.append(predictions.get('platform_commission', 0))
-    growth_data.append(predictions.get('new_users_next_month', 0)) # We need this in predictions
-    deletions_data.append(predictions.get('deleted_accounts_next_month', 0)) # We need this too
+    
+    # Revenue prediction - try multiple keys
+    revenue_pred = predictions.get('platform_commission', 0) or \
+                   predictions.get('revenue_next_month', 0) or \
+                   predictions.get('commission_next_month', 0) or 0
+    revenue_data.append(max(0, float(revenue_pred)))
+    
+    # Completed bookings prediction - try multiple keys
+    bookings_pred = predictions.get('completed_bookings_next_month', 0) or \
+                    predictions.get('completed_bookings', 0) or 0
+    bookings_data.append(max(0, int(float(bookings_pred))))
+    
+    # New users prediction
+    growth_data.append(max(0, int(predictions.get('new_users_next_month', 0))))
+    
+    # Deleted accounts prediction
+    deletions_data.append(max(0, int(predictions.get('deleted_accounts_next_month', 0))))
     
     return {
         'labels': labels,
         'revenue_data': revenue_data,
+        'bookings_data': bookings_data,
         'growth_data': growth_data,
         'deletions_data': deletions_data
     }
@@ -6466,11 +6481,12 @@ def real_time_prediction_api(request):
         if not predictor.loaded:
             predictor.load_model()
         
-        # Make predictions
+        # Make predictions using ML model
         predictions = predictor.predict(platform_data) if predictor.loaded else None
         
         if not predictions:
-            predictions = get_fallback_predictions(platform_data)
+            # No fallback - if ML predictions fail, return empty predictions
+            predictions = {}
         
         # All 19 features that we want to predict/display
         feature_list = [

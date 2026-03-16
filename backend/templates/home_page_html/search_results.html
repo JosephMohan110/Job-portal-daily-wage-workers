@@ -1,0 +1,555 @@
+{% include 'home_page_html/header.html' %}
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        background-color: #ffffff;
+        font-family: Arial, sans-serif;
+    }
+
+    .search-container {
+        max-width: 1000px;
+        margin: 20px auto;
+        padding: 0 15px;
+    }
+
+    .back-button {
+        display: inline-block;
+        margin-bottom: 15px;
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .back-button:hover {
+        color: #764ba2;
+        transform: translateX(-5px);
+    }
+
+    .back-button::before {
+        content: '← ';
+    }
+
+    .search-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 25px;
+        margin-bottom: 30px;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+    }
+
+    .search-header h1 {
+        font-size: 28px;
+        margin-bottom: 10px;
+        font-weight: 700;
+    }
+
+    .search-stats {
+        display: flex;
+        gap: 30px;
+        font-size: 14px;
+        margin-top: 15px;
+    }
+
+    .stat {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .stat-number {
+        font-weight: bold;
+        font-size: 20px;
+    }
+
+    .stat-label {
+        opacity: 0.9;
+    }
+
+    .no-results {
+        text-align: center;
+        padding: 60px 20px;
+        background: #f9f9f9;
+        border: 2px dashed #ddd;
+        border-radius: 8px;
+    }
+
+    .no-results h2 {
+        color: #333;
+        font-size: 24px;
+        margin-bottom: 10px;
+    }
+
+    .no-results p {
+        color: #666;
+        font-size: 16px;
+        margin-bottom: 5px;
+    }
+
+    .no-results-hint {
+        color: #999;
+        margin-top: 15px;
+        font-size: 14px;
+    }
+
+    /* EMPLOYEES TABLE */
+    .section-title {
+        font-size: 18px;
+        color: #333;
+        margin-bottom: 15px;
+        font-weight: 600;
+        padding-left: 5px;
+        border-left: 4px solid #667eea;
+    }
+
+    .employees-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 30px;
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .employees-table thead {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .employees-table th {
+        padding: 15px 12px;
+        text-align: left;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .employees-table td {
+        padding: 12px;
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 14px;
+        color: #333;
+    }
+
+    .employees-table tbody tr {
+        transition: all 0.3s ease;
+    }
+
+    .employees-table tbody tr:hover {
+        background-color: #f8f9ff;
+    }
+
+    .employee-name {
+        font-weight: 600;
+        color: #333;
+    }
+
+    .employee-title {
+        color: #999;
+        font-size: 12px;
+        margin-top: 3px;
+    }
+
+    .skills-text {
+        color: #667eea;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    .rating-badge {
+        background: linear-gradient(135deg, #fff3cd 0%, #ffe0b2 100%);
+        color: #856404;
+        padding: 6px 10px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    /* BLURRED TABLE */
+    .blurred-section {
+        position: relative;
+        margin-bottom: 30px;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .employees-table-blurred {
+        width: 100%;
+        border-collapse: collapse;
+        filter: blur(5px);
+        opacity: 0.5;
+        pointer-events: none;
+        background: white;
+        border-radius: 8px;
+    }
+
+    .employees-table-blurred thead {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .employees-table-blurred th {
+        padding: 15px 12px;
+        text-align: left;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .employees-table-blurred td {
+        padding: 12px;
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 14px;
+        color: #333;
+    }
+
+    .login-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.95);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+    }
+
+    .overlay-message {
+        text-align: center;
+        background: white;
+        padding: 30px 40px;
+        border-radius: 12px;
+        border: 2px solid #667eea;
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    }
+
+    .overlay-icon {
+        font-size: 48px;
+        margin-bottom: 15px;
+    }
+
+    .overlay-message h3 {
+        color: #333;
+        font-size: 20px;
+        margin-bottom: 8px;
+        font-weight: 700;
+    }
+
+    .overlay-message p {
+        color: #666;
+        margin-bottom: 20px;
+        font-size: 14px;
+    }
+
+    /* LOGIN SECTION */
+    .login-section-search {
+        background: linear-gradient(135deg, #f5f7ff 0%, #f0ecff 100%);
+        border: 2px solid #e8e0ff;
+        padding: 40px 30px;
+        text-align: center;
+        margin-bottom: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.1);
+    }
+
+    .login-section-search h2 {
+        font-size: 22px;
+        color: #333;
+        margin-bottom: 10px;
+        font-weight: 700;
+    }
+
+    .login-section-search p {
+        font-size: 15px;
+        color: #666;
+        margin-bottom: 20px;
+        line-height: 1.6;
+    }
+
+    .login-buttons {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .login-btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 12px 28px;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 15px;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s ease;
+    }
+
+    .login-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    }
+
+    .already-logged {
+        background: linear-gradient(135deg, #d4f1d4 0%, #c8ffe8 100%);
+        color: #0a9396;
+        padding: 16px 20px;
+        border-radius: 6px;
+        border: 1px solid #a8eed4;
+        font-weight: 600;
+        text-align: center;
+        margin-top: 15px;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+        .search-header {
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .search-header h1 {
+            font-size: 20px;
+        }
+
+        .search-stats {
+            gap: 15px;
+            font-size: 12px;
+            flex-wrap: wrap;
+        }
+
+        .stat-number {
+            font-size: 16px;
+        }
+
+        .employees-table,
+        .employees-table-blurred {
+            font-size: 12px;
+        }
+
+        .employees-table th,
+        .employees-table td,
+        .employees-table-blurred th,
+        .employees-table-blurred td {
+            padding: 8px 5px;
+        }
+
+        .login-section-search {
+            padding: 20px 15px;
+        }
+
+        .login-section-search h2 {
+            font-size: 18px;
+        }
+
+        .login-section-search p {
+            font-size: 13px;
+        }
+
+        .login-btn {
+            padding: 10px 20px;
+            font-size: 13px;
+        }
+
+        .login-buttons {
+            gap: 8px;
+        }
+
+        .overlay-message {
+            padding: 20px 30px;
+        }
+
+        .overlay-icon {
+            font-size: 36px;
+        }
+
+        .overlay-message h3 {
+            font-size: 18px;
+        }
+
+        .overlay-message p {
+            font-size: 13px;
+        }
+    }
+
+    .empty-state-icon {
+        font-size: 80px;
+        margin-bottom: 20px;
+        opacity: 0.5;
+    }
+</style>
+
+<div class="search-container">
+    <a href="{% url 'index' %}" class="back-button">Back to Home</a>
+
+    {% if search_query %}
+        <div class="search-header">
+            <h1>Search Results for "{{ search_query }}"</h1>
+            <div class="search-stats">
+                <div class="stat">
+                    <span class="stat-number">{{ total_count }}</span>
+                    <span class="stat-label">Total Found</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number">{{ employees_data|length }}</span>
+                    <span class="stat-label">Results</span>
+                </div>
+            </div>
+        </div>
+
+        {% if employees_data %}
+            <!-- SECTION 1: FIRST 3 EMPLOYEES (CLEAR/VISIBLE) -->
+            <div style="margin-bottom: 30px;">
+                <h3 class="section-title">Available Professionals (Showing First {{ preview_count }})</h3>
+                <table class="employees-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Job Title</th>
+                            <th>Skills</th>
+                            <th>Rating</th>
+                            <th>Experience</th>
+                            <th>Jobs Done</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in employees_data|slice:":3" %}
+                        {% with employee=item.employee skills_list=item.skills_list %}
+                        <tr>
+                            <td>
+                                <div class="employee-name">{{ employee.first_name }} {{ employee.last_name }}</div>
+                                <div class="employee-title">{{ employee.availability_status }}</div>
+                            </td>
+                            <td>{{ employee.job_title|default:"Not Specified" }}</td>
+                            <td>
+                                <div class="skills-text">
+                                    {% if skills_list %}
+                                        {{ skills_list|join:", " }}
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td>
+                                <span class="rating-badge">⭐ {{ employee.rating|default:0|floatformat:1 }}</span>
+                            </td>
+                            <td>{{ employee.years_experience|default:0 }} yrs</td>
+                            <td>{{ employee.total_jobs_done|default:0 }}</td>
+                        </tr>
+                        {% endwith %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- SECTION 2: LOGIN PROMPT (IF MORE RESULTS) -->
+            {% if employees_data|length > 3 %}
+            <div class="login-section-search">
+                <h2>📌 See All {{ total_count }} Professionals</h2>
+                <p>Login to unlock full access and view profiles of all {{ total_count }} professionals found</p>
+                
+                {% if is_logged_in %}
+                    <div class="already-logged">
+                        ✓ You're logged in - scroll below to see all professionals
+                    </div>
+                {% else %}
+                    <div class="login-buttons">
+                        <a href="{% url 'employee_login' %}" class="login-btn">👤 Employee Login</a>
+                        <a href="{% url 'employer_login' %}" class="login-btn">🏢 Employer Login</a>
+                        <a href="{% url 'register' %}" class="login-btn">✍️ Register</a>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- SECTION 3: REMAINING EMPLOYEES (BLURRED IF NOT LOGGED IN) -->
+            {% if employees_data|length > 3 %}
+            <div class="blurred-section">
+                {% if not is_logged_in %}
+                <div class="login-overlay">
+                    <div class="overlay-message">
+                        <div class="overlay-icon">🔒</div>
+                        <h3>Login to See More</h3>
+                        <p>View full profiles and start connecting with workers</p>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <h3 class="section-title">More Professionals ({{ employees_data|length|add:"-3" }} additional)</h3>
+                <table class="employees-table{% if not is_logged_in %}-blurred{% endif %}">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Job Title</th>
+                            <th>Skills</th>
+                            <th>Rating</th>
+                            <th>Experience</th>
+                            <th>Jobs Done</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in employees_data|slice:"3:" %}
+                        {% with employee=item.employee skills_list=item.skills_list %}
+                        <tr>
+                            <td>
+                                <div class="employee-name">{{ employee.first_name }} {{ employee.last_name }}</div>
+                                <div class="employee-title">{{ employee.availability_status }}</div>
+                            </td>
+                            <td>{{ employee.job_title|default:"Not Specified" }}</td>
+                            <td>
+                                <div class="skills-text">
+                                    {% if skills_list %}
+                                        {{ skills_list|join:", " }}
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td>
+                                <span class="rating-badge">⭐ {{ employee.rating|default:0|floatformat:1 }}</span>
+                            </td>
+                            <td>{{ employee.years_experience|default:0 }} yrs</td>
+                            <td>{{ employee.total_jobs_done|default:0 }}</td>
+                        </tr>
+                        {% endwith %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+            {% endif %}
+
+        {% else %}
+            <!-- NO RESULTS -->
+            <div class="no-results">
+                <div class="empty-state-icon">🔍</div>
+                <h2>No Professionals Found</h2>
+                <p>No professionals found matching "{{ search_query }}"</p>
+                <div class="no-results-hint">
+                    <p>Try different keywords: carpenter, electrician, painter, plumber, designer, developer, etc.</p>
+                    <p style="margin-top: 8px;">Or <a href="{% url 'index' %}" style="color: #667eea; text-decoration: none; font-weight: 600;">browse all professionals</a></p>
+                </div>
+            </div>
+        {% endif %}
+
+    {% else %}
+        <!-- NO SEARCH QUERY -->
+        <div class="no-results">
+            <div class="empty-state-icon">🔍</div>
+            <h2>Search for Professionals</h2>
+            <p>Enter keywords like job title or skills to find available workers</p>
+        </div>
+    {% endif %}
+</div>
+
+{% include 'home_page_html/footer.html' %}

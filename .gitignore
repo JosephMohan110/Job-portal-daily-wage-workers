@@ -1,0 +1,25 @@
+env/
+__pycache__/
+*.pyc
+db.sqlite3
+*.zip
+.vSCode/
+.vscode/
+old_version_model/
+.md
+C:\Users\LENOVO\Desktop\jobportal\backend\media\ml_models
+
+media/ml_models/
+backend/media/ml_models/xgboost/complete_xgboost_package.pkl
+backend/media/ml_models/xgboost/xgboost_model.pkl
+
+Recording 2026-02-25 082539.mp4
+
+/explnation/
+/pre.mov
+BOOKING_SYSTEM_COMPLETE_GUIDE.html
+
+CHATBOT_COMPLETE_GUIDE.html
+RAZORPAY_PAYMENT_COMPLETE_GUIDE.html
+VOICE_ASSISTANT_COMPLETE_GUIDE.html
+backend/media/

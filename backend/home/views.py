@@ -405,4 +405,51 @@ def logout(request):
     return redirect('index')
 
 
+#***************************************************
+# SEARCH FUNCTIONALITY
+#***************************************************
+
+def search_employees(request):
+    """Search for employees by skills, job title, or name"""
+    from django.db.models import Q
+    from employee.models import Employee
+    
+    search_query = request.GET.get('q', '').strip()
+    is_logged_in = 'employee_id' in request.session or 'employer_id' in request.session
+    
+    employees_data = []
+    total_count = 0
+    preview_count = 3
+    
+    if search_query:
+        # Search in employee fields
+        employees = Employee.objects.filter(
+            Q(first_name__icontains=search_query) |
+            Q(last_name__icontains=search_query) |
+            Q(job_title__icontains=search_query) |
+            Q(skills__icontains=search_query) |
+            Q(city__icontains=search_query)
+        ).filter(status='Active').distinct()[:50]  # Limit to 50 results
+        
+        total_count = employees.count()
+        
+        # Process employee data with skills
+        for employee in employees:
+            skills_list = [skill.strip() for skill in employee.skills.split(',') if skill.strip()] if employee.skills else []
+            employees_data.append({
+                'employee': employee,
+                'skills_list': skills_list
+            })
+    
+    context = {
+        'search_query': search_query,
+        'employees_data': employees_data,
+        'total_count': total_count,
+        'preview_count': preview_count,
+        'is_logged_in': is_logged_in,
+    }
+    
+    return render(request, 'home_page_html/search_results.html', context)
+
+
 
