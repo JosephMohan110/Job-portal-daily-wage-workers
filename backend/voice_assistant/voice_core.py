@@ -217,7 +217,24 @@ class VoiceAssistantCore:
                     'direction': 'bottom'
                 }
 
-        # interactive login flow
+        # Detect employee/employer username entry
+        if 'enter' in command and 'username' in command:
+            if 'employee' in command:
+                return {
+                    'type': 'action',
+                    'message': "Starting Employee Login. Please say your email.",
+                    'action': 'start_login_flow',
+                    'login_type': 'employee'
+                }
+            elif 'employer' in command:
+                return {
+                    'type': 'action',
+                    'message': "Starting Employer Login. Please say your email.",
+                    'action': 'start_login_flow',
+                    'login_type': 'employer'
+                }
+        
+        # interactive login flow - generic
         if 'enter' in command and ('username' in command or 'email' in command) and 'password' in command:
              return {
                 'type': 'action',

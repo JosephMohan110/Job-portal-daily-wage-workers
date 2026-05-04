@@ -999,7 +999,7 @@
                                 <input type="file" name="profile_image" id="profilePhoto" accept="image/*" style="display: none;">
                                 
                                 <!-- Action buttons -->
-                                <div style="display: flex; flex-direction: column; gap: 10px;">
+                                <div style="display: flex; flex-direction: column; gap: 10px; flex: 1;">
                                     <button type="button" class="btn btn-sm" id="uploadBtn" onclick="selectNewImage()">
                                         <i class="fas fa-upload"></i> Upload New Photo
                                     </button>
@@ -1009,6 +1009,13 @@
                                             {% if not employer.profile_image %}disabled style="opacity: 0.6; cursor: not-allowed;"{% endif %}>
                                         <i class="fas fa-trash"></i> Remove Photo
                                     </button>
+                                    
+                                    <!-- Selected file name display -->
+                                    <div id="selectedFileName" style="display: none; margin-top: 10px; padding: 10px; border-radius: 6px; 
+                                         background: var(--primary-light); border: 1px solid var(--primary); color: var(--primary); font-size: 0.9rem;">
+                                        <i class="fas fa-check-circle" style="margin-right: 8px;"></i>
+                                        <strong>Selected:</strong> <span id="fileNameText"></span>
+                                    </div>
                                 </div>
                             </div>
                             
@@ -1124,6 +1131,13 @@
                             <input type="file" id="aadharFile" name="aadhar_document" accept=".pdf,.jpg,.jpeg,.png" 
                                    style="display: none;" onchange="handleFileSelect(this, 'aadhar')">
                             <small class="file-error" id="aadharError" style="color: var(--danger); display: none; margin-top: 0.5rem;"></small>
+                            
+                            <!-- Selected file name display -->
+                            <div id="aadharFileName" style="display: none; margin-top: 1rem; padding: 10px; border-radius: 6px; 
+                                 background: var(--primary-light); border: 1px solid var(--primary); color: var(--primary); font-size: 0.9rem;">
+                                <i class="fas fa-check-circle" style="margin-right: 8px;"></i>
+                                <strong>Selected:</strong> <span id="aadharFileNameText"></span>
+                            </div>
                         </div>
 
                         <!-- Document Save Button -->
@@ -1131,7 +1145,7 @@
                             <button type="submit" class="btn btn-primary" id="uploadDocumentsBtn">
                                 <i class="fas fa-save"></i> Save Aadhar Card
                             </button>
-                            <button type="reset" class="btn btn-outline">
+                            <button type="reset" class="btn btn-outline" onclick="clearDocumentUpload('aadhar')">
                                 <i class="fas fa-redo"></i> Clear
                             </button>
                         </div>
@@ -1876,6 +1890,11 @@
             if (this.files && this.files[0]) {
                 selectedFile = this.files[0];
                 
+                // Show file name
+                const fileName = selectedFile.name;
+                document.getElementById('fileNameText').textContent = fileName;
+                document.getElementById('selectedFileName').style.display = 'block';
+                
                 // Show preview
                 const reader = new FileReader();
                 reader.onload = function(e) {
@@ -1905,6 +1924,9 @@
         function cancelImageUpload() {
             // Hide preview
             document.getElementById('previewImageContainer').style.display = 'none';
+            
+            // Hide selected file name
+            document.getElementById('selectedFileName').style.display = 'none';
             
             // Show original image
             document.getElementById('originalProfileImage').style.display = 'block';
@@ -1940,6 +1962,7 @@
             } else if (pendingAction === 'upload') {
                 // Hide preview and show original
                 document.getElementById('previewImageContainer').style.display = 'none';
+                document.getElementById('selectedFileName').style.display = 'none';
                 document.getElementById('originalProfileImage').style.display = 'block';
                 document.getElementById('profilePhoto').value = '';
                 selectedFile = null;
@@ -2186,11 +2209,18 @@
         function handleFileSelect(input, docType) {
             const file = input.files[0];
             const errorDiv = document.getElementById(docType + 'Error');
+            const fileNameDiv = document.getElementById(docType + 'FileName');
+            const fileNameText = document.getElementById(docType + 'FileNameText');
 
             // Clear previous error messages
             if (errorDiv) {
                 errorDiv.style.display = 'none';
                 errorDiv.textContent = '';
+            }
+
+            // Hide file name display initially
+            if (fileNameDiv) {
+                fileNameDiv.style.display = 'none';
             }
 
             if (!file) return;
@@ -2217,11 +2247,47 @@
                 return;
             }
 
+            // Show the file name
+            if (fileNameDiv && fileNameText) {
+                fileNameText.textContent = file.name;
+                fileNameDiv.style.display = 'block';
+            }
+
             // Show the upload area as ready
             const uploadArea = document.getElementById(docType + 'UploadArea');
             if (uploadArea) {
                 uploadArea.style.borderColor = 'var(--success)';
                 uploadArea.style.backgroundColor = 'rgba(40, 167, 69, 0.05)';
+            }
+        }
+
+        // Clear document upload
+        function clearDocumentUpload(docType) {
+            const fileInput = document.getElementById(docType + 'File');
+            const fileNameDiv = document.getElementById(docType + 'FileName');
+            const uploadArea = document.getElementById(docType + 'UploadArea');
+            const errorDiv = document.getElementById(docType + 'Error');
+
+            // Clear file input
+            if (fileInput) {
+                fileInput.value = '';
+            }
+
+            // Hide file name display
+            if (fileNameDiv) {
+                fileNameDiv.style.display = 'none';
+            }
+
+            // Reset upload area styling
+            if (uploadArea) {
+                uploadArea.style.borderColor = 'var(--border-color)';
+                uploadArea.style.backgroundColor = 'transparent';
+            }
+
+            // Hide error messages
+            if (errorDiv) {
+                errorDiv.style.display = 'none';
+                errorDiv.textContent = '';
             }
         }
 

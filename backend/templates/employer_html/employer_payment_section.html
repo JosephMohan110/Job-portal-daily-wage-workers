@@ -525,16 +525,34 @@
                     <td>{{ payment.employee.full_name }}</td>
                     <td>₹{{ payment.amount|floatformat:0 }}</td>
                     <td>
-                        <span class="status-badge status-{{ payment.status }}">
-                            {{ payment.get_status_display }}
-                        </span>
+                        {% if payment.razorpay_payment_id or payment.status == 'completed' %}
+                            <span class="status-badge status-completed">
+                                <i class="fas fa-check-circle"></i> Completed
+                            </span>
+                        {% elif payment.status == 'processing' or payment.status == 'pending' %}
+                            <span class="status-badge status-pending">
+                                <i class="fas fa-clock"></i> Pending
+                            </span>
+                        {% elif payment.status == 'failed' %}
+                            <span class="status-badge status-failed">
+                                <i class="fas fa-times-circle"></i> Failed
+                            </span>
+                        {% elif payment.status == 'refunded' %}
+                            <span class="status-badge status-refunded">
+                                <i class="fas fa-undo"></i> Refunded
+                            </span>
+                        {% else %}
+                            <span class="status-badge status-{{ payment.status }}">
+                                {{ payment.get_status_display }}
+                            </span>
+                        {% endif %}
                     </td>
                     <td>
                         <div class="action-buttons">
                             <a href="{% url 'transaction_details' payment.payment_id %}" class="btn-sm btn-view">
                                 <i class="fas fa-receipt"></i> Details
                             </a>
-                            {% if payment.status == 'completed' %}
+                            {% if payment.razorpay_payment_id or payment.status == 'completed' %}
                             <a href="{% url 'view_invoice' payment.payment_id %}" class="btn-sm btn-invoice">
                                 <i class="fas fa-file-invoice"></i> Invoice
                             </a>

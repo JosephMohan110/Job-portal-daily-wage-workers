@@ -345,6 +345,7 @@
         isListening: false,
         listeningTimer: null,
         inputMode: null, // null, 'username', 'password'
+        currentLoginType: null, // null, 'employee', 'employer'
 
         init: function () {
             if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
@@ -583,7 +584,13 @@
             } else if (response.action === 'fill_field') {
                 this.fillField(response.field, response.value);
             } else if (response.action === 'perform_action') {
-                if (response.action_name === 'submit') {
+                if (response.action_name === 'submit' || response.action_name === 'login') {
+                    // Store current URL to detect if page navigates
+                    const originalUrl = window.location.href;
+                    
+                    // Detect which form is visible to determine login type
+                    this.detectVisibleLoginForm();
+                    
                     // Try to find visible form first
                     const forms = document.querySelectorAll('form');
                     let submitted = false;
@@ -598,6 +605,13 @@
                     if (!submitted && forms.length > 0) {
                         forms[0].submit();
                     }
+                    
+                    // Check after delay if login succeeded or failed
+                    if (submitted || forms.length > 0) {
+                        setTimeout(() => {
+                            this.checkLoginStatus(originalUrl);
+                        }, 3000); // Wait 3 seconds for page to load
+                    }
                 }
             } else if (response.action === 'scroll') {
                 if (response.direction === 'down') {
@@ -610,6 +624,17 @@
                     window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
                 }
             } else if (response.action === 'start_login_flow') {
+                this.currentLoginType = response.login_type || null;
+                
+                // If login_type is specified, switch to that form first
+                if (this.currentLoginType) {
+                    const btnId = this.currentLoginType === 'employer' ? 'employerSwitch' : 'employeeSwitch';
+                    const btn = document.getElementById(btnId);
+                    if (btn) {
+                        btn.click(); // Switch to the correct login form
+                    }
+                }
+                
                 this.inputMode = 'username';
                 setTimeout(() => {
                     this.speak("Please say your email.", () => {
@@ -660,6 +685,144 @@
             if (!found) {
                 console.warn(`Could not find field: ${name}`);
             }
+        },
+
+        checkLoginStatus: function (originalUrl) {
+            // Check if page URL changed (successful login)
+            if (window.location.href !== originalUrl) {
+                // Page navigated - login succeeded
+                const dashboardType = this.detectDashboard();
+                
+                if (dashboardType) {
+                    // Announce successful login
+                    const message = dashboardType === 'employee' 
+                        ? "Welcome! Your Employee Dashboard has opened." 
+                        : "Welcome! Your Employer Dashboard has opened.";
+                    
+                    this.speak(message, () => {
+                        this.currentLoginType = null;
+                        this.inputMode = null;
+                        // Start listening for next commands
+                        setTimeout(() => this.startListening(), 500);
+                    });
+                } else {
+                    // Page changed but couldn't determine dashboard type
+                    this.speak("Login successful. Dashboard is loading.", () => {
+                        this.currentLoginType = null;
+                        this.inputMode = null;
+                        setTimeout(() => this.startListening(), 500);
+                    });
+                }
+                return;
+            }
+            
+            // Page didn't navigate - check for error messages
+            const errorMessages = this.getErrorMessages();
+            
+            if (errorMessages.length > 0) {
+                // Login failed - speak error
+                const errorText = errorMessages.join(". ");
+                this.speak(errorText, () => {
+                    // Clear password field and restart listening
+                    const passwordFields = document.querySelectorAll('input[type="password"]');
+                    passwordFields.forEach(field => {
+                        if (field.offsetParent !== null) { // Only clear visible fields
+                            field.value = '';
+                        }
+                    });
+                    
+                    this.currentLoginType = null;
+                    this.inputMode = null;
+                    
+                    this.speak("Please try again. Say your email.", () => {
+                        setTimeout(() => this.startListening(), 200);
+                    });
+                });
+            }
+        },
+        
+        detectVisibleLoginForm: function () {
+            // Detect which login form is currently visible
+            const employeeBox = document.getElementById('employeeBox');
+            const employerBox = document.getElementById('employerBox');
+            
+            if (employeeBox && employeeBox.offsetParent !== null) {
+                // Employee login form is visible
+                this.currentLoginType = 'employee';
+            } else if (employerBox && employerBox.offsetParent !== null) {
+                // Employer login form is visible
+                this.currentLoginType = 'employer';
+            }
+        },
+        
+        detectDashboard: function () {
+            // Check URL for dashboard indicators
+            const url = window.location.href.toLowerCase();
+            
+            if (url.includes('employee') && url.includes('dashboard')) {
+                return 'employee';
+            } else if (url.includes('employer') && url.includes('dashboard')) {
+                return 'employer';
+            }
+            
+            // Check for dashboard-specific elements if URL check fails
+            // Look for page headers or titles
+            const pageContent = document.body.textContent.toLowerCase();
+            
+            if (pageContent.includes('employee dashboard')) {
+                return 'employee';
+            } else if (pageContent.includes('employer dashboard')) {
+                return 'employer';
+            }
+            
+            // Check for role-specific elements
+            if (document.querySelector('[data-role="employee"]')) {
+                return 'employee';
+            } else if (document.querySelector('[data-role="employer"]')) {
+                return 'employer';
+            }
+            
+            // Fallback to stored login type if set
+            if (this.currentLoginType === 'employee') {
+                return 'employee';
+            } else if (this.currentLoginType === 'employer') {
+                return 'employer';
+            }
+            
+            return null;
+        },
+        
+        getErrorMessages: function () {
+            // Look for Django messages (error alerts)
+            const errors = [];
+            
+            // Check for .alert-danger, .alert-error, or .messages div
+            const alertElements = document.querySelectorAll('[role="alert"], .alert, .messages .alert-danger, .alert-error, .errorlist li');
+            
+            alertElements.forEach(el => {
+                const text = el.textContent.trim();
+                if (text && (text.toLowerCase().includes('error') || 
+                            text.toLowerCase().includes('invalid') || 
+                            text.toLowerCase().includes('not found') ||
+                            text.toLowerCase().includes('deactivat') ||
+                            text.toLowerCase().includes('please enter'))) {
+                    errors.push(text);
+                }
+            });
+            
+            // Also check for form-wide error messages
+            const forms = document.querySelectorAll('form');
+            forms.forEach(form => {
+                if (form.offsetParent !== null) { // Only check visible forms
+                    const formErrors = form.querySelectorAll('.errorlist, .error-message, [role="alert"]');
+                    formErrors.forEach(err => {
+                        const text = err.textContent.trim();
+                        if (text) errors.push(text);
+                    });
+                }
+            });
+            
+            return [...new Set(errors)]; // Remove duplicates
         },
 
         speak: function (text, callback) {

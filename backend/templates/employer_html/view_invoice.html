@@ -1,0 +1,790 @@
+{% include 'employer_html/employer_header.html' %}
+
+<div class="main-content">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1><i class="fas fa-file-invoice-dollar"></i> Payment Invoice</h1>
+        <p>View payment details and invoice information</p>
+    </div>
+
+    <!-- Alerts -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Invoice Container -->
+    <div class="invoice-container">
+        <!-- Invoice Card -->
+        <div class="invoice-card">
+            <!-- Header -->
+            <div class="invoice-header">
+                <div class="header-left">
+                    <h2 class="company-name">WorkNest</h2>
+                    <p class="company-tagline">Trusted Employment Platform</p>
+                </div>
+                <div class="header-right">
+                    <div class="invoice-title-section">
+                        <h3 class="invoice-title">PAYMENT INVOICE</h3>
+                        <div class="invoice-meta">
+                            <p><strong>Invoice #:</strong> 
+                                {% if invoice %}
+                                    {{ invoice.invoice_number }}
+                                {% else %}
+                                    INV-{{ payment.payment_id }}
+                                {% endif %}
+                            </p>
+                            <p><strong>Date:</strong> {{ payment.payment_date|default:payment.created_at|date:"d M Y" }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status Section -->
+            <div class="status-section">
+                <div class="status-badge">
+                    {% if payment.status == 'completed' %}
+                        <span class="badge-completed">
+                            <i class="fas fa-check-circle"></i> COMPLETED
+                        </span>
+                    {% elif payment.status == 'pending' %}
+                        <span class="badge-pending">
+                            <i class="fas fa-clock"></i> PENDING
+                        </span>
+                    {% elif payment.status == 'processing' %}
+                        <span class="badge-processing">
+                            <i class="fas fa-hourglass-half"></i> PROCESSING
+                        </span>
+                    {% elif payment.status == 'failed' %}
+                        <span class="badge-failed">
+                            <i class="fas fa-times-circle"></i> FAILED
+                        </span>
+                    {% elif payment.status == 'refunded' %}
+                        <span class="badge-refunded">
+                            <i class="fas fa-undo"></i> REFUNDED
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Bill To Section -->
+            <div class="invoice-body">
+                <div class="bill-section">
+                    <h4 class="section-label"><i class="fas fa-building"></i> Bill From</h4>
+                    <div class="bill-details">
+                        <p><strong>{{ employer.company_name|default:employer.full_name }}</strong></p>
+                        <p>{{ employer.address }}</p>
+                        <p>{{ employer.city }}, {{ employer.state }} {{ employer.zip_code }}</p>
+                        <p>Email: {{ employer.email }}</p>
+                        <p>Phone: {{ employer.phone }}</p>
+                    </div>
+                </div>
+
+                <div class="bill-section">
+                    <h4 class="section-label"><i class="fas fa-user"></i> Bill To</h4>
+                    <div class="bill-details">
+                        <p><strong>{{ payment.employee.first_name }} {{ payment.employee.last_name }}</strong></p>
+                        <p>Email: {{ payment.employee.email }}</p>
+                        <p>Phone: {{ payment.employee.phone|default:"N/A" }}</p>
+                        {% if payment.employee.address %}
+                            <p>{{ payment.employee.address }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Items Table -->
+            <div class="items-section">
+                <h4 class="section-label"><i class="fas fa-list"></i> Payment Details</h4>
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th>Quantity</th>
+                            <th>Rate</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                {% if payment.job %}
+                                    <strong>{{ payment.job.title }}</strong>
+                                    <p class="item-description">{{ payment.description|default:"Payment for completed job" }}</p>
+                                {% else %}
+                                    <strong>Payment</strong>
+                                    <p class="item-description">{{ payment.description|default:"Service payment" }}</p>
+                                {% endif %}
+                            </td>
+                            <td>1</td>
+                            <td>₹{{ payment.amount }}</td>
+                            <td class="amount-cell">₹{{ payment.amount }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Totals Section -->
+            <div class="totals-section">
+                <div class="totals-row">
+                    <span class="label">Subtotal:</span>
+                    <span class="value">₹{{ payment.amount }}</span>
+                </div>
+                {% if invoice and invoice.tax_amount %}
+                <div class="totals-row">
+                    <span class="label">Tax ({{ invoice.tax_amount|default:"0" }}):</span>
+                    <span class="value">₹{{ invoice.tax_amount }}</span>
+                </div>
+                {% endif %}
+                <div class="totals-row total">
+                    <span class="label">Total Amount:</span>
+                    <span class="value">₹{{ invoice.total_amount|default:payment.amount }}</span>
+                </div>
+            </div>
+
+            <!-- Payment Information -->
+            <div class="payment-info">
+                <h4 class="section-label"><i class="fas fa-info-circle"></i> Payment Information</h4>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <label>Payment Method:</label>
+                        <span>{{ payment.get_payment_method_display }}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Payment Status:</label>
+                        <span class="status-badge-text">
+                            {% if payment.status == 'completed' %}
+                                <span class="text-success"><i class="fas fa-check"></i> Completed</span>
+                            {% elif payment.status == 'pending' %}
+                                <span class="text-warning"><i class="fas fa-clock"></i> Pending</span>
+                            {% elif payment.status == 'processing' %}
+                                <span class="text-info"><i class="fas fa-hourglass"></i> Processing</span>
+                            {% elif payment.status == 'failed' %}
+                                <span class="text-danger"><i class="fas fa-times"></i> Failed</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <label>Created Date:</label>
+                        <span>{{ payment.created_at|date:"d M Y, H:i" }}</span>
+                    </div>
+                    {% if payment.payment_date %}
+                    <div class="info-item">
+                        <label>Payment Date:</label>
+                        <span>{{ payment.payment_date|date:"d M Y, H:i" }}</span>
+                    </div>
+                    {% endif %}
+                    {% if payment.razorpay_payment_id %}
+                    <div class="info-item">
+                        <label>Transaction ID:</label>
+                        <span class="transaction-id">{{ payment.razorpay_payment_id }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                {% if invoice and invoice.notes %}
+                <div class="notes-section">
+                    <h5>Notes:</h5>
+                    <p>{{ invoice.notes }}</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="invoice-footer">
+                <button onclick="window.print()" class="btn-action btn-print" title="Print this invoice">
+                    <div class="btn-icon">
+                        <i class="fas fa-print"></i>
+                    </div>
+                    <div class="btn-content">
+                        <h4>Print Invoice</h4>
+                        <p>Get a printed copy</p>
+                    </div>
+                </button>
+                {% if invoice and invoice.invoice_file %}
+                <a href="{{ invoice.invoice_file.url }}" class="btn-action btn-download" download title="Download PDF">
+                    <div class="btn-icon">
+                        <i class="fas fa-file-pdf"></i>
+                    </div>
+                    <div class="btn-content">
+                        <h4>Download PDF</h4>
+                        <p>Save as file</p>
+                    </div>
+                </a>
+                {% endif %}
+                <a href="{% url 'payment_history' %}" class="btn-action btn-back" title="Return to payment history">
+                    <div class="btn-icon">
+                        <i class="fas fa-arrow-left"></i>
+                    </div>
+                    <div class="btn-content">
+                        <h4>Back to History</h4>
+                        <p>View all payments</p>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Footer Note -->
+            <div class="invoice-note">
+                <p><i class="fas fa-check-circle"></i> Thank you for your business. This is a computer-generated invoice and does not require a signature.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .invoice-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 2rem 0;
+    }
+
+    .invoice-card {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 2.5rem;
+        box-shadow: 0 8px 32px rgba(74, 111, 255, 0.12), 0 2px 8px rgba(0, 0, 0, 0.05);
+        border: 1px solid var(--primary-light);
+    }
+
+    .invoice-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 2rem;
+        padding-bottom: 2rem;
+        border-bottom: 2px solid var(--primary-light);
+    }
+
+    .header-left {
+        flex: 1;
+    }
+
+    .company-name {
+        color: var(--primary);
+        font-size: 1.8rem;
+        font-weight: bold;
+        margin: 0;
+    }
+
+    .company-tagline {
+        color: var(--text-light);
+        font-size: 0.9rem;
+        margin: 0.25rem 0 0 0;
+    }
+
+    .invoice-title-section {
+        text-align: right;
+    }
+
+    .invoice-title {
+        color: var(--primary);
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0 0 0.5rem 0;
+        letter-spacing: 1px;
+    }
+
+    .invoice-meta {
+        font-size: 0.9rem;
+        color: var(--text-dark);
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+    }
+
+    .invoice-meta p {
+        margin: 0;
+        padding: 0.5rem 0;
+    }
+
+    .invoice-meta strong {
+        color: var(--primary);
+        display: block;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Status Section */
+    .status-section {
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+    .status-badge {
+        display: inline-block;
+    }
+
+    .badge-completed,
+    .badge-pending,
+    .badge-processing,
+    .badge-failed,
+    .badge-refunded {
+        padding: 0.75rem 1.5rem;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 1rem;
+        letter-spacing: 1px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .badge-completed {
+        background: rgba(40, 167, 69, 0.1);
+        color: var(--success);
+    }
+
+    .badge-pending {
+        background: rgba(255, 193, 7, 0.1);
+        color: var(--warning);
+    }
+
+    .badge-processing {
+        background: rgba(23, 162, 184, 0.1);
+        color: var(--info);
+    }
+
+    .badge-failed {
+        background: rgba(220, 53, 69, 0.1);
+        color: var(--danger);
+    }
+
+    .badge-refunded {
+        background: rgba(108, 117, 125, 0.1);
+        color: var(--secondary);
+    }
+
+    /* Invoice Body */
+    .invoice-body {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+        padding-bottom: 2rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .bill-section h4 {
+        margin-bottom: 1rem;
+        color: var(--primary);
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .bill-section h4 i {
+        font-size: 1.1rem;
+    }
+
+    .section-label {
+        color: var(--primary);
+        font-weight: 700;
+        margin-bottom: 0.75rem;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .bill-details {
+        color: var(--text-dark);
+        line-height: 1.8;
+        font-size: 0.95rem;
+    }
+
+    .bill-details p {
+        margin: 0.3rem 0;
+    }
+
+    /* Items Section */
+    .items-section {
+        margin-bottom: 2rem;
+    }
+
+    .items-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .items-table thead {
+        background: linear-gradient(135deg, var(--primary-light) 0%, rgba(74, 111, 255, 0.05) 100%);
+    }
+
+    .items-table th {
+        padding: 1rem;
+        text-align: left;
+        color: var(--primary);
+        font-weight: 600;
+        border-bottom: 2px solid var(--primary);
+    }
+
+    .items-table td {
+        padding: 1rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .items-table tbody tr {
+        transition: background-color 0.2s ease;
+    }
+
+    .items-table tbody tr:hover {
+        background-color: var(--primary-light);
+    }
+
+    .items-table tbody tr:last-child td {
+        border-bottom: 2px solid var(--primary);
+    }
+    }
+
+    .item-description {
+        color: var(--text-light);
+        font-size: 0.9rem;
+        margin: 0.25rem 0 0 0;
+    }
+
+    .amount-cell {
+        font-weight: 600;
+        color: var(--primary);
+        text-align: right;
+    }
+
+    /* Totals Section */
+    .totals-section {
+        background: var(--primary-light);
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+    }
+
+    .totals-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 0.8rem;
+        margin-bottom: 0.75rem;
+        font-size: 1rem;
+        border-bottom: 1px solid rgba(74, 111, 255, 0.1);
+    }
+
+    .totals-row:last-child {
+        margin-bottom: 0;
+        border-bottom: none;
+    }
+
+    .totals-row .label {
+        color: var(--text-dark);
+        font-weight: 500;
+    }
+
+    .totals-row .value {
+        color: var(--text-dark);
+        font-weight: 600;
+    }
+
+    .totals-row.total {
+        font-size: 1.3rem;
+        border: none;
+        border-top: 2px solid var(--primary);
+        padding-top: 1rem;
+        padding-bottom: 0;
+        margin-top: 0.5rem;
+        font-weight: 700;
+    }
+
+    .totals-row.total .label,
+    .totals-row.total .value {
+        color: var(--primary);
+        font-size: 1.2rem;
+    }
+
+    /* Payment Info */
+    .payment-info {
+        background: linear-gradient(135deg, var(--primary-light) 0%, rgba(74, 111, 255, 0.03) 100%);
+        padding: 1.5rem;
+        border-radius: 12px;
+        border: 1px solid var(--primary-light);
+        margin-bottom: 2rem;
+    }
+
+    .payment-info h3 {
+        color: var(--primary);
+        font-size: 1rem;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .payment-info h3 i {
+        font-size: 1.1rem;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .info-item {
+        display: flex;
+        flex-direction: column;
+        padding: 0.75rem 0;
+    }
+
+    .info-item label {
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 0.5rem;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .info-item span {
+        color: var(--text-dark);
+        font-weight: 500;
+        font-size: 1rem;
+    }
+        color: var(--text-light);
+    }
+
+    .transaction-id {
+        font-family: 'Courier New', monospace;
+        background: var(--white);
+        padding: 0.5rem;
+        border-radius: 4px;
+        word-break: break-all;
+    }
+
+    .status-badge-text {
+        display: inline-flex;
+        gap: 0.5rem;
+    }
+
+    .text-success { color: var(--success); }
+    .text-warning { color: var(--warning); }
+    .text-info { color: var(--info); }
+    .text-danger { color: var(--danger); }
+
+    .notes-section {
+        background: var(--white);
+        padding: 1rem;
+        border-left: 4px solid var(--primary);
+        margin-top: 1rem;
+    }
+
+    .notes-section h5 {
+        margin-bottom: 0.5rem;
+        color: var(--text-dark);
+    }
+
+    .notes-section p {
+        margin: 0;
+        color: var(--text-light);
+    }
+
+    /* Footer Actions */
+    .invoice-footer {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+        padding-top: 2rem;
+        border-top: 2px solid var(--primary-light);
+    }
+
+    .btn-action {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        padding: 1.5rem;
+        border-radius: 12px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        text-decoration: none;
+        background: var(--white);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        border: 2px solid var(--border-color);
+        font-family: inherit;
+    }
+
+    .btn-action:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+        border-color: transparent;
+    }
+
+    .btn-action .btn-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        color: var(--white);
+        flex-shrink: 0;
+        transition: all 0.3s ease;
+    }
+
+    .btn-action .btn-content {
+        flex: 1;
+        text-align: left;
+    }
+
+    .btn-action .btn-content h4 {
+        margin: 0 0 0.3rem 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--text-dark);
+    }
+
+    .btn-action .btn-content p {
+        margin: 0;
+        font-size: 0.85rem;
+        color: var(--text-light);
+    }
+
+    /* Button Variants */
+    .btn-print {
+        border-color: var(--primary);
+        background: linear-gradient(135deg, rgba(74, 111, 255, 0.05) 0%, rgba(74, 111, 255, 0.02) 100%);
+    }
+
+    .btn-print .btn-icon {
+        background: var(--primary);
+    }
+
+    .btn-print:hover {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    }
+
+    .btn-print:hover .btn-content h4 {
+        color: var(--white);
+    }
+
+    .btn-print:hover .btn-content p {
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .btn-download {
+        border-color: #28a745;
+        background: linear-gradient(135deg, rgba(40, 167, 69, 0.05) 0%, rgba(40, 167, 69, 0.02) 100%);
+    }
+
+    .btn-download .btn-icon {
+        background: #28a745;
+    }
+
+    .btn-download:hover {
+        background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+    }
+
+    .btn-download:hover .btn-content h4 {
+        color: var(--white);
+    }
+
+    .btn-download:hover .btn-content p {
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .btn-back {
+        border-color: #6c757d;
+        background: linear-gradient(135deg, rgba(108, 117, 125, 0.05) 0%, rgba(108, 117, 125, 0.02) 100%);
+    }
+
+    .btn-back .btn-icon {
+        background: #6c757d;
+    }
+
+    .btn-back:hover {
+        background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+    }
+
+    .btn-back:hover .btn-content h4 {
+        color: var(--white);
+    }
+
+    .btn-back:hover .btn-content p {
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    /* Invoice Note */
+    .invoice-note {
+        text-align: center;
+        background: linear-gradient(135deg, var(--primary-light) 0%, rgba(74, 111, 255, 0.05) 100%);
+        padding: 1.5rem;
+        border-radius: 12px;
+        border: 1px solid var(--primary-light);
+        color: var(--primary);
+        font-size: 0.95rem;
+    }
+
+    .invoice-note p {
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .invoice-note i {
+        font-size: 1.1rem;
+    }
+
+    /* Print Styles */
+    @media print {
+        body {
+            background: white;
+        }
+
+        .page-header,
+        .invoice-footer {
+            display: none !important;
+        }
+
+        .invoice-card {
+            box-shadow: none;
+            border: none;
+        }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .invoice-card {
+            padding: 1.5rem;
+        }
+
+        .invoice-header {
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .invoice-title-section {
+            text-align: left;
+        }
+
+        .invoice-body {
+            grid-template-columns: 1fr;
+        }
+
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .invoice-footer {
+            flex-direction: column;
+        }
+
+        .invoice-footer .btn {
+            width: 100%;
+        }
+    }
+</style>
+

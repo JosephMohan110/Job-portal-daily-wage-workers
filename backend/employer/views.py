@@ -3233,7 +3233,7 @@ def employer_payment_section(request):
             employer=employer,
             status='completed'
         ).exclude(
-            payments__status='completed'
+            payments__status__in=['completed', 'successful']
         ).select_related('employee').order_by('-completed_at')[:10]
         
         # Get recent payments
@@ -3261,7 +3261,7 @@ def employer_payment_section(request):
             status='failed'
         ).count()
         
-        # Get monthly spending
+        # Get month-over-month spending
         now = timezone.now()
         month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         month_end = (month_start + timedelta(days=32)).replace(day=1) - timedelta(days=1)
@@ -3374,7 +3374,7 @@ def initiate_payment(request, job_id):
                 currency='INR',
                 description=f"Payment for job: {job.title}",
                 razorpay_order_id=razorpay_order['id'],
-                status='pending'
+                status='processing'
             )
             print(f" Payment record created: {payment.payment_id}")
         
@@ -3849,7 +3849,7 @@ def payment_history(request):
         total_payments = payments.count()
         total_amount = payments.aggregate(total=Sum('amount'))['total'] or 0
         successful_payments = payments.filter(status='completed').count()
-        pending_payments = payments.filter(status='pending').count()
+        pending_payments = payments.filter(status__in=['pending', 'processing']).count()
         
         context = {
             'employer': employer,
